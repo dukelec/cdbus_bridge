@@ -45,6 +45,7 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
+#include "arch_wrapper.h"
 
 /* USER CODE END Includes */
 
@@ -87,6 +88,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+  local_irq_disable();
 
   /* USER CODE END SysInit */
 
@@ -108,7 +110,8 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-
+      void net_task(void);
+      net_task();
   }
   /* USER CODE END 3 */
 

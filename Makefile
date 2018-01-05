@@ -14,6 +14,7 @@
 # target
 ######################################
 TARGET = cdbus_bridge
+GIT_VERSION := $(shell git describe --dirty --always --tags)
 
 
 ######################################
@@ -64,7 +65,6 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c \
 Src/spi.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash.c \
-Src/gpio.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi_ex.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_uart.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_cortex.c \
@@ -72,20 +72,23 @@ Src/main.c \
 Src/system_stm32f1xx.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_spi.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc.c \
-Src/stm32f1xx_it.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c \
-Src/main.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_gpio.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_flash_ex.c \
 Src/tim.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c \
-Src/usart.c \
-Src/spi.c \
 Src/stm32f1xx_hal_msp.c \
-Src/tim.c \
-Src/stm32f1xx_hal_msp.c \
-Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.c  
+Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.c \
+cdnet/net/cdnet.c \
+cdnet/net/port_dispatcher.c \
+cdnet/dev/cdctl_bx.c \
+cdnet/dev/cdbus_uart.c \
+cdnet/utils/list.c \
+cdnet/utils/modbus_crc.c \
+cdnet/utils/debug.c \
+usr/uart_raw.c \
+usr/app_entry.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -101,13 +104,12 @@ PERIFLIB_SOURCES =
 #######################################
 # binaries
 #######################################
-BINPATH = 
 PREFIX = arm-none-eabi-
-CC = $(BINPATH)/$(PREFIX)gcc
-AS = $(BINPATH)/$(PREFIX)gcc -x assembler-with-cpp
-CP = $(BINPATH)/$(PREFIX)objcopy
-AR = $(BINPATH)/$(PREFIX)ar
-SZ = $(BINPATH)/$(PREFIX)size
+CC = $(PREFIX)gcc
+AS = $(PREFIX)gcc -x assembler-with-cpp
+CP = $(PREFIX)objcopy
+AR = $(PREFIX)ar
+SZ = $(PREFIX)size
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
  
@@ -133,7 +135,10 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DSTM32F103xB
+-DSTM32F103xB \
+-DSW_VER=\"$(GIT_VERSION)\" \
+-DCDUART_IT \
+-DARCH_SPI
 
 
 # AS includes
@@ -145,7 +150,12 @@ C_INCLUDES =  \
 -IDrivers/STM32F1xx_HAL_Driver/Inc \
 -IDrivers/STM32F1xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32F1xx/Include \
--IDrivers/CMSIS/Include
+-IDrivers/CMSIS/Include \
+-Icdnet/net \
+-Icdnet/utils \
+-Icdnet/dev \
+-Icdnet/arch/stm32 \
+-Iusr
 
 
 # compile gcc flags

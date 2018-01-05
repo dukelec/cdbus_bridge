@@ -1,0 +1,3 @@
+[submodule "cdnet"]
+	path = cdnet
+	url = ../cdnet

@@ -18,7 +18,7 @@
 #t/* SysTick_IRQn interrupt configuration */
 #tNVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(),0, 0));
 #n
-#t#t/**DISABLE: JTAG-DP Disabled and SW-DP Disabled #n#t#t*/
-#t__HAL_AFIO_REMAP_SWJ_DISABLE();
+#t#t/**NOJTAG: JTAG-DP Disabled and SW-DP Enabled #n#t#t*/
+#t__HAL_AFIO_REMAP_SWJ_NOJTAG();
 #n
 #n

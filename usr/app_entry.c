@@ -143,7 +143,9 @@ static void uc2r_ud(void)
                     r_intf.cd_intf.get_free_node(&r_intf.cd_intf);
             if (r_node) {
                 cd_frame_t *r_frame = container_of(r_node, cd_frame_t, node);
-                memcpy(r_frame->dat, frame->dat + 3, frame->dat[2]);
+                memcpy(r_frame->dat, frame->dat + 3, 2);
+                r_frame->dat[2] = frame->dat[2] - 2;
+                memcpy(r_frame->dat + 3, frame->dat + 5, r_frame->dat[2]);
                 d_debug("uc2r: done\n");
                 //cd_dump_frame(r_frame);
                 r_intf.cd_intf.put_tx_node(&r_intf.cd_intf, r_node);
@@ -184,8 +186,9 @@ static void r2uc(void)
 
     u_frame->dat[0] = 0x56;
     u_frame->dat[1] = 0xaa;
-    u_frame->dat[2] = r_frame->dat[2] + 3;
-    memcpy(u_frame->dat + 3, r_frame->dat, r_frame->dat[2] + 3);
+    u_frame->dat[2] = r_frame->dat[2] + 2;
+    memcpy(u_frame->dat + 3, r_frame->dat, 2);
+    memcpy(u_frame->dat + 5, r_frame->dat + 3, r_frame->dat[2]);
 
     d_debug("r2uc: done\n");
     //cd_dump_frame(r_frame);

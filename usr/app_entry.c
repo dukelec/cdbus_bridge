@@ -66,8 +66,8 @@ static udp_ser_t passthru_conf = {0};
 static int8_t raw_out_type = 0; // -1: disable; 0: local; 1: cross net
 static uint8_t raw_out_mac = 0;
 static uint8_t raw_out_addr[2];
-static uint16_t raw_out_port_begin = CDNET_BASIC_PORT;
-static uint16_t raw_out_port_end = CDNET_BASIC_PORT + 1;
+static uint16_t raw_out_port_begin = CDNET_DEF_PORT;
+static uint16_t raw_out_port_end = CDNET_DEF_PORT + 1;
 
 static bool raw_mode = false;
 static uint8_t local_mac = 254;
@@ -310,7 +310,7 @@ static void raw_out_task(void)
     ur_frame_t *ur_frame = container_of(ur_node, ur_frame_t, node);
     cdnet_packet_t *n_pkt = container_of(n_node, cdnet_packet_t, node);
 
-    n_pkt->is_local = (raw_out_type == 0);
+    n_pkt->is_multi_net = (raw_out_type == 1);
     n_pkt->dst_mac = raw_out_mac;
     memcpy(n_pkt->dst_addr, raw_out_addr, 2);
     n_pkt->dst_port = RAW_SER_PORT;

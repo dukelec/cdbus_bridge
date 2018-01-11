@@ -29,6 +29,7 @@ extern TIM_HandleTypeDef htim1;
 
 uart_t debug_uart = { .huart = &huart3 };
 static uart_t u_uart = { .huart = &huart1 };
+static gpio_t r_rst_n = { .group = CDCTL_RST_N_GPIO_Port, .num = CDCTL_RST_N_Pin };
 static gpio_t r_ns = { .group = CDCTL_NS_GPIO_Port, .num = CDCTL_NS_Pin };
 static spi_t r_spi = { .hspi = &hspi1, .ns_pin = &r_ns };
 
@@ -70,7 +71,7 @@ static uint16_t raw_out_port_begin = CDNET_DEF_PORT;
 static uint16_t raw_out_port_end = CDNET_DEF_PORT + 1;
 
 static bool raw_mode = false;
-static uint8_t local_mac = 254;
+static uint8_t local_mac = 255;
 
 static char cpu_id[25];
 
@@ -88,13 +89,23 @@ static void get_uid(char *buf)
     buf[24] = '\0';
 }
 
-static void cd_dump_frame(cd_frame_t *frame)
+#if 0
+void cd_dump_frame(cd_frame_t *frame)
 {
     int i, len = frame->dat[2] + 3;
-    for (i = 0; i < len; i++)
-        printf("%02x ", frame->dat[i]);
-    printf("\n");
+    static char print_buf[100];
+    uint8_t *buf = frame->dat;
+    while (len) {
+        int print_len = 0;
+        for (i = 0; i < 16; i++) {
+            print_len += sprintf(print_buf + print_len, "%02x ", *buf++);
+            if (--len == 0)
+                break;
+        }
+        d_verbose("dump: %s\n", print_buf);
+    }
 }
+#endif
 
 // for passthrough mode, end after the r2uc
 
@@ -331,6 +342,8 @@ static void passthru_conf_cb(void)
 
         if (pkt->dat_len == 1) {
             r_intf.cd_intf.set_filter(&r_intf.cd_intf, pkt->dat[0]);
+            n_intf.mac = pkt->dat[0];
+            // TODO: update flash
 
             pkt->dat_len = 0;
             list_put(&p_dispr.V_ser_head, node);
@@ -354,7 +367,7 @@ static void net_init(void)
     for (i = 0; i < N_PACKET_MAX; i++)
         list_put(&n_free_head, &n_packet_alloc[i].node);
 
-    cdctl_intf_init(&r_intf, &r_free_head, &r_spi);
+    cdctl_intf_init(&r_intf, &r_free_head, &r_spi, &r_rst_n);
     if (raw_mode) {
         ur_intf_init(&ur_intf, &u_free_head, &u_uart);
         cdnet_intf_init(&n_intf, &n_free_head, &r_intf.cd_intf, local_mac);

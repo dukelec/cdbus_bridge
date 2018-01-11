@@ -47,6 +47,8 @@
 
 /* Private define ------------------------------------------------------------*/
 
+#define CDCTL_RST_N_Pin GPIO_PIN_3
+#define CDCTL_RST_N_GPIO_Port GPIOA
 #define CDCTL_NS_Pin GPIO_PIN_4
 #define CDCTL_NS_GPIO_Port GPIOA
 

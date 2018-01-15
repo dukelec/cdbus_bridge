@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : SPI.h
-  * Description        : This file provides code for the configuration
-  *                      of the SPI instances.
+  * @file           : usbd_desc.h
+  * @version        : v2.0_Cube
+  * @brief          : Header for usbd_desc file.
   ******************************************************************************
   * This notice applies to any and all portions of this file
   * that are not between comment pairs USER CODE BEGIN and
@@ -45,47 +45,75 @@
   * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
   ******************************************************************************
-  */
+*/
+
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __spi_H
-#define __spi_H
+#ifndef __USBD_DESC__H__
+#define __USBD_DESC__H__
+
 #ifdef __cplusplus
  extern "C" {
 #endif
-
 /* Includes ------------------------------------------------------------------*/
-#include "stm32f1xx_hal.h"
-#include "main.h"
+#include "usbd_def.h"
 
-/* USER CODE BEGIN Includes */
+/** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
+  * @{
+  */
+  
+/** @defgroup USB_DESC
+  * @brief general defines for the usb device library file
+  * @{
+  */ 
 
-/* USER CODE END Includes */
+/** @defgroup USB_DESC_Exported_Defines
+  * @{
+  */
 
-extern SPI_HandleTypeDef hspi1;
+/**
+  * @}
+  */ 
 
-/* USER CODE BEGIN Private defines */
+/** @defgroup USBD_DESC_Exported_TypesDefinitions
+  * @{
+  */
+/**
+  * @}
+  */ 
 
-/* USER CODE END Private defines */
+/** @defgroup USBD_DESC_Exported_Macros
+  * @{
+  */ 
+/**
+  * @}
+  */ 
 
-extern void _Error_Handler(char *, int);
+/** @defgroup USBD_DESC_Exported_Variables
+  * @{
+  */ 
+extern USBD_DescriptorsTypeDef FS_Desc;
+/**
+  * @}
+  */ 
 
-void MX_SPI1_Init(void);
-
-/* USER CODE BEGIN Prototypes */
-
-/* USER CODE END Prototypes */
-
+/** @defgroup USBD_DESC_Exported_FunctionsPrototype
+  * @{
+  */ 
+  
+/**
+  * @}
+  */ 
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ spi_H */
+
+#endif /* __USBD_DESC_H */
 
 /**
   * @}
-  */
+  */ 
 
 /**
-  * @}
-  */
-
+* @}
+*/ 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

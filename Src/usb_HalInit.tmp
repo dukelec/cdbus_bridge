@@ -1,0 +1,14 @@
+
+#thpcd_USB_FS.Instance = USB;
+#thpcd_USB_FS.Init.dev_endpoints = 8;
+#thpcd_USB_FS.Init.speed = PCD_SPEED_FULL;
+#thpcd_USB_FS.Init.ep0_mps = DEP0CTL_MPS_8;
+#thpcd_USB_FS.Init.low_power_enable = DISABLE;
+#thpcd_USB_FS.Init.lpm_enable = DISABLE;
+#thpcd_USB_FS.Init.battery_charging_enable = DISABLE;
+#tif (HAL_PCD_Init(&hpcd_USB_FS) != HAL_OK)
+#t{
+#t#t_Error_Handler(__FILE__, __LINE__);
+#t}
+#n
+#n

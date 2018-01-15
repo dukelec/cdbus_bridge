@@ -1,0 +1,2 @@
+PCD_HandleTypeDef hpcd_USB_FS;
+void _Error_Handler(char * file, int line);

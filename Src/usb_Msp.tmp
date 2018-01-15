@@ -1,0 +1,31 @@
+
+#nvoid HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
+{
+#tif(pcdHandle->Instance==USB)
+#t{
+#t/* USER CODE BEGIN USB_MspInit 0 */
+#n#t/* USER CODE END USB_MspInit 0 */
+#t#t/* Peripheral clock enable */
+#t#t__HAL_RCC_USB_CLK_ENABLE();
+#n#t#t/* Peripheral interrupt init */
+#t#tHAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn, 0, 0);
+#t#tHAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
+#t/* USER CODE BEGIN USB_MspInit 1 */
+#n#t/* USER CODE END USB_MspInit 1 */
+#t}
+}
+
+#nvoid HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
+{
+#tif(pcdHandle->Instance==USB)
+#t{
+#t/* USER CODE BEGIN USB_MspDeInit 0 */
+#n#t/* USER CODE END USB_MspDeInit 0 */
+#t#t/* Peripheral clock disable */
+#t#t__HAL_RCC_USB_CLK_DISABLE();
+#n#t#t/* Peripheral interrupt Deinit*/
+#t#tHAL_NVIC_DisableIRQ(USB_LP_CAN1_RX0_IRQn);#n
+#t/* USER CODE BEGIN USB_MspDeInit 1 */
+#n#t/* USER CODE END USB_MspDeInit 1 */
+#t}
+}

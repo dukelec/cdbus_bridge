@@ -81,14 +81,17 @@ Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_pwr.c \
 Src/stm32f1xx_hal_msp.c \
 Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_rcc_ex.c \
 cdnet/net/cdnet.c \
-cdnet/net/port_dispatcher.c \
+cdnet/net/cdnet_l0.c \
+cdnet/net/cdnet_l1.c \
+cdnet/net/cdnet_l2.c \
 cdnet/dev/cdctl_bx.c \
 cdnet/dev/cdbus_uart.c \
 cdnet/utils/list.c \
 cdnet/utils/modbus_crc.c \
 cdnet/utils/debug.c \
 usr/uart_raw.c \
-usr/app_entry.c \
+usr/app_config.c \
+usr/app_main.c \
 Src/usbd_cdc_if.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
 Src/usbd_conf.c \
@@ -149,7 +152,8 @@ C_DEFS =  \
 -DSTM32F103xB \
 -DSW_VER=\"$(GIT_VERSION)\" \
 -DCDUART_IT \
--DARCH_SPI #\
+-DARCH_SPI \
+-DDEBUG
 #-DVERBOSE
 
 # AS includes

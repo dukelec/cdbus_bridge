@@ -121,8 +121,8 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-      void net_task(void);
-      net_task();
+      void app_main(void);
+      app_main();
   }
   /* USER CODE END 3 */
 

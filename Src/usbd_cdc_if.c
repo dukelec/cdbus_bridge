@@ -49,6 +49,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_cdc_if.h"
 /* USER CODE BEGIN INCLUDE */
+#include "app_main.h"
 /* USER CODE END INCLUDE */
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
@@ -268,6 +269,13 @@ static int8_t CDC_Receive_FS (uint8_t* Buf, uint32_t *Len)
   /* USER CODE BEGIN 6 */
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
+  
+  uint32_t l = *Len;
+  Buf[l++] = '-';
+  Buf[l++] = 'C';
+  Buf[l++] = 'D';
+  Buf[l++] = '-';
+  CDC_Transmit_FS(Buf, l);
   return (USBD_OK);
   /* USER CODE END 6 */ 
 }

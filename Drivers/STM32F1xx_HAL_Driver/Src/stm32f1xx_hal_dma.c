@@ -405,12 +405,20 @@ HAL_StatusTypeDef HAL_DMA_Start_IT(DMA_HandleTypeDef *hdma, uint32_t SrcAddress,
     if(NULL != hdma->XferHalfCpltCallback)
     {
       /* Enable the Half transfer complete interrupt as well */
-      __HAL_DMA_ENABLE_IT(hdma, (DMA_IT_TC | DMA_IT_HT | DMA_IT_TE));
+      //__HAL_DMA_ENABLE_IT(hdma, (DMA_IT_TC | DMA_IT_HT | DMA_IT_TE));
+
+      __HAL_DMA_DISABLE_IT(hdma, DMA_IT_HT);
+      __HAL_DMA_ENABLE_IT(hdma, (DMA_IT_TC | DMA_IT_TE));
     }
     else
     {
-      __HAL_DMA_DISABLE_IT(hdma, DMA_IT_HT);
-      __HAL_DMA_ENABLE_IT(hdma, (DMA_IT_TC | DMA_IT_TE));
+      //__HAL_DMA_DISABLE_IT(hdma, DMA_IT_HT);
+      //__HAL_DMA_ENABLE_IT(hdma, (DMA_IT_TC | DMA_IT_TE));
+
+      __HAL_DMA_DISABLE_IT(hdma, (DMA_IT_TC | DMA_IT_HT | DMA_IT_TE));
+      hdma->State = HAL_DMA_STATE_READY;
+      __HAL_UNLOCK(hdma);
+
     }
     /* Enable the Peripheral */
     __HAL_DMA_ENABLE(hdma);

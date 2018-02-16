@@ -32,27 +32,26 @@ typedef enum {
 } intf_idx_t;
 
 typedef struct {
-    uint16_t    magic_code; // 0xcdcd
-    bool        stay_in_bl; // stay in bootloader
+    uint16_t        magic_code; // 0xcdcd
+    bool            stay_in_bl; // stay in bootloader
 
-    app_mode_t  mode;
-    intf_idx_t  intf_idx;
+    app_mode_t      mode;
+    intf_idx_t      intf_idx;
 
-    uint8_t     rs485_mac;
-    uint8_t     rs485_net;
-    uint32_t    rs485_baudrate_low;
-    uint32_t    rs485_baudrate_high;
+    uint8_t         rs485_mac;
+    uint8_t         rs485_net;
+    uint32_t        rs485_baudrate_low;
+    uint32_t        rs485_baudrate_high;
 
-    uint32_t    ttl_baudrate;
-    uint32_t    rs232_baudrate;
+    uint32_t        ttl_baudrate;
+    uint32_t        rs232_baudrate;
 
     // raw
-    bool        rpt_en;
-    bool        rpt_multi_net;
-    uint8_t     rpt_mac;
-    uint8_t     rpt_addr[2];
-    uint16_t    rpt_src_port;
-    uint16_t    rpt_dst_port;
+    bool            rpt_en;
+    cdnet_level_t   rpt_pkt_level;
+    bool            rpt_multi_net;
+    uint8_t         rpt_mac;
+    uint8_t         rpt_addr[2];
 
 } app_conf_t;
 
@@ -61,7 +60,18 @@ typedef struct {
 #define RAW_SER_PORT        20
 #define RAW_CONF_PORT       21
 
+// usb cdc buffer size
+#define CDC_RX_SIZE         1024
+#define CDC_TX_SIZE         1024
+extern uint8_t UserTxBufferFS[];
+
 extern app_conf_t app_conf;
 extern cdnet_intf_t n_intf;
+
+void usb_cdc_rx_callback(uint8_t* buf, uint32_t len);
+
+void p1_service(cdnet_packet_t *pkt);
+void p2_service(cdnet_packet_t *pkt);
+void p3_service(cdnet_packet_t *pkt);
 
 #endif

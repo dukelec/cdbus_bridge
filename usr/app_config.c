@@ -14,7 +14,7 @@ app_conf_t app_conf = {
         .stay_in_bl = false,
 
         .mode = APP_PASS_THRU,
-        .intf_idx = INTF_USB,
+        .intf_idx = INTF_TTL,
 
         .rs485_mac = 254,
         .rs485_net = 0,
@@ -26,9 +26,7 @@ app_conf_t app_conf = {
 
         .rpt_en = true,
         .rpt_multi_net = false,
-        .rpt_mac = 0,
-        .rpt_src_port = CDNET_DEF_PORT,
-        .rpt_dst_port = RAW_SER_PORT
+        .rpt_mac = 0
 };
 
 

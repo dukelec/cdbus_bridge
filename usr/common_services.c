@@ -7,6 +7,7 @@
  * Author: Duke Fong <duke@dukelec.com>
  */
 
+#include "cdctl_bx_it.h"
 #include "app_main.h"
 
 extern cdctl_intf_t r_intf;
@@ -27,7 +28,7 @@ static void get_uid(char *buf)
 // make sure local mac != 255 before call any service
 
 // device info
-void p0_service(cdnet_packet_t *pkt)
+void p1_service(cdnet_packet_t *pkt)
 {
     char cpu_id[25];
     char info_str[100];
@@ -38,20 +39,20 @@ void p0_service(cdnet_packet_t *pkt)
 
     // filter string by input data
     if (pkt->len != 0 && strstr(info_str, (char *)pkt->dat) == NULL) {
-        list_put(n_intf.free_head, node);
+        list_put(n_intf.free_head, &pkt->node);
         return;
     }
 
     strcpy((char *)pkt->dat, info_str);
     pkt->len = strlen(info_str);
     cdnet_exchg_src_dst(&n_intf, pkt);
-    list_put(&n_intf.tx_head, pkt->node);
+    list_put(&n_intf.tx_head, &pkt->node);
 }
 
 // device baud rate
 void p2_service(cdnet_packet_t *pkt)
 {
-    list_put(n_intf.free_head, pkt->node);
+    list_put(n_intf.free_head, &pkt->node);
 }
 
 // device addr
@@ -102,9 +103,9 @@ void p3_service(cdnet_packet_t *pkt)
 
 out_send:
     cdnet_exchg_src_dst(&n_intf, pkt);
-    list_put(&n_intf.tx_head, pkt->node);
+    list_put(&n_intf.tx_head, &pkt->node);
     return;
 
 err_free:
-    list_put(n_intf.free_head, pkt->node);
+    list_put(n_intf.free_head, &pkt->node);
 }

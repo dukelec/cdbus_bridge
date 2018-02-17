@@ -55,20 +55,22 @@ typedef struct {
 
 } app_conf_t;
 
+typedef struct {
+    list_node_t node;
+    uint16_t    len;
+    uint8_t     dat[512]; // CDC_DATA_HS_MAX_PACKET_SIZE
+} cdc_buf_t;
 
 #define FLASH_PORT          10 // save to flash
 #define RAW_SER_PORT        20
 #define RAW_CONF_PORT       21
 
-// usb cdc buffer size
-#define CDC_RX_SIZE         1024
-#define CDC_TX_SIZE         1024
-extern uint8_t UserTxBufferFS[];
-
 extern app_conf_t app_conf;
 extern cdnet_intf_t n_intf;
 
-void usb_cdc_rx_callback(uint8_t* buf, uint32_t len);
+extern list_head_t cdc_rx_free_head;
+extern list_head_t cdc_rx_head;
+extern cdc_buf_t *cdc_rx_buf;
 
 void p1_service(cdnet_packet_t *pkt);
 void p2_service(cdnet_packet_t *pkt);

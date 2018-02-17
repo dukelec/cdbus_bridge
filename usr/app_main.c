@@ -34,6 +34,16 @@ static gpio_t r_int_n = { .group = CDCTL_INT_N_GPIO_Port, .num = CDCTL_INT_N_Pin
 static gpio_t r_ns = { .group = CDCTL_NS_GPIO_Port, .num = CDCTL_NS_Pin };
 static spi_t r_spi = { .hspi = &hspi1, .ns_pin = &r_ns };
 
+#define CDC_RX_MAX 3
+#define CDC_TX_MAX 3
+static cdc_buf_t cdc_rx_alloc[CDC_RX_MAX];
+static cdc_buf_t cdc_tx_alloc[CDC_TX_MAX];
+list_head_t cdc_rx_free_head = {0};
+list_head_t cdc_tx_free_head = {0};
+list_head_t cdc_rx_head = {0};
+list_head_t cdc_tx_head = {0};
+cdc_buf_t *cdc_rx_buf = NULL;
+cdc_buf_t *cdc_tx_buf = NULL;
 
 #define FRAME_MAX 10
 static cd_frame_t frame_alloc[FRAME_MAX];
@@ -56,11 +66,11 @@ static cd_intf_t d_intf = {0};
 
 static list_node_t *d_get_free_node(cd_intf_t *_)
 {
-    return list_get(&frame_free_head);
+    return list_get_irq_safe(r_intf.free_head);
 }
 static void d_put_free_node(cd_intf_t *_, list_node_t *node)
 {
-    list_put(&frame_free_head, node);
+    list_put_irq_safe(r_intf.free_head, node);
 }
 static list_node_t *d_get_rx_node(cd_intf_t *_)
 {
@@ -82,10 +92,15 @@ static void d_init(void)
 static void device_init(void)
 {
     int i;
+    for (i = 0; i < CDC_RX_MAX; i++)
+        list_put(&cdc_rx_free_head, &cdc_rx_alloc[i].node);
+    for (i = 0; i < CDC_TX_MAX; i++)
+        list_put(&cdc_tx_free_head, &cdc_tx_alloc[i].node);
     for (i = 0; i < FRAME_MAX; i++)
         list_put(&frame_free_head, &frame_alloc[i].node);
     for (i = 0; i < PACKET_MAX; i++)
         list_put(&packet_free_head, &packet_alloc[i].node);
+    cdc_rx_buf = container_of(list_get(&cdc_rx_free_head), cdc_buf_t, node);
 
     cdctl_intf_init(&r_intf, &frame_free_head, app_conf.rs485_mac,
             app_conf.rs485_baudrate_low, app_conf.rs485_baudrate_high,
@@ -113,9 +128,8 @@ void set_led_state(led_state_t state)
 
 }
 
-
-// may in irq context
-void app_raw_from_u(const uint8_t *buf, int size,
+// alloc from n_intf.free_head, send through n_intf.tx_head
+static void app_raw_from_u(const uint8_t *buf, int size,
         const uint8_t *wr, const uint8_t *rd)
 {
     static cdnet_packet_t *pkt = NULL;
@@ -128,7 +142,7 @@ void app_raw_from_u(const uint8_t *buf, int size,
         return;
     }
 
-    if (rd == wr && pkt && pkt->len && get_systick() - t_last > 5) {
+    if (rd == wr && pkt && pkt->len && get_systick() - t_last > (2000 / SYSTICK_US_DIV)) {
         list_put(&n_intf.tx_head, &pkt->node);
         pkt = NULL;
         return;
@@ -177,8 +191,9 @@ void app_raw_from_u(const uint8_t *buf, int size,
     }
 }
 
-// may in irq context
-void app_pass_thru_from_u(const uint8_t *buf, int size,
+
+// alloc from r_intf.free_head, send through r_intf.tx_head or d_rx_head
+static void app_pass_thru_from_u(const uint8_t *buf, int size,
         const uint8_t *wr, const uint8_t *rd)
 {
     static uint8_t tmp[260]; // max size for cdbus through uart
@@ -195,7 +210,7 @@ void app_pass_thru_from_u(const uint8_t *buf, int size,
         else // rd < wr
             max_len = wr - rd;
 
-        if (get_systick() - t_last > 500) {
+        if (get_systick() - t_last > (50000 / SYSTICK_US_DIV)) {
             if (copied_len)
                 d_warn("pass_thru <- u: timeout cleanup\n");
             copied_len = 0;
@@ -227,7 +242,7 @@ void app_pass_thru_from_u(const uint8_t *buf, int size,
                 return;
             }
 
-            list_node_t *node = list_get(&packet_free_head);
+            list_node_t *node = list_get_irq_safe(r_intf.free_head);
             if (!node) {
                 d_error("pass_thru <- u: no free pkt\n");
                 copied_len = 0;
@@ -242,7 +257,7 @@ void app_pass_thru_from_u(const uint8_t *buf, int size,
                 memcpy(frame->dat, tmp + 3, 2);
                 frame->dat[2] = tmp[2] - 2;
                 memcpy(frame->dat + 3, tmp + 5, frame->dat[2]);
-                list_put(&r_intf.tx_head, node);
+                list_put_irq_safe(&r_intf.tx_head, node);
             }
 
             copied_len = 0;
@@ -280,7 +295,7 @@ void app_main(void)
                 hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
             d_info("usb connected\n");
             app_conf.intf_idx = INTF_USB;
-            // TODO: stop uart dma
+            HAL_UART_DMAStop(hw_uart->huart);
         }
 
 
@@ -290,8 +305,7 @@ void app_main(void)
         list_node_t *nd = list_get(&n_intf.rx_head);
         if (nd) {
             cdnet_packet_t *pkt = container_of(nd, cdnet_packet_t, node);
-            if (pkt->src_port < CDNET_DEF_PORT ||
-                    pkt->dst_port >= CDNET_DEF_PORT) {
+            if (pkt->src_port < CDNET_DEF_PORT || pkt->dst_port >= CDNET_DEF_PORT) {
                 d_warn("unexpected pkg\n");
                 list_put(n_intf.free_head, nd);
             } else {
@@ -345,133 +359,171 @@ void app_main(void)
 
         // handle data exchange
 
-        static uint32_t t_last = 0;
-        static int copied_len = 0;
         USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
         uint32_t wd_pos = CIRC_BUF_SZ - hw_uart->huart->hdmarx->Instance->CNDTR;
 
         if (app_conf.intf_idx == INTF_USB) {
-            if (app_conf.mode == APP_RAW) {
-                local_irq_disable();
-                app_raw_from_u(NULL, 0, NULL, NULL); // check for timeout
-                local_irq_enable();
+            int size;
+            uint8_t *wr, *rd;
+            cdc_buf_t *bf = NULL;
+            list_node_t *nd = list_get_irq_safe(&cdc_rx_head);
+            if (nd) {
+                bf = container_of(nd, cdc_buf_t, node);
+                size = bf->len + 1; // avoid scroll to begin
+                wr = bf->dat + bf->len;
+                rd = bf->dat;
             }
 
-            if (hcdc->TxState != 0)
-                goto end;
-
-            if (copied_len && get_systick() - t_last > 10) {
-                CDC_Transmit_FS(UserTxBufferFS, copied_len);
-                copied_len = 0;
-                goto end;
+            if (app_conf.mode == APP_PASS_THRU) {
+                if (bf)
+                    app_pass_thru_from_u(bf->dat, size, wr, rd);
+            } else {
+                if (bf)
+                    app_raw_from_u(bf->dat, size, wr, rd);
+                else
+                    app_raw_from_u(NULL, 0, NULL, NULL); // check for timeout
             }
-        } else {
+            if (bf) {
+                uint32_t flags;
+                local_irq_save(flags);
+                list_put(&cdc_rx_free_head, nd);
+                if (!cdc_rx_buf) {
+                    nd = list_get(&cdc_rx_free_head);
+                    cdc_rx_buf = container_of(nd, cdc_buf_t, node);
+                    d_warn("continue CDC Rx\n");
+                    USBD_CDC_SetRxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat);
+                    USBD_CDC_ReceivePacket(&hUsbDeviceFS);
+                }
+                local_irq_restore(flags);
+            }
+        } else { // hw_uart
             if (app_conf.mode == APP_PASS_THRU)
                 app_pass_thru_from_u(circ_buf, CIRC_BUF_SZ, circ_buf + wd_pos, circ_buf + rd_pos);
             else
                 app_raw_from_u(circ_buf, CIRC_BUF_SZ, circ_buf + wd_pos, circ_buf + rd_pos);
-            rd_pos = wd_pos;
+        }
+        rd_pos = wd_pos;
 
-            // if hw_uart busy, goto end
-            if (hw_uart->huart->gState != HAL_UART_STATE_READY)
-                goto end;
-            // if copied_len, start send
-            if (copied_len) {
-                HAL_UART_Transmit_DMA(hw_uart->huart, UserTxBufferFS, copied_len);
-                copied_len = 0;
-                goto end;
-            }
+        cdc_buf_t *bf = NULL;
+        if (!cdc_tx_head.last) {
+            list_node_t *nd = list_get(&cdc_tx_free_head);
+            if (!nd)
+                goto send_list;
+            bf = container_of(nd, cdc_buf_t, node);
+            bf->len = 0;
+            list_put(&cdc_tx_head, nd);
+        } else {
+            bf = container_of(cdc_tx_head.last, cdc_buf_t, node);
         }
 
         if (app_conf.mode == APP_PASS_THRU) {
             if (d_tx_head.first) {
                 // send to u: d_tx_head
-                list_node_t *nd = d_tx_head.first;
-                cd_frame_t *frm = container_of(nd, cd_frame_t, node);
+                list_node_t *d_nd = d_tx_head.first;
+                cd_frame_t *frm = container_of(d_nd, cd_frame_t, node);
 
-                if (copied_len + frm->dat[2] + 5 > CDC_TX_SIZE) {
-                    CDC_Transmit_FS(UserTxBufferFS, copied_len);
-                    copied_len = 0;
-                    goto end;
+                if (bf->len + frm->dat[2] + 5 > 512) {
+                    list_node_t *nd = list_get(&cdc_tx_free_head);
+                    if (!nd)
+                        goto send_list;
+                    bf = container_of(nd, cdc_buf_t, node);
+                    bf->len = 0;
+                    list_put(&cdc_tx_head, nd);
                 }
 
                 uint16_t crc_val = crc16(frm->dat, frm->dat[2] + 3);
                 frm->dat[frm->dat[2] + 3] = crc_val & 0xff;
                 frm->dat[frm->dat[2] + 4] = crc_val >> 8;
-                memcpy(UserTxBufferFS + copied_len, frm->dat, frm->dat[2] + 5);
-                copied_len += frm->dat[2] + 5;
-                t_last = get_systick();
+                memcpy(bf->dat + bf->len, frm->dat, frm->dat[2] + 5);
+                bf->len += frm->dat[2] + 5;
 
                 list_get(&d_tx_head);
-                list_put(&frame_free_head, nd);
+                list_put_irq_safe(r_intf.free_head, d_nd);
 
             } else if (r_intf.rx_head.first) {
                 // send to u: r_intf.rx_head (add 56 aa)
-                list_node_t *nd = r_intf.rx_head.first;
-                cd_frame_t *frm = container_of(nd, cd_frame_t, node);
+                list_node_t *d_nd = r_intf.rx_head.first;
+                cd_frame_t *frm = container_of(d_nd, cd_frame_t, node);
 
-                if (copied_len + frm->dat[2] + 5 + 2 > CDC_TX_SIZE) {
-                    CDC_Transmit_FS(UserTxBufferFS, copied_len);
-                    copied_len = 0;
-                    goto end;
+                if (bf->len + frm->dat[2] + 5 + 2 > 512) {
+                    list_node_t *nd = list_get(&cdc_tx_free_head);
+                    if (!nd)
+                        goto send_list;
+                    bf = container_of(nd, cdc_buf_t, node);
+                    bf->len = 0;
+                    list_put(&cdc_tx_head, nd);
                 }
 
-                UserTxBufferFS[copied_len + 0] = 0x56;
-                UserTxBufferFS[copied_len + 1] = 0xaa;
-                UserTxBufferFS[copied_len + 2] = frm->dat[2] + 2;
+                bf->dat[bf->len + 0] = 0x56;
+                bf->dat[bf->len + 1] = 0xaa;
+                bf->dat[bf->len + 2] = frm->dat[2] + 2;
 
-                memcpy(UserTxBufferFS + copied_len + 3, frm->dat, 2);
-                memcpy(UserTxBufferFS + copied_len + 5, frm->dat + 3, frm->dat[2] + 2);
+                memcpy(bf->dat + bf->len + 3, frm->dat, 2);
+                memcpy(bf->dat + bf->len + 5, frm->dat + 3, frm->dat[2] + 2);
 
-                uint16_t crc_val = crc16(UserTxBufferFS + copied_len, frm->dat[2] + 5);
-                UserTxBufferFS[copied_len + frm->dat[2] + 5] = crc_val & 0xff;
-                UserTxBufferFS[copied_len + frm->dat[2] + 6] = crc_val >> 8;
+                uint16_t crc_val = crc16(bf->dat + bf->len, frm->dat[2] + 5);
+                bf->dat[bf->len + frm->dat[2] + 5] = crc_val & 0xff;
+                bf->dat[bf->len + frm->dat[2] + 6] = crc_val >> 8;
 
-                copied_len += frm->dat[2] + 7;
-                t_last = get_systick();
+                bf->len += frm->dat[2] + 7;
 
-                list_get(&r_intf.rx_head);
-                list_put(&frame_free_head, nd);
+                list_get_irq_safe(&r_intf.rx_head);
+                list_put_irq_safe(r_intf.free_head, d_nd);
             }
-        } else {
+        } else { // app_raw
             // send to u: raw2u_head
             if (raw2u_head.first) {
-                list_node_t *nd = raw2u_head.first;
+                list_node_t *p_nd = raw2u_head.first;
                 cdnet_packet_t *pkt = container_of(nd, cdnet_packet_t, node);
 
-                if (copied_len + pkt->len > CDC_TX_SIZE) {
-                    CDC_Transmit_FS(UserTxBufferFS, copied_len);
-                    copied_len = 0;
-                    goto end;
+                if (bf->len + pkt->len > 512) {
+                    list_node_t *nd = list_get(&cdc_tx_free_head);
+                    if (!nd)
+                        goto send_list;
+                    bf = container_of(nd, cdc_buf_t, node);
+                    bf->len = 0;
+                    list_put(&cdc_tx_head, nd);
                 }
 
-                memcpy(UserTxBufferFS + copied_len, pkt->dat, pkt->len);
-                copied_len += pkt->len;
-                t_last = get_systick();
+                memcpy(bf->dat + bf->len, pkt->dat, pkt->len);
+                bf->len += pkt->len;
 
                 list_get(&raw2u_head);
-                list_put(&packet_free_head, nd);
+                list_put(n_intf.free_head, p_nd);
             }
         }
 
-end:
+send_list:
+        if (cdc_tx_buf) {
+            if (app_conf.intf_idx == INTF_USB) {
+                if (hcdc->TxState == 0) {
+                    list_put(&cdc_tx_free_head, &cdc_tx_buf->node);
+                    cdc_tx_buf = NULL;
+                }
+            } else { // hw_uart
+                if (hw_uart->huart->gState == HAL_UART_STATE_READY) {
+                    list_put(&cdc_tx_free_head, &cdc_tx_buf->node);
+                    cdc_tx_buf = NULL;
+                }
+            }
+        }
+        if (!cdc_tx_buf && cdc_tx_head.first) {
+            cdc_buf_t *bf = container_of(cdc_tx_head.first, cdc_buf_t, node);
+            if (bf->len != 0) {
+                if (app_conf.intf_idx == INTF_USB) {
+                    CDC_Transmit_FS(bf->dat, bf->len);
+                } else { // hw_uart
+                    HAL_UART_Transmit_DMA(hw_uart->huart, bf->dat, bf->len);
+                }
+                list_get(&cdc_tx_head);
+                cdc_tx_buf = bf;
+            }
+        }
+
         debug_flush();
     }
 }
 
-
-void usb_cdc_rx_callback(uint8_t* buf, uint32_t len)
-{
-    int size = len + 1; // avoid scroll to begin
-    uint8_t *wr = buf + len;
-    uint8_t *rd = buf;
-
-    if (app_conf.mode == APP_PASS_THRU) {
-        app_pass_thru_from_u(buf, size, wr, rd);
-    } else {
-        app_raw_from_u(buf, size, wr, rd);
-    }
-}
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {

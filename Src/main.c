@@ -57,7 +57,7 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
-#include "arch_wrapper.h"
+#include "common.h"
 
 /* USER CODE END Includes */
 

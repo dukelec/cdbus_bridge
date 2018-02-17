@@ -252,12 +252,14 @@ static void app_pass_thru_from_u(const uint8_t *buf, int size,
 
             if (tmp[1] == 0x55) {
                 memcpy(frame->dat, tmp, tmp[2] + 3);
+                d_verbose("pass_thru <- u: new 55 pkt\n");
                 list_put(&d_rx_head, node);
             } else {
                 memcpy(frame->dat, tmp + 3, 2);
                 frame->dat[2] = tmp[2] - 2;
                 memcpy(frame->dat + 3, tmp + 5, frame->dat[2]);
-                list_put_irq_safe(&r_intf.tx_head, node);
+                d_verbose("pass_thru <- u: new 56 pkt\n");
+                cdctl_put_tx_node(&r_intf.cd_intf, node);
             }
 
             copied_len = 0;
@@ -305,8 +307,9 @@ void app_main(void)
         list_node_t *nd = list_get(&n_intf.rx_head);
         if (nd) {
             cdnet_packet_t *pkt = container_of(nd, cdnet_packet_t, node);
-            if (pkt->src_port < CDNET_DEF_PORT || pkt->dst_port >= CDNET_DEF_PORT) {
-                d_warn("unexpected pkg\n");
+            if (pkt->level == CDNET_L2 || pkt->src_port < CDNET_DEF_PORT ||
+                    pkt->dst_port >= CDNET_DEF_PORT) {
+                d_warn("unexpected pkg port\n");
                 list_put(n_intf.free_head, nd);
             } else {
                 switch (pkt->dst_port) {
@@ -407,8 +410,10 @@ void app_main(void)
         cdc_buf_t *bf = NULL;
         if (!cdc_tx_head.last) {
             list_node_t *nd = list_get(&cdc_tx_free_head);
-            if (!nd)
+            if (!nd) {
+                d_warn("cdc_tx_free_head empty 0\n");
                 goto send_list;
+            }
             bf = container_of(nd, cdc_buf_t, node);
             bf->len = 0;
             list_put(&cdc_tx_head, nd);
@@ -424,13 +429,16 @@ void app_main(void)
 
                 if (bf->len + frm->dat[2] + 5 > 512) {
                     list_node_t *nd = list_get(&cdc_tx_free_head);
-                    if (!nd)
+                    if (!nd) {
+                        d_warn("cdc_tx_free_head empty 1\n");
                         goto send_list;
+                    }
                     bf = container_of(nd, cdc_buf_t, node);
                     bf->len = 0;
                     list_put(&cdc_tx_head, nd);
                 }
 
+                d_verbose("pass_thru -> u: 55, dat len %d\n", frm->dat[2]);
                 uint16_t crc_val = crc16(frm->dat, frm->dat[2] + 3);
                 frm->dat[frm->dat[2] + 3] = crc_val & 0xff;
                 frm->dat[frm->dat[2] + 4] = crc_val >> 8;
@@ -447,8 +455,10 @@ void app_main(void)
 
                 if (bf->len + frm->dat[2] + 5 + 2 > 512) {
                     list_node_t *nd = list_get(&cdc_tx_free_head);
-                    if (!nd)
+                    if (!nd) {
+                        d_warn("cdc_tx_free_head empty 2\n");
                         goto send_list;
+                    }
                     bf = container_of(nd, cdc_buf_t, node);
                     bf->len = 0;
                     list_put(&cdc_tx_head, nd);
@@ -478,8 +488,10 @@ void app_main(void)
 
                 if (bf->len + pkt->len > 512) {
                     list_node_t *nd = list_get(&cdc_tx_free_head);
-                    if (!nd)
+                    if (!nd) {
+                        d_warn("cdc_tx_free_head empty 3\n");
                         goto send_list;
+                    }
                     bf = container_of(nd, cdc_buf_t, node);
                     bf->len = 0;
                     list_put(&cdc_tx_head, nd);
@@ -501,9 +513,11 @@ send_list:
                     cdc_tx_buf = NULL;
                 }
             } else { // hw_uart
-                if (hw_uart->huart->gState == HAL_UART_STATE_READY) {
+                if (hw_uart->huart->TxXferCount == 0) {
+                    hw_uart->huart->gState = HAL_UART_STATE_READY;
                     list_put(&cdc_tx_free_head, &cdc_tx_buf->node);
                     cdc_tx_buf = NULL;
+                    //d_verbose("hw_uart dma done.\n");
                 }
             }
         }
@@ -513,6 +527,7 @@ send_list:
                 if (app_conf.intf_idx == INTF_USB) {
                     CDC_Transmit_FS(bf->dat, bf->len);
                 } else { // hw_uart
+                    //d_verbose("hw_uart dma tx...\n");
                     HAL_UART_Transmit_DMA(hw_uart->huart, bf->dat, bf->len);
                 }
                 list_get(&cdc_tx_head);

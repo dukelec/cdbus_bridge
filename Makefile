@@ -85,6 +85,7 @@ cdnet/net/cdnet_seq.c \
 cdnet/net/cdnet_l0.c \
 cdnet/net/cdnet_l1.c \
 cdnet/net/cdnet_l2.c \
+cdnet/dev/cdbus_uart.c \
 cdnet/dev/cdctl_bx_it.c \
 cdnet/utils/list.c \
 cdnet/utils/modbus_crc.c \

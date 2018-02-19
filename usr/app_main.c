@@ -8,6 +8,7 @@
  */
 
 #include "app_main.h"
+#include "cdbus_uart.h"
 #include "cdctl_bx_it.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
@@ -60,33 +61,8 @@ cdnet_intf_t n_intf = {0};   // CDNET
 static list_head_t raw2u_head = {0};
 
 // dummy interface for UART, for pass-thru mode only
-static list_head_t d_rx_head = {0};
-static list_head_t d_tx_head = {0};
-static cd_intf_t d_intf = {0};
-
-static list_node_t *d_get_free_node(cd_intf_t *_)
-{
-    return list_get_irq_safe(r_intf.free_head);
-}
-static void d_put_free_node(cd_intf_t *_, list_node_t *node)
-{
-    list_put_irq_safe(r_intf.free_head, node);
-}
-static list_node_t *d_get_rx_node(cd_intf_t *_)
-{
-    return list_get(&d_rx_head);
-}
-static void d_put_tx_node(cd_intf_t *_, list_node_t *node)
-{
-    list_put(&d_tx_head, node);
-}
-static void d_init(void)
-{
-    d_intf.get_free_node = d_get_free_node;
-    d_intf.put_free_node = d_put_free_node;
-    d_intf.get_rx_node = d_get_rx_node;
-    d_intf.put_tx_node = d_put_tx_node;
-}
+static cduart_intf_t d_intf = {0};
+static cd_frame_t *d_conv_frame = NULL;
 
 
 static void device_init(void)
@@ -100,19 +76,25 @@ static void device_init(void)
         list_put(&frame_free_head, &frame_alloc[i].node);
     for (i = 0; i < PACKET_MAX; i++)
         list_put(&packet_free_head, &packet_alloc[i].node);
+
     cdc_rx_buf = container_of(list_get(&cdc_rx_free_head), cdc_buf_t, node);
+    d_conv_frame = container_of(list_get(&frame_free_head), cd_frame_t, node);
 
     cdctl_intf_init(&r_intf, &frame_free_head, app_conf.rs485_mac,
             app_conf.rs485_baudrate_low, app_conf.rs485_baudrate_high,
             &r_spi, &r_rst_n, &r_int_n);
+    cduart_intf_init(&d_intf, &frame_free_head);
+    d_intf.remote_filter[0] = 0xaa;
+    d_intf.remote_filter_len = 1;
+    d_intf.local_filter[0] = 0x55;
+    d_intf.local_filter[1] = 0x56;
+    d_intf.local_filter_len = 2;
 
-    d_init();
     if (app_conf.mode == APP_PASS_THRU) {
-        cdnet_intf_init(&n_intf, &packet_free_head, &d_intf, 0x55);
+        cdnet_intf_init(&n_intf, &packet_free_head, &d_intf.cd_intf, 0x55);
         n_intf.net = 0;
     } else {
-        cdnet_intf_init(&n_intf, &packet_free_head, &r_intf.cd_intf,
-                app_conf.rs485_mac);
+        cdnet_intf_init(&n_intf, &packet_free_head, &r_intf.cd_intf, app_conf.rs485_mac);
         n_intf.net = app_conf.rs485_net;
     }
 
@@ -196,73 +178,26 @@ static void app_raw_from_u(const uint8_t *buf, int size,
 static void app_pass_thru_from_u(const uint8_t *buf, int size,
         const uint8_t *wr, const uint8_t *rd)
 {
-    static uint8_t tmp[260]; // max size for cdbus through uart
-    static int copied_len = 0;
-    static uint32_t t_last = 0;
-    int max_len;
-    int cpy_len;
+    list_node_t *pre, *cur;
 
-    while (true) {
-        if (rd == wr)
-            return;
-        else if (rd > wr)
-            max_len = buf + size - rd;
-        else // rd < wr
-            max_len = wr - rd;
+    if (rd > wr) {
+        cduart_rx_handle(&d_intf, rd, buf + size - rd);
+        rd = buf;
+    }
+    if (rd < wr)
+        cduart_rx_handle(&d_intf, rd, wr - rd);
 
-        if (get_systick() - t_last > (50000 / SYSTICK_US_DIV)) {
-            if (copied_len)
-                d_warn("pass_thru <- u: timeout cleanup\n");
-            copied_len = 0;
-        }
-        t_last = get_systick();
+    list_for_each(&d_intf.rx_head, pre, cur) {
+        cd_frame_t *fr_src = container_of(cur, cd_frame_t, node);
+        if (fr_src->dat[1] == 0x56) {
+            memcpy(d_conv_frame->dat, fr_src->dat + 3, 2);
+            d_conv_frame->dat[2] = fr_src->dat[2] - 2;
+            memcpy(d_conv_frame->dat + 3, fr_src->dat + 5, d_conv_frame->dat[2]);
 
-        if (copied_len < 3)
-            cpy_len = min(3 - copied_len, max_len);
-        else
-            cpy_len = min(tmp[2] + 5 - copied_len, max_len);
-
-        memcpy(tmp + copied_len, rd, cpy_len);
-        copied_len += cpy_len;
-        rd += cpy_len;
-        if (rd == buf + size)
-            rd = buf;
-
-        if ((copied_len >= 1 && tmp[0] != 0xaa) ||
-                (copied_len >= 2 && tmp[1] != 0x55 && tmp[1] != 0x56)) {
-            d_warn("pass_thru <- u: filtered\n");
-            copied_len = 0;
-            return;
-        }
-
-        if (copied_len == tmp[2] + 5) {
-            if (crc16(tmp, tmp[2] + 5) != 0) {
-                d_warn("pass_thru <- u: crc error\n");
-                copied_len = 0;
-                return;
-            }
-
-            list_node_t *node = list_get_irq_safe(r_intf.free_head);
-            if (!node) {
-                d_error("pass_thru <- u: no free pkt\n");
-                copied_len = 0;
-                return;
-            }
-            cd_frame_t *frame = container_of(node, cd_frame_t, node);
-
-            if (tmp[1] == 0x55) {
-                memcpy(frame->dat, tmp, tmp[2] + 3);
-                d_verbose("pass_thru <- u: new 55 pkt\n");
-                list_put(&d_rx_head, node);
-            } else {
-                memcpy(frame->dat, tmp + 3, 2);
-                frame->dat[2] = tmp[2] - 2;
-                memcpy(frame->dat + 3, tmp + 5, frame->dat[2]);
-                d_verbose("pass_thru <- u: new 56 pkt\n");
-                cdctl_put_tx_node(&r_intf.cd_intf, node);
-            }
-
-            copied_len = 0;
+            list_pick(&d_intf.rx_head, pre, cur);
+            cdctl_put_tx_node(&r_intf.cd_intf, &d_conv_frame->node);
+            d_conv_frame = fr_src;
+            cur = pre;
         }
     }
 }
@@ -422,9 +357,9 @@ void app_main(void)
         }
 
         if (app_conf.mode == APP_PASS_THRU) {
-            if (d_tx_head.first) {
-                // send to u: d_tx_head
-                list_node_t *d_nd = d_tx_head.first;
+            if (d_intf.tx_head.first) {
+                // send to u: d_intf.tx_head
+                list_node_t *d_nd = d_intf.tx_head.first;
                 cd_frame_t *frm = container_of(d_nd, cd_frame_t, node);
 
                 if (bf->len + frm->dat[2] + 5 > 512) {
@@ -439,13 +374,11 @@ void app_main(void)
                 }
 
                 d_verbose("pass_thru -> u: 55, dat len %d\n", frm->dat[2]);
-                uint16_t crc_val = crc16(frm->dat, frm->dat[2] + 3);
-                frm->dat[frm->dat[2] + 3] = crc_val & 0xff;
-                frm->dat[frm->dat[2] + 4] = crc_val >> 8;
+                cduart_fill_crc(frm->dat);
                 memcpy(bf->dat + bf->len, frm->dat, frm->dat[2] + 5);
                 bf->len += frm->dat[2] + 5;
 
-                list_get(&d_tx_head);
+                list_get(&d_intf.tx_head);
                 list_put_irq_safe(r_intf.free_head, d_nd);
 
             } else if (r_intf.rx_head.first) {
@@ -464,17 +397,13 @@ void app_main(void)
                     list_put(&cdc_tx_head, nd);
                 }
 
-                bf->dat[bf->len + 0] = 0x56;
-                bf->dat[bf->len + 1] = 0xaa;
-                bf->dat[bf->len + 2] = frm->dat[2] + 2;
-
-                memcpy(bf->dat + bf->len + 3, frm->dat, 2);
-                memcpy(bf->dat + bf->len + 5, frm->dat + 3, frm->dat[2] + 2);
-
-                uint16_t crc_val = crc16(bf->dat + bf->len, frm->dat[2] + 5);
-                bf->dat[bf->len + frm->dat[2] + 5] = crc_val & 0xff;
-                bf->dat[bf->len + frm->dat[2] + 6] = crc_val >> 8;
-
+                uint8_t *buf_dst = bf->dat + bf->len;
+                *buf_dst = 0x56;
+                *(buf_dst + 1) = 0xaa;
+                *(buf_dst + 2) = frm->dat[2] + 2;
+                memcpy(buf_dst + 3, frm->dat, 2);
+                memcpy(buf_dst + 5, frm->dat + 3, *(buf_dst + 2));
+                cduart_fill_crc(buf_dst);
                 bf->len += frm->dat[2] + 7;
 
                 list_get_irq_safe(&r_intf.rx_head);
@@ -563,4 +492,3 @@ void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
 {
     d_error("spi error...\n");
 }
-

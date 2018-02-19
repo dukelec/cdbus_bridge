@@ -269,8 +269,18 @@ static int8_t CDC_Control_FS  (uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS (uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
+  //d_debug("CDC_Receive_FS: len: %d, [%02x ...]\n", *Len, Buf[0]);
+
   list_node_t *node;
+  if (!cdc_rx_buf) {
+      printf("CDC_Receive_FS: !cdc_rx_buf\n");
+      while (true);
+  }
   cdc_rx_buf->len = *Len;
+  if (!cdc_rx_buf->len) {
+      printf("CDC_Receive_FS: !len\n");
+      while (true);
+  }
   list_put_irq_safe(&cdc_rx_head, &cdc_rx_buf->node);
   node = list_get_irq_safe(&cdc_rx_free_head);
   if (!node) {

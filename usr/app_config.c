@@ -16,8 +16,7 @@ app_conf_t app_conf = {
         .mode = APP_PASS_THRU,
         .intf_idx = INTF_TTL,
 
-        .rs485_mac = 254,
-        .rs485_net = 0,
+        .rs485_addr = { .net = 0, .mac = 254 },
         .rs485_baudrate_low = 115200,
         .rs485_baudrate_high = 115200,
 
@@ -25,7 +24,9 @@ app_conf_t app_conf = {
         .rs232_baudrate = 115200,
 
         .rpt_en = true,
-        .rpt_multi_net = false,
+        .rpt_pkt_level = CDNET_L1,
+        .rpt_seq = true,
+        .rpt_multi = CDNET_MULTI_NONE,
         .rpt_mac = 0
 };
 

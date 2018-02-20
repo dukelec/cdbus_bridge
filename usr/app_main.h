@@ -38,8 +38,7 @@ typedef struct {
     app_mode_t      mode;
     intf_idx_t      intf_idx;
 
-    uint8_t         rs485_mac;
-    uint8_t         rs485_net;
+    cdnet_addr_t    rs485_addr;
     uint32_t        rs485_baudrate_low;
     uint32_t        rs485_baudrate_high;
 
@@ -49,9 +48,10 @@ typedef struct {
     // raw
     bool            rpt_en;
     cdnet_level_t   rpt_pkt_level;
-    bool            rpt_multi_net;
+    bool            rpt_seq;
+    cdnet_multi_t   rpt_multi;
     uint8_t         rpt_mac;
-    uint8_t         rpt_addr[2];
+    cdnet_addr_t    rpt_addr;
 
 } app_conf_t;
 

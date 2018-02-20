@@ -80,7 +80,7 @@ static void device_init(void)
     cdc_rx_buf = container_of(list_get(&cdc_rx_free_head), cdc_buf_t, node);
     d_conv_frame = container_of(list_get(&frame_free_head), cd_frame_t, node);
 
-    cdctl_intf_init(&r_intf, &frame_free_head, app_conf.rs485_mac,
+    cdctl_intf_init(&r_intf, &frame_free_head, app_conf.rs485_addr.mac,
             app_conf.rs485_baudrate_low, app_conf.rs485_baudrate_high,
             &r_spi, &r_rst_n, &r_int_n);
     cduart_intf_init(&d_intf, &frame_free_head);
@@ -91,11 +91,10 @@ static void device_init(void)
     d_intf.local_filter_len = 2;
 
     if (app_conf.mode == APP_PASS_THRU) {
-        cdnet_intf_init(&n_intf, &packet_free_head, &d_intf.cd_intf, 0x55);
-        n_intf.net = 0;
+        cdnet_addr_t addr = { .net = 0, .mac = 0x55 };
+        cdnet_intf_init(&n_intf, &packet_free_head, &d_intf.cd_intf, &addr);
     } else {
-        cdnet_intf_init(&n_intf, &packet_free_head, &r_intf.cd_intf, app_conf.rs485_mac);
-        n_intf.net = app_conf.rs485_net;
+        cdnet_intf_init(&n_intf, &packet_free_head, &r_intf.cd_intf, &app_conf.rs485_addr);
     }
 
     if (app_conf.intf_idx == INTF_TTL) {
@@ -146,12 +145,11 @@ static void app_raw_from_u(const uint8_t *buf, int size,
             }
             pkt = container_of(node, cdnet_packet_t, node);
             pkt->level = app_conf.rpt_pkt_level;
-            pkt->is_seq = true;
-            pkt->is_multi_net = app_conf.rpt_multi_net;
-            pkt->is_multicast = false;
+            pkt->seq = app_conf.rpt_seq;
+            pkt->multi = app_conf.rpt_multi;
             cdnet_fill_src_addr(&n_intf, pkt);
             pkt->dst_mac = app_conf.rpt_mac;
-            memcpy(pkt->dst_addr, app_conf.rpt_addr, 2);
+            pkt->dst_addr = app_conf.rpt_addr;
             pkt->src_port = CDNET_DEF_PORT;
             pkt->dst_port = RAW_SER_PORT;
             pkt->len = 0;
@@ -268,10 +266,12 @@ void app_main(void)
                 case RAW_CONF_PORT:
                     if (pkt->len == 4) {
                         app_conf.rpt_en = !!(pkt->dat[0] & 0x80);
-                        app_conf.rpt_multi_net = !!(pkt->dat[0] & 0x20);
-                        app_conf.rpt_pkt_level = pkt->dat[0] & 0x0f;
+                        app_conf.rpt_multi = pkt->dat[0] & 0x30;
+                        app_conf.rpt_seq = pkt->dat[0] & 0x08;
+                        app_conf.rpt_pkt_level = pkt->dat[0] & 0x03;
                         app_conf.rpt_mac = pkt->dat[1];
-                        memcpy(app_conf.rpt_addr, &pkt->dat[2], 2);
+                        app_conf.rpt_addr.net = pkt->dat[2];
+                        app_conf.rpt_addr.mac = pkt->dat[3];
 
                         pkt->len = 0;
                         cdnet_exchg_src_dst(&n_intf, pkt);
@@ -280,6 +280,7 @@ void app_main(void)
                                 app_conf.rpt_en, app_conf.rpt_mac,
                                 app_conf.rpt_pkt_level);
                     } else {
+                        // TODO: report setting
                         list_put(n_intf.free_head, nd);
                         d_warn("raw_conf: wrong len: %d\n", pkt->len);
                     }

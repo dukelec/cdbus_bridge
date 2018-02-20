@@ -81,22 +81,22 @@ void p3_service(cdnet_packet_t *pkt)
     // set mac
     if (pkt->len == 2 && pkt->dat[0] == 0x00) {
         r_intf.cd_intf.set_filter(&r_intf.cd_intf, pkt->dat[1]);
-        n_intf.mac = pkt->dat[1];
+        n_intf.addr.mac = pkt->dat[1];
         pkt->len = 0;
-        d_debug("set filter: %d...\n", n_intf.mac);
+        d_debug("set filter: %d...\n", n_intf.addr.mac);
         goto out_send;
     }
     // set net
     if (pkt->len == 2 && pkt->dat[0] == 0x01) {
-        n_intf.net = pkt->dat[1];
+        n_intf.addr.net = pkt->dat[1];
         pkt->len = 0;
-        d_debug("set net: %d...\n", n_intf.net);
+        d_debug("set net: %d...\n", n_intf.addr.net);
         goto out_send;
     }
     // check net id
     if (pkt->len == 1 && pkt->dat[0] == 0x01) {
         pkt->len = 1;
-        pkt->dat[0] = n_intf.net;
+        pkt->dat[0] = n_intf.addr.net;
         goto out_send;
     }
     goto err_free; // TODO: add mac address auto allocation

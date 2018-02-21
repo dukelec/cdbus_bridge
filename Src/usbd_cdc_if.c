@@ -271,7 +271,6 @@ static int8_t CDC_Receive_FS (uint8_t* Buf, uint32_t *Len)
   /* USER CODE BEGIN 6 */
   //d_debug("CDC_Receive_FS: len: %d, [%02x ...]\n", *Len, Buf[0]);
 
-  list_node_t *node;
   if (!cdc_rx_buf) {
       printf("CDC_Receive_FS: !cdc_rx_buf\n");
       while (true);
@@ -281,14 +280,13 @@ static int8_t CDC_Receive_FS (uint8_t* Buf, uint32_t *Len)
       printf("CDC_Receive_FS: !len\n");
       while (true);
   }
-  list_put_irq_safe(&cdc_rx_head, &cdc_rx_buf->node);
-  node = list_get_irq_safe(&cdc_rx_free_head);
-  if (!node) {
+  list_put_it(&cdc_rx_head, &cdc_rx_buf->node);
+
+  cdc_rx_buf = list_get_entry_it(&cdc_rx_free_head, cdc_buf_t);
+  if (!cdc_rx_buf) {
       d_warn("CDC_Receive_FS: no free buf\n");
-      cdc_rx_buf = NULL;
       return USBD_OK;
   }
-  cdc_rx_buf = container_of(node, cdc_buf_t, node);
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
   return (USBD_OK);

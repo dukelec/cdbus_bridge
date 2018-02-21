@@ -77,8 +77,8 @@ static void device_init(void)
     for (i = 0; i < PACKET_MAX; i++)
         list_put(&packet_free_head, &packet_alloc[i].node);
 
-    cdc_rx_buf = container_of(list_get(&cdc_rx_free_head), cdc_buf_t, node);
-    d_conv_frame = container_of(list_get(&frame_free_head), cd_frame_t, node);
+    cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
+    d_conv_frame = list_get_entry(&frame_free_head, cd_frame_t);
 
     cdctl_intf_init(&r_intf, &frame_free_head, app_conf.rs485_addr.mac,
             app_conf.rs485_baudrate_low, app_conf.rs485_baudrate_high,
@@ -138,12 +138,11 @@ static void app_raw_from_u(const uint8_t *buf, int size,
             max_len = wr - rd;
 
         if (!pkt) {
-            list_node_t *node = list_get(n_intf.free_head);
-            if (!node) {
+            pkt = cdnet_packet_get(n_intf.free_head);
+            if (!pkt) {
                 d_error("raw <- u: no free pkt\n");
                 return;
             }
-            pkt = container_of(node, cdnet_packet_t, node);
             pkt->level = app_conf.rpt_pkt_level;
             pkt->seq = app_conf.rpt_seq;
             pkt->multi = app_conf.rpt_multi;
@@ -186,14 +185,14 @@ static void app_pass_thru_from_u(const uint8_t *buf, int size,
         cduart_rx_handle(&d_intf, rd, wr - rd);
 
     list_for_each(&d_intf.rx_head, pre, cur) {
-        cd_frame_t *fr_src = container_of(cur, cd_frame_t, node);
+        cd_frame_t *fr_src = list_entry(cur, cd_frame_t);
         if (fr_src->dat[1] == 0x56) {
             memcpy(d_conv_frame->dat, fr_src->dat + 3, 2);
             d_conv_frame->dat[2] = fr_src->dat[2] - 2;
             memcpy(d_conv_frame->dat + 3, fr_src->dat + 5, d_conv_frame->dat[2]);
 
             list_pick(&d_intf.rx_head, pre, cur);
-            cdctl_put_tx_node(&r_intf.cd_intf, &d_conv_frame->node);
+            cdctl_put_tx_frame(&r_intf.cd_intf, d_conv_frame);
             d_conv_frame = fr_src;
             cur = pre;
         }
@@ -237,13 +236,12 @@ void app_main(void)
         // handle cdnet
 
         cdnet_rx(&n_intf);
-        list_node_t *nd = list_get(&n_intf.rx_head);
-        if (nd) {
-            cdnet_packet_t *pkt = container_of(nd, cdnet_packet_t, node);
+        cdnet_packet_t *pkt = cdnet_packet_get(&n_intf.rx_head);
+        if (pkt) {
             if (pkt->level == CDNET_L2 || pkt->src_port < CDNET_DEF_PORT ||
                     pkt->dst_port >= CDNET_DEF_PORT) {
                 d_warn("unexpected pkg port\n");
-                list_put(n_intf.free_head, nd);
+                list_put(n_intf.free_head, &pkt->node);
             } else {
                 switch (pkt->dst_port) {
                 case 1:
@@ -258,9 +256,9 @@ void app_main(void)
 
                 case RAW_SER_PORT:
                     if (app_conf.mode == APP_RAW)
-                        list_put(&raw2u_head, nd);
+                        list_put(&raw2u_head, &pkt->node);
                     else
-                        list_put(n_intf.free_head, nd);
+                        list_put(n_intf.free_head, &pkt->node);
                     break;
 
                 case RAW_CONF_PORT:
@@ -275,20 +273,20 @@ void app_main(void)
 
                         pkt->len = 0;
                         cdnet_exchg_src_dst(&n_intf, pkt);
-                        list_put(&n_intf.tx_head, nd);
+                        list_put(&n_intf.tx_head, &pkt->node);
                         d_debug("raw_conf: en: %d, mac: %d, lev: %d\n",
                                 app_conf.rpt_en, app_conf.rpt_mac,
                                 app_conf.rpt_pkt_level);
                     } else {
                         // TODO: report setting
-                        list_put(n_intf.free_head, nd);
+                        list_put(n_intf.free_head, &pkt->node);
                         d_warn("raw_conf: wrong len: %d\n", pkt->len);
                     }
                     break;
 
                 default:
-                    d_warn("unexpected pkg\n");
-                    list_put(n_intf.free_head, nd);
+                    d_warn("unknown pkg\n");
+                    list_put(n_intf.free_head, &pkt->node);
                 }
             }
 
@@ -304,10 +302,8 @@ void app_main(void)
         if (app_conf.intf_idx == INTF_USB) {
             int size;
             uint8_t *wr, *rd;
-            cdc_buf_t *bf = NULL;
-            list_node_t *nd = list_get_irq_safe(&cdc_rx_head);
-            if (nd) {
-                bf = container_of(nd, cdc_buf_t, node);
+            cdc_buf_t *bf = list_get_entry_it(&cdc_rx_head, cdc_buf_t);
+            if (bf) {
                 size = bf->len + 1; // avoid scroll to begin
                 wr = bf->dat + bf->len;
                 rd = bf->dat;
@@ -325,10 +321,9 @@ void app_main(void)
             if (bf) {
                 uint32_t flags;
                 local_irq_save(flags);
-                list_put(&cdc_rx_free_head, nd);
+                list_put(&cdc_rx_free_head, &bf->node);
                 if (!cdc_rx_buf) {
-                    nd = list_get(&cdc_rx_free_head);
-                    cdc_rx_buf = container_of(nd, cdc_buf_t, node);
+                    cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
                     d_warn("continue CDC Rx\n");
                     USBD_CDC_SetRxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat);
                     USBD_CDC_ReceivePacket(&hUsbDeviceFS);
@@ -345,33 +340,30 @@ void app_main(void)
 
         cdc_buf_t *bf = NULL;
         if (!cdc_tx_head.last) {
-            list_node_t *nd = list_get(&cdc_tx_free_head);
-            if (!nd) {
-                d_warn("cdc_tx_free_head empty 0\n");
+            bf = list_get_entry(&cdc_tx_free_head, cdc_buf_t);
+            if (!bf) {
+                d_warn("no cdc_tx_free, 0\n");
                 goto send_list;
             }
-            bf = container_of(nd, cdc_buf_t, node);
             bf->len = 0;
-            list_put(&cdc_tx_head, nd);
+            list_put(&cdc_tx_head, &bf->node);
         } else {
-            bf = container_of(cdc_tx_head.last, cdc_buf_t, node);
+            bf = list_entry(cdc_tx_head.last, cdc_buf_t);
         }
 
         if (app_conf.mode == APP_PASS_THRU) {
             if (d_intf.tx_head.first) {
                 // send to u: d_intf.tx_head
-                list_node_t *d_nd = d_intf.tx_head.first;
-                cd_frame_t *frm = container_of(d_nd, cd_frame_t, node);
+                cd_frame_t *frm = list_entry(d_intf.tx_head.first, cd_frame_t);
 
                 if (bf->len + frm->dat[2] + 5 > 512) {
-                    list_node_t *nd = list_get(&cdc_tx_free_head);
-                    if (!nd) {
-                        d_warn("cdc_tx_free_head empty 1\n");
+                    bf = list_get_entry(&cdc_tx_free_head, cdc_buf_t);
+                    if (!bf) {
+                        d_warn("no cdc_tx_free, 1\n");
                         goto send_list;
                     }
-                    bf = container_of(nd, cdc_buf_t, node);
                     bf->len = 0;
-                    list_put(&cdc_tx_head, nd);
+                    list_put(&cdc_tx_head, &bf->node);
                 }
 
                 d_verbose("pass_thru -> u: 55, dat len %d\n", frm->dat[2]);
@@ -380,22 +372,20 @@ void app_main(void)
                 bf->len += frm->dat[2] + 5;
 
                 list_get(&d_intf.tx_head);
-                list_put_irq_safe(r_intf.free_head, d_nd);
+                list_put_it(r_intf.free_head, &frm->node);
 
             } else if (r_intf.rx_head.first) {
                 // send to u: r_intf.rx_head (add 56 aa)
-                list_node_t *d_nd = r_intf.rx_head.first;
-                cd_frame_t *frm = container_of(d_nd, cd_frame_t, node);
+                cd_frame_t *frm = list_entry(r_intf.rx_head.first, cd_frame_t);
 
                 if (bf->len + frm->dat[2] + 5 + 2 > 512) {
-                    list_node_t *nd = list_get(&cdc_tx_free_head);
-                    if (!nd) {
-                        d_warn("cdc_tx_free_head empty 2\n");
+                    bf = list_get_entry(&cdc_tx_free_head, cdc_buf_t);
+                    if (!bf) {
+                        d_warn("no cdc_tx_free, 2\n");
                         goto send_list;
                     }
-                    bf = container_of(nd, cdc_buf_t, node);
                     bf->len = 0;
-                    list_put(&cdc_tx_head, nd);
+                    list_put(&cdc_tx_head, &bf->node);
                 }
 
                 uint8_t *buf_dst = bf->dat + bf->len;
@@ -407,31 +397,29 @@ void app_main(void)
                 cduart_fill_crc(buf_dst);
                 bf->len += frm->dat[2] + 7;
 
-                list_get_irq_safe(&r_intf.rx_head);
-                list_put_irq_safe(r_intf.free_head, d_nd);
+                list_get_it(&r_intf.rx_head);
+                list_put_it(r_intf.free_head, &frm->node);
             }
         } else { // app_raw
             // send to u: raw2u_head
             if (raw2u_head.first) {
-                list_node_t *p_nd = raw2u_head.first;
-                cdnet_packet_t *pkt = container_of(nd, cdnet_packet_t, node);
+                cdnet_packet_t *pkt = list_entry(raw2u_head.first, cdnet_packet_t);
 
                 if (bf->len + pkt->len > 512) {
-                    list_node_t *nd = list_get(&cdc_tx_free_head);
-                    if (!nd) {
-                        d_warn("cdc_tx_free_head empty 3\n");
+                    bf = list_get_entry(&cdc_tx_free_head, cdc_buf_t);
+                    if (!bf) {
+                        d_warn("no cdc_tx_free_head, 3\n");
                         goto send_list;
                     }
-                    bf = container_of(nd, cdc_buf_t, node);
                     bf->len = 0;
-                    list_put(&cdc_tx_head, nd);
+                    list_put(&cdc_tx_head, &bf->node);
                 }
 
                 memcpy(bf->dat + bf->len, pkt->dat, pkt->len);
                 bf->len += pkt->len;
 
                 list_get(&raw2u_head);
-                list_put(n_intf.free_head, p_nd);
+                list_put(n_intf.free_head, &pkt->node);
             }
         }
 
@@ -452,7 +440,7 @@ send_list:
             }
         }
         if (!cdc_tx_buf && cdc_tx_head.first) {
-            cdc_buf_t *bf = container_of(cdc_tx_head.first, cdc_buf_t, node);
+            cdc_buf_t *bf = list_entry(cdc_tx_head.first, cdc_buf_t);
             if (bf->len != 0) {
                 if (app_conf.intf_idx == INTF_USB) {
                     CDC_Transmit_FS(bf->dat, bf->len);

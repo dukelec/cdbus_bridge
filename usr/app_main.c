@@ -324,7 +324,7 @@ void app_main(void)
                 list_put(&cdc_rx_free_head, &bf->node);
                 if (!cdc_rx_buf) {
                     cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
-                    d_warn("continue CDC Rx\n");
+                    d_verbose("continue CDC Rx\n");
                     USBD_CDC_SetRxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat);
                     USBD_CDC_ReceivePacket(&hUsbDeviceFS);
                 }

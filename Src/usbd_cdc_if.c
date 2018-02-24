@@ -305,7 +305,7 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 
   cdc_rx_buf = list_get_entry_it(&cdc_rx_free_head, cdc_buf_t);
   if (!cdc_rx_buf) {
-      d_warn("CDC_Receive_FS: no free buf\n");
+      d_verbose("CDC_Receive_FS: no free buf\n");
       return USBD_OK;
   }
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat);

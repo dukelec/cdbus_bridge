@@ -90,6 +90,7 @@ cdnet/dev/cdctl_bx_it.c \
 cdnet/utils/list.c \
 cdnet/utils/modbus_crc.c \
 cdnet/utils/debug.c \
+cdnet/utils/hex_dump.c \
 usr/app_config.c \
 usr/common_services.c \
 usr/app_main.c \

@@ -15,7 +15,8 @@
 #define DEBUG
 //#define VERBOSE
 #define DBG_LEN             40
-//#define DBG_TX_IT
+#define DBG_TX_IT
+//#define LIST_DEBUG
 
 #define CDUART_IRQ_SAFE
 #define CDUART_IDLE_TIME    (500000 / SYSTICK_US_DIV) // 500 ms

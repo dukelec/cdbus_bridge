@@ -52,6 +52,9 @@
 
 /* USER CODE BEGIN INCLUDE */
 #include "app_main.h"
+
+extern int usb_rx_cnt;
+extern int usb_tx_cnt;
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -301,6 +304,7 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
       printf("CDC_Receive_FS: !len\n");
       while (true);
   }
+  usb_rx_cnt++;
   list_put_it(&cdc_rx_head, &cdc_rx_buf->node);
 
   cdc_rx_buf = list_get_entry_it(&cdc_rx_free_head, cdc_buf_t);
@@ -333,6 +337,7 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
   if (hcdc->TxState != 0){
     return USBD_BUSY;
   }
+  usb_tx_cnt++;
   USBD_CDC_SetTxBuffer(&hUsbDeviceFS, Buf, Len);
   result = USBD_CDC_TransmitPacket(&hUsbDeviceFS);
   /* USER CODE END 7 */

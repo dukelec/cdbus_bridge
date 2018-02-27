@@ -64,6 +64,9 @@ static list_head_t raw2u_head = {0};
 static cduart_intf_t d_intf = {0};
 static cd_frame_t *d_conv_frame = NULL;
 
+int usb_rx_cnt = 0;
+int usb_tx_cnt = 0;
+
 
 static void device_init(void)
 {
@@ -230,6 +233,24 @@ void app_main(void)
             d_info("usb connected\n");
             app_conf.intf_idx = INTF_USB;
             HAL_UART_DMAStop(hw_uart->huart);
+        }
+
+        {
+            static int t_l = 0;
+            if (get_systick() - t_l > 2000) {
+                USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
+                t_l = get_systick();
+                d_debug("bx: state: %d, tx_l: %d, rx_l: %d, p %d\n",
+                        r_intf.state, r_intf.tx_head.len, r_intf.rx_head.len,
+                        gpio_get_value(r_intf.int_n));
+                d_debug("bx: cnt: rx: %d %d (%d %d), tx: %d %d (%d)\n",
+                        r_intf.rx_lost_cnt, r_intf.rx_error_cnt,
+                        r_intf.rx_cnt, r_intf.rx_no_free_node_cnt,
+                        r_intf.tx_cd_cnt, r_intf.tx_error_cnt, r_intf.tx_cnt);
+                d_debug("usb: rx: %d, tx: %d, tx_buf: %p, tx_l: %d, t_s: %x\n",
+                        usb_rx_cnt, usb_tx_cnt, cdc_tx_buf, cdc_tx_head.len, hcdc->TxState);
+                d_debug("net: tx_l: %d\n", n_intf.tx_head.len);
+            }
         }
 
 

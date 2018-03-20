@@ -59,17 +59,25 @@
 
 /* Private define ------------------------------------------------------------*/
 
-#define CDCTL_INT_N_Pin GPIO_PIN_1
-#define CDCTL_INT_N_GPIO_Port GPIOA
-#define CDCTL_INT_N_EXTI_IRQn EXTI1_IRQn
+#define LED_B_Pin GPIO_PIN_13
+#define LED_B_GPIO_Port GPIOC
+#define LED_G_Pin GPIO_PIN_14
+#define LED_G_GPIO_Port GPIOC
+#define LED_R_Pin GPIO_PIN_15
+#define LED_R_GPIO_Port GPIOC
+#define LED_RX_Pin GPIO_PIN_0
+#define LED_RX_GPIO_Port GPIOC
+#define LED_TX_Pin GPIO_PIN_1
+#define LED_TX_GPIO_Port GPIOC
+#define SW_MODE_Pin GPIO_PIN_2
+#define SW_MODE_GPIO_Port GPIOC
 #define CDCTL_NS_Pin GPIO_PIN_4
 #define CDCTL_NS_GPIO_Port GPIOA
-#define CDCTL_RST_N_Pin GPIO_PIN_12
-#define CDCTL_RST_N_GPIO_Port GPIOB
-#define LED2_Pin GPIO_PIN_6
-#define LED2_GPIO_Port GPIOB
-#define LED1_Pin GPIO_PIN_7
-#define LED1_GPIO_Port GPIOB
+#define CDCTL_RST_N_Pin GPIO_PIN_4
+#define CDCTL_RST_N_GPIO_Port GPIOC
+#define CDCTL_INT_N_Pin GPIO_PIN_5
+#define CDCTL_INT_N_GPIO_Port GPIOC
+#define CDCTL_INT_N_EXTI_IRQn EXTI9_5_IRQn
 
 /* ########################## Assert Selection ############################## */
 /**

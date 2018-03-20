@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    stm32f103xb.h
+  * @file    stm32f105xc.h
   * @author  MCD Application Team
   * @version V4.2.0
   * @date    31-March-2017
@@ -48,12 +48,12 @@
   * @{
   */
 
-/** @addtogroup stm32f103xb
+/** @addtogroup stm32f105xc
   * @{
   */
     
-#ifndef __STM32F103xB_H
-#define __STM32F103xB_H
+#ifndef __STM32F105xC_H
+#define __STM32F105xC_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -117,8 +117,8 @@ typedef enum
   DMA1_Channel6_IRQn          = 16,     /*!< DMA1 Channel 6 global Interrupt                      */
   DMA1_Channel7_IRQn          = 17,     /*!< DMA1 Channel 7 global Interrupt                      */
   ADC1_2_IRQn                 = 18,     /*!< ADC1 and ADC2 global Interrupt                       */
-  USB_HP_CAN1_TX_IRQn         = 19,     /*!< USB Device High Priority or CAN1 TX Interrupts       */
-  USB_LP_CAN1_RX0_IRQn        = 20,     /*!< USB Device Low Priority or CAN1 RX0 Interrupts       */
+  CAN1_TX_IRQn                = 19,     /*!< CAN1 TX Interrupts                                   */
+  CAN1_RX0_IRQn               = 20,     /*!< CAN1 RX0 Interrupts                                  */
   CAN1_RX1_IRQn               = 21,     /*!< CAN1 RX1 Interrupt                                   */
   CAN1_SCE_IRQn               = 22,     /*!< CAN1 SCE Interrupt                                   */
   EXTI9_5_IRQn                = 23,     /*!< External Line[9:5] Interrupts                        */
@@ -140,7 +140,23 @@ typedef enum
   USART3_IRQn                 = 39,     /*!< USART3 global Interrupt                              */
   EXTI15_10_IRQn              = 40,     /*!< External Line[15:10] Interrupts                      */
   RTC_Alarm_IRQn              = 41,     /*!< RTC Alarm through EXTI Line Interrupt                */
-  USBWakeUp_IRQn              = 42,     /*!< USB Device WakeUp from suspend through EXTI Line Interrupt */
+  OTG_FS_WKUP_IRQn            = 42,     /*!< USB OTG FS WakeUp from suspend through EXTI Line Interrupt */
+  TIM5_IRQn                   = 50,     /*!< TIM5 global Interrupt                                */
+  SPI3_IRQn                   = 51,     /*!< SPI3 global Interrupt                                */
+  UART4_IRQn                  = 52,     /*!< UART4 global Interrupt                               */
+  UART5_IRQn                  = 53,     /*!< UART5 global Interrupt                               */
+  TIM6_IRQn                   = 54,     /*!< TIM6 global Interrupt                                */
+  TIM7_IRQn                   = 55,     /*!< TIM7 global Interrupt                                */
+  DMA2_Channel1_IRQn          = 56,     /*!< DMA2 Channel 1 global Interrupt                      */
+  DMA2_Channel2_IRQn          = 57,     /*!< DMA2 Channel 2 global Interrupt                      */
+  DMA2_Channel3_IRQn          = 58,     /*!< DMA2 Channel 3 global Interrupt                      */
+  DMA2_Channel4_IRQn          = 59,     /*!< DMA2 Channel 4 global Interrupt                      */
+  DMA2_Channel5_IRQn          = 60,     /*!< DMA2 Channel 5 global Interrupt                      */
+  CAN2_TX_IRQn                = 63,     /*!< CAN2 TX Interrupt                                    */
+  CAN2_RX0_IRQn               = 64,     /*!< CAN2 RX0 Interrupt                                   */
+  CAN2_RX1_IRQn               = 65,     /*!< CAN2 RX1 Interrupt                                   */
+  CAN2_SCE_IRQn               = 66,     /*!< CAN2 SCE Interrupt                                   */
+  OTG_FS_IRQn                 = 67      /*!< USB OTG FS global Interrupt                          */
 } IRQn_Type;
 
 /**
@@ -212,6 +228,39 @@ typedef struct
   __IO uint32_t RTCCR;
   __IO uint32_t CR;
   __IO uint32_t CSR;
+  uint32_t  RESERVED13[2];
+  __IO uint32_t DR11;
+  __IO uint32_t DR12;
+  __IO uint32_t DR13;
+  __IO uint32_t DR14;
+  __IO uint32_t DR15;
+  __IO uint32_t DR16;
+  __IO uint32_t DR17;
+  __IO uint32_t DR18;
+  __IO uint32_t DR19;
+  __IO uint32_t DR20;
+  __IO uint32_t DR21;
+  __IO uint32_t DR22;
+  __IO uint32_t DR23;
+  __IO uint32_t DR24;
+  __IO uint32_t DR25;
+  __IO uint32_t DR26;
+  __IO uint32_t DR27;
+  __IO uint32_t DR28;
+  __IO uint32_t DR29;
+  __IO uint32_t DR30;
+  __IO uint32_t DR31;
+  __IO uint32_t DR32;
+  __IO uint32_t DR33;
+  __IO uint32_t DR34;
+  __IO uint32_t DR35;
+  __IO uint32_t DR36;
+  __IO uint32_t DR37;
+  __IO uint32_t DR38;
+  __IO uint32_t DR39;
+  __IO uint32_t DR40;
+  __IO uint32_t DR41;
+  __IO uint32_t DR42;
 } BKP_TypeDef;
   
 /** 
@@ -275,7 +324,7 @@ typedef struct
   uint32_t  RESERVED4;
   __IO uint32_t FA1R;
   uint32_t  RESERVED5[8];
-  CAN_FilterRegister_TypeDef sFilterRegister[14];
+  CAN_FilterRegister_TypeDef sFilterRegister[28];
 } CAN_TypeDef;
 
 /** 
@@ -291,6 +340,26 @@ typedef struct
   __IO uint32_t CR;           /*!< CRC Control register,                        Address offset: 0x08 */ 
 } CRC_TypeDef;
 
+/** 
+  * @brief Digital to Analog Converter
+  */
+
+typedef struct
+{
+  __IO uint32_t CR;
+  __IO uint32_t SWTRIGR;
+  __IO uint32_t DHR12R1;
+  __IO uint32_t DHR12L1;
+  __IO uint32_t DHR8R1;
+  __IO uint32_t DHR12R2;
+  __IO uint32_t DHR12L2;
+  __IO uint32_t DHR8R2;
+  __IO uint32_t DHR12RD;
+  __IO uint32_t DHR12LD;
+  __IO uint32_t DHR8RD;
+  __IO uint32_t DOR1;
+  __IO uint32_t DOR2;
+} DAC_TypeDef;
 
 /** 
   * @brief Debug MCU
@@ -452,6 +521,8 @@ typedef struct
   __IO uint32_t BDCR;
   __IO uint32_t CSR;
 
+  __IO uint32_t AHBRSTR;
+  __IO uint32_t CFGR2;
 
 } RCC_TypeDef;
 
@@ -515,6 +586,7 @@ typedef struct
   __IO uint32_t RXCRCR;
   __IO uint32_t TXCRCR;
   __IO uint32_t I2SCFGR;
+  __IO uint32_t I2SPR;
 } SPI_TypeDef;
 
 /**
@@ -561,40 +633,121 @@ typedef struct
   __IO uint32_t GTPR;       /*!< USART Guard time and prescaler register, Address offset: 0x18 */
 } USART_TypeDef;
 
+
 /** 
-  * @brief Universal Serial Bus Full Speed Device
+  * @brief __USB_OTG_Core_register
   */
-  
+
 typedef struct
 {
-  __IO uint16_t EP0R;                 /*!< USB Endpoint 0 register,                   Address offset: 0x00 */ 
-  __IO uint16_t RESERVED0;            /*!< Reserved */     
-  __IO uint16_t EP1R;                 /*!< USB Endpoint 1 register,                   Address offset: 0x04 */
-  __IO uint16_t RESERVED1;            /*!< Reserved */       
-  __IO uint16_t EP2R;                 /*!< USB Endpoint 2 register,                   Address offset: 0x08 */
-  __IO uint16_t RESERVED2;            /*!< Reserved */       
-  __IO uint16_t EP3R;                 /*!< USB Endpoint 3 register,                   Address offset: 0x0C */ 
-  __IO uint16_t RESERVED3;            /*!< Reserved */       
-  __IO uint16_t EP4R;                 /*!< USB Endpoint 4 register,                   Address offset: 0x10 */
-  __IO uint16_t RESERVED4;            /*!< Reserved */       
-  __IO uint16_t EP5R;                 /*!< USB Endpoint 5 register,                   Address offset: 0x14 */
-  __IO uint16_t RESERVED5;            /*!< Reserved */       
-  __IO uint16_t EP6R;                 /*!< USB Endpoint 6 register,                   Address offset: 0x18 */
-  __IO uint16_t RESERVED6;            /*!< Reserved */       
-  __IO uint16_t EP7R;                 /*!< USB Endpoint 7 register,                   Address offset: 0x1C */
-  __IO uint16_t RESERVED7[17];        /*!< Reserved */     
-  __IO uint16_t CNTR;                 /*!< Control register,                          Address offset: 0x40 */
-  __IO uint16_t RESERVED8;            /*!< Reserved */       
-  __IO uint16_t ISTR;                 /*!< Interrupt status register,                 Address offset: 0x44 */
-  __IO uint16_t RESERVED9;            /*!< Reserved */       
-  __IO uint16_t FNR;                  /*!< Frame number register,                     Address offset: 0x48 */
-  __IO uint16_t RESERVEDA;            /*!< Reserved */       
-  __IO uint16_t DADDR;                /*!< Device address register,                   Address offset: 0x4C */
-  __IO uint16_t RESERVEDB;            /*!< Reserved */       
-  __IO uint16_t BTABLE;               /*!< Buffer Table address register,             Address offset: 0x50 */
-  __IO uint16_t RESERVEDC;            /*!< Reserved */       
-} USB_TypeDef;
+  __IO uint32_t GOTGCTL;              /*!<  USB_OTG Control and Status Register       Address offset: 000h */
+  __IO uint32_t GOTGINT;              /*!<  USB_OTG Interrupt Register                Address offset: 004h */
+  __IO uint32_t GAHBCFG;              /*!<  Core AHB Configuration Register           Address offset: 008h */
+  __IO uint32_t GUSBCFG;              /*!<  Core USB Configuration Register           Address offset: 00Ch */
+  __IO uint32_t GRSTCTL;              /*!<  Core Reset Register                       Address offset: 010h */
+  __IO uint32_t GINTSTS;              /*!<  Core Interrupt Register                   Address offset: 014h */
+  __IO uint32_t GINTMSK;              /*!<  Core Interrupt Mask Register              Address offset: 018h */
+  __IO uint32_t GRXSTSR;              /*!<  Receive Sts Q Read Register               Address offset: 01Ch */
+  __IO uint32_t GRXSTSP;              /*!<  Receive Sts Q Read & POP Register         Address offset: 020h */
+  __IO uint32_t GRXFSIZ;              /*!< Receive FIFO Size Register                 Address offset: 024h */
+  __IO uint32_t DIEPTXF0_HNPTXFSIZ;   /*!<  EP0 / Non Periodic Tx FIFO Size Register  Address offset: 028h */
+  __IO uint32_t HNPTXSTS;             /*!<  Non Periodic Tx FIFO/Queue Sts reg        Address offset: 02Ch */
+  uint32_t Reserved30[2];             /*!< Reserved 030h*/
+  __IO uint32_t GCCFG;                /*!< General Purpose IO Register                Address offset: 038h */
+  __IO uint32_t CID;                  /*!< User ID Register                           Address offset: 03Ch */
+  uint32_t  Reserved40[48];           /*!< Reserved 040h-0FFh */
+  __IO uint32_t HPTXFSIZ;             /*!< Host Periodic Tx FIFO Size Reg             Address offset: 100h */
+  __IO uint32_t DIEPTXF[0x0F];        /*!< dev Periodic Transmit FIFO                 Address offset: 0x104 */
+} USB_OTG_GlobalTypeDef;
 
+/** 
+  * @brief __device_Registers
+  */
+
+typedef struct 
+{
+  __IO uint32_t DCFG;                 /*!< dev Configuration Register                 Address offset: 800h*/
+  __IO uint32_t DCTL;                 /*!< dev Control Register                       Address offset: 804h*/
+  __IO uint32_t DSTS;                 /*!< dev Status Register (RO)                   Address offset: 808h*/
+  uint32_t Reserved0C;                /*!< Reserved 80Ch*/
+  __IO uint32_t DIEPMSK;              /*!< dev IN Endpoint Mask                       Address offset: 810h*/
+  __IO uint32_t DOEPMSK;              /*!< dev OUT Endpoint Mask                      Address offset: 814h*/
+  __IO uint32_t DAINT;                /*!< dev All Endpoints Itr Reg                  Address offset: 818h*/
+  __IO uint32_t DAINTMSK;             /*!< dev All Endpoints Itr Mask                 Address offset: 81Ch*/
+  uint32_t  Reserved20;               /*!< Reserved 820h*/
+  uint32_t Reserved9;                 /*!< Reserved 824h*/
+  __IO uint32_t DVBUSDIS;             /*!< dev VBUS discharge Register                Address offset: 828h*/
+  __IO uint32_t DVBUSPULSE;           /*!< dev VBUS Pulse Register                    Address offset: 82Ch*/
+  __IO uint32_t DTHRCTL;              /*!< dev thr                                    Address offset: 830h*/
+  __IO uint32_t DIEPEMPMSK;           /*!< dev empty msk                              Address offset: 834h*/
+  __IO uint32_t DEACHINT;             /*!< dedicated EP interrupt                     Address offset: 838h*/
+  __IO uint32_t DEACHMSK;             /*!< dedicated EP msk                           Address offset: 83Ch*/  
+  uint32_t Reserved40;                /*!< dedicated EP mask                          Address offset: 840h*/
+  __IO uint32_t DINEP1MSK;            /*!< dedicated EP mask                          Address offset: 844h*/
+  uint32_t  Reserved44[15];           /*!< Reserved 844-87Ch*/
+  __IO uint32_t DOUTEP1MSK;           /*!< dedicated EP msk                           Address offset: 884h*/
+} USB_OTG_DeviceTypeDef;
+
+/** 
+  * @brief __IN_Endpoint-Specific_Register
+  */
+
+typedef struct 
+{
+  __IO uint32_t DIEPCTL;              /*!< dev IN Endpoint Control Reg                900h + (ep_num * 20h) + 00h*/
+  uint32_t Reserved04;                /*!< Reserved                                   900h + (ep_num * 20h) + 04h*/
+  __IO uint32_t DIEPINT;              /*!< dev IN Endpoint Itr Reg                    900h + (ep_num * 20h) + 08h*/
+  uint32_t Reserved0C;                /*!< Reserved                                   900h + (ep_num * 20h) + 0Ch*/
+  __IO uint32_t DIEPTSIZ;             /*!< IN Endpoint Txfer Size                     900h + (ep_num * 20h) + 10h*/
+  __IO uint32_t DIEPDMA;              /*!< IN Endpoint DMA Address Reg                900h + (ep_num * 20h) + 14h*/
+  __IO uint32_t DTXFSTS;              /*!< IN Endpoint Tx FIFO Status Reg             900h + (ep_num * 20h) + 18h*/
+  uint32_t Reserved18;                /*!< Reserved                                   900h+(ep_num*20h)+1Ch-900h+ (ep_num * 20h) + 1Ch*/
+} USB_OTG_INEndpointTypeDef;
+
+/** 
+  * @brief __OUT_Endpoint-Specific_Registers
+  */
+
+typedef struct 
+{
+  __IO uint32_t DOEPCTL;              /*!< dev OUT Endpoint Control Reg               B00h + (ep_num * 20h) + 00h*/
+  uint32_t Reserved04;                /*!< Reserved                                   B00h + (ep_num * 20h) + 04h*/
+  __IO uint32_t DOEPINT;              /*!< dev OUT Endpoint Itr Reg                   B00h + (ep_num * 20h) + 08h*/
+  uint32_t Reserved0C;                /*!< Reserved                                   B00h + (ep_num * 20h) + 0Ch*/
+  __IO uint32_t DOEPTSIZ;             /*!< dev OUT Endpoint Txfer Size                B00h + (ep_num * 20h) + 10h*/
+  __IO uint32_t DOEPDMA;              /*!< dev OUT Endpoint DMA Address               B00h + (ep_num * 20h) + 14h*/
+  uint32_t Reserved18[2];             /*!< Reserved                                   B00h + (ep_num * 20h) + 18h - B00h + (ep_num * 20h) + 1Ch*/
+} USB_OTG_OUTEndpointTypeDef;
+
+/** 
+  * @brief __Host_Mode_Register_Structures
+  */
+
+typedef struct 
+{
+  __IO uint32_t HCFG;                 /*!< Host Configuration Register    400h*/
+  __IO uint32_t HFIR;                 /*!< Host Frame Interval Register   404h*/
+  __IO uint32_t HFNUM;                /*!< Host Frame Nbr/Frame Remaining 408h*/
+  uint32_t Reserved40C;               /*!< Reserved                       40Ch*/
+  __IO uint32_t HPTXSTS;              /*!< Host Periodic Tx FIFO/ Queue Status 410h*/
+  __IO uint32_t HAINT;                /*!< Host All Channels Interrupt Register 414h*/
+  __IO uint32_t HAINTMSK;             /*!< Host All Channels Interrupt Mask 418h*/
+} USB_OTG_HostTypeDef;
+
+/** 
+  * @brief __Host_Channel_Specific_Registers
+  */
+
+typedef struct
+{
+  __IO uint32_t HCCHAR;
+  __IO uint32_t HCSPLT;
+  __IO uint32_t HCINT;
+  __IO uint32_t HCINTMSK;
+  __IO uint32_t HCTSIZ;
+  __IO uint32_t HCDMA;
+  uint32_t Reserved[2];
+} USB_OTG_HostChannelTypeDef;
 
 /** 
   * @brief Window WATCHDOG
@@ -617,7 +770,7 @@ typedef struct
 
 
 #define FLASH_BASE            0x08000000U /*!< FLASH base address in the alias region */
-#define FLASH_BANK1_END       0x0801FFFFU /*!< FLASH END address of bank1 */
+#define FLASH_BANK1_END       0x0803FFFFU /*!< FLASH END address of bank1 */
 #define SRAM_BASE             0x20000000U /*!< SRAM base address in the alias region */
 #define PERIPH_BASE           0x40000000U /*!< Peripheral base address in the alias region */
 
@@ -633,17 +786,25 @@ typedef struct
 #define TIM2_BASE             (APB1PERIPH_BASE + 0x00000000U)
 #define TIM3_BASE             (APB1PERIPH_BASE + 0x00000400U)
 #define TIM4_BASE             (APB1PERIPH_BASE + 0x00000800U)
+#define TIM5_BASE             (APB1PERIPH_BASE + 0x00000C00U)
+#define TIM6_BASE             (APB1PERIPH_BASE + 0x00001000U)
+#define TIM7_BASE             (APB1PERIPH_BASE + 0x00001400U)
 #define RTC_BASE              (APB1PERIPH_BASE + 0x00002800U)
 #define WWDG_BASE             (APB1PERIPH_BASE + 0x00002C00U)
 #define IWDG_BASE             (APB1PERIPH_BASE + 0x00003000U)
 #define SPI2_BASE             (APB1PERIPH_BASE + 0x00003800U)
+#define SPI3_BASE             (APB1PERIPH_BASE + 0x00003C00U)
 #define USART2_BASE           (APB1PERIPH_BASE + 0x00004400U)
 #define USART3_BASE           (APB1PERIPH_BASE + 0x00004800U)
+#define UART4_BASE            (APB1PERIPH_BASE + 0x00004C00U)
+#define UART5_BASE            (APB1PERIPH_BASE + 0x00005000U)
 #define I2C1_BASE             (APB1PERIPH_BASE + 0x00005400U)
 #define I2C2_BASE             (APB1PERIPH_BASE + 0x5800)
 #define CAN1_BASE             (APB1PERIPH_BASE + 0x00006400U)
+#define CAN2_BASE             (APB1PERIPH_BASE + 0x00006800U)
 #define BKP_BASE              (APB1PERIPH_BASE + 0x00006C00U)
 #define PWR_BASE              (APB1PERIPH_BASE + 0x00007000U)
+#define DAC_BASE              (APB1PERIPH_BASE + 0x00007400U)
 #define AFIO_BASE             (APB2PERIPH_BASE + 0x00000000U)
 #define EXTI_BASE             (APB2PERIPH_BASE + 0x00000400U)
 #define GPIOA_BASE            (APB2PERIPH_BASE + 0x00000800U)
@@ -667,6 +828,12 @@ typedef struct
 #define DMA1_Channel5_BASE    (AHBPERIPH_BASE + 0x00000058U)
 #define DMA1_Channel6_BASE    (AHBPERIPH_BASE + 0x0000006CU)
 #define DMA1_Channel7_BASE    (AHBPERIPH_BASE + 0x00000080U)
+#define DMA2_BASE             (AHBPERIPH_BASE + 0x00000400U)
+#define DMA2_Channel1_BASE    (AHBPERIPH_BASE + 0x00000408U)
+#define DMA2_Channel2_BASE    (AHBPERIPH_BASE + 0x0000041CU)
+#define DMA2_Channel3_BASE    (AHBPERIPH_BASE + 0x00000430U)
+#define DMA2_Channel4_BASE    (AHBPERIPH_BASE + 0x00000444U)
+#define DMA2_Channel5_BASE    (AHBPERIPH_BASE + 0x00000458U)
 #define RCC_BASE              (AHBPERIPH_BASE + 0x00001000U)
 #define CRC_BASE              (AHBPERIPH_BASE + 0x00003000U)
 
@@ -679,10 +846,22 @@ typedef struct
 
 #define DBGMCU_BASE          0xE0042000U /*!< Debug MCU registers base address */
 
-/* USB device FS */
-#define USB_BASE              (APB1PERIPH_BASE + 0x00005C00U) /*!< USB_IP Peripheral Registers base address */
-#define USB_PMAADDR           (APB1PERIPH_BASE + 0x00006000U) /*!< USB_IP Packet Memory Area base address */
 
+/*!< USB registers base address */
+#define USB_OTG_FS_PERIPH_BASE               0x50000000U
+
+#define USB_OTG_GLOBAL_BASE                  0x00000000U
+#define USB_OTG_DEVICE_BASE                  0x00000800U
+#define USB_OTG_IN_ENDPOINT_BASE             0x00000900U
+#define USB_OTG_OUT_ENDPOINT_BASE            0x00000B00U
+#define USB_OTG_EP_REG_SIZE                  0x00000020U
+#define USB_OTG_HOST_BASE                    0x00000400U
+#define USB_OTG_HOST_PORT_BASE               0x00000440U
+#define USB_OTG_HOST_CHANNEL_BASE            0x00000500U
+#define USB_OTG_HOST_CHANNEL_SIZE            0x00000020U
+#define USB_OTG_PCGCCTL_BASE                 0x00000E00U
+#define USB_OTG_FIFO_BASE                    0x00001000U
+#define USB_OTG_FIFO_SIZE                    0x00001000U
 
 /**
   * @}
@@ -695,18 +874,26 @@ typedef struct
 #define TIM2                ((TIM_TypeDef *)TIM2_BASE)
 #define TIM3                ((TIM_TypeDef *)TIM3_BASE)
 #define TIM4                ((TIM_TypeDef *)TIM4_BASE)
+#define TIM5                ((TIM_TypeDef *)TIM5_BASE)
+#define TIM6                ((TIM_TypeDef *)TIM6_BASE)
+#define TIM7                ((TIM_TypeDef *)TIM7_BASE)
 #define RTC                 ((RTC_TypeDef *)RTC_BASE)
 #define WWDG                ((WWDG_TypeDef *)WWDG_BASE)
 #define IWDG                ((IWDG_TypeDef *)IWDG_BASE)
 #define SPI2                ((SPI_TypeDef *)SPI2_BASE)
+#define SPI3                ((SPI_TypeDef *)SPI3_BASE)
 #define USART2              ((USART_TypeDef *)USART2_BASE)
 #define USART3              ((USART_TypeDef *)USART3_BASE)
+#define UART4               ((USART_TypeDef *)UART4_BASE)
+#define UART5               ((USART_TypeDef *)UART5_BASE)
 #define I2C1                ((I2C_TypeDef *)I2C1_BASE)
 #define I2C2                ((I2C_TypeDef *)I2C2_BASE)
-#define USB                 ((USB_TypeDef *)USB_BASE)
 #define CAN1                ((CAN_TypeDef *)CAN1_BASE)
+#define CAN2                ((CAN_TypeDef *)CAN2_BASE)
 #define BKP                 ((BKP_TypeDef *)BKP_BASE)
 #define PWR                 ((PWR_TypeDef *)PWR_BASE)
+#define DAC1                ((DAC_TypeDef *)DAC_BASE)
+#define DAC                 ((DAC_TypeDef *)DAC_BASE) /* Kept for legacy purpose */
 #define AFIO                ((AFIO_TypeDef *)AFIO_BASE)
 #define EXTI                ((EXTI_TypeDef *)EXTI_BASE)
 #define GPIOA               ((GPIO_TypeDef *)GPIOA_BASE)
@@ -722,6 +909,7 @@ typedef struct
 #define USART1              ((USART_TypeDef *)USART1_BASE)
 #define SDIO                ((SDIO_TypeDef *)SDIO_BASE)
 #define DMA1                ((DMA_TypeDef *)DMA1_BASE)
+#define DMA2                ((DMA_TypeDef *)DMA2_BASE)
 #define DMA1_Channel1       ((DMA_Channel_TypeDef *)DMA1_Channel1_BASE)
 #define DMA1_Channel2       ((DMA_Channel_TypeDef *)DMA1_Channel2_BASE)
 #define DMA1_Channel3       ((DMA_Channel_TypeDef *)DMA1_Channel3_BASE)
@@ -729,12 +917,18 @@ typedef struct
 #define DMA1_Channel5       ((DMA_Channel_TypeDef *)DMA1_Channel5_BASE)
 #define DMA1_Channel6       ((DMA_Channel_TypeDef *)DMA1_Channel6_BASE)
 #define DMA1_Channel7       ((DMA_Channel_TypeDef *)DMA1_Channel7_BASE)
+#define DMA2_Channel1       ((DMA_Channel_TypeDef *)DMA2_Channel1_BASE)
+#define DMA2_Channel2       ((DMA_Channel_TypeDef *)DMA2_Channel2_BASE)
+#define DMA2_Channel3       ((DMA_Channel_TypeDef *)DMA2_Channel3_BASE)
+#define DMA2_Channel4       ((DMA_Channel_TypeDef *)DMA2_Channel4_BASE)
+#define DMA2_Channel5       ((DMA_Channel_TypeDef *)DMA2_Channel5_BASE)
 #define RCC                 ((RCC_TypeDef *)RCC_BASE)
 #define CRC                 ((CRC_TypeDef *)CRC_BASE)
 #define FLASH               ((FLASH_TypeDef *)FLASH_R_BASE)
 #define OB                  ((OB_TypeDef *)OB_BASE)
 #define DBGMCU              ((DBGMCU_TypeDef *)DBGMCU_BASE)
 
+#define USB_OTG_FS          ((USB_OTG_GlobalTypeDef *)USB_OTG_FS_PERIPH_BASE)
 
 /**
   * @}
@@ -898,7 +1092,167 @@ typedef struct
 #define BKP_DR10_D_Msk                      (0xFFFFU << BKP_DR10_D_Pos)        /*!< 0x0000FFFF */
 #define BKP_DR10_D                          BKP_DR10_D_Msk                     /*!< Backup data */
 
-#define RTC_BKP_NUMBER 10
+/*******************  Bit definition for BKP_DR11 register  *******************/
+#define BKP_DR11_D_Pos                      (0U)                               
+#define BKP_DR11_D_Msk                      (0xFFFFU << BKP_DR11_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR11_D                          BKP_DR11_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR12 register  *******************/
+#define BKP_DR12_D_Pos                      (0U)                               
+#define BKP_DR12_D_Msk                      (0xFFFFU << BKP_DR12_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR12_D                          BKP_DR12_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR13 register  *******************/
+#define BKP_DR13_D_Pos                      (0U)                               
+#define BKP_DR13_D_Msk                      (0xFFFFU << BKP_DR13_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR13_D                          BKP_DR13_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR14 register  *******************/
+#define BKP_DR14_D_Pos                      (0U)                               
+#define BKP_DR14_D_Msk                      (0xFFFFU << BKP_DR14_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR14_D                          BKP_DR14_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR15 register  *******************/
+#define BKP_DR15_D_Pos                      (0U)                               
+#define BKP_DR15_D_Msk                      (0xFFFFU << BKP_DR15_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR15_D                          BKP_DR15_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR16 register  *******************/
+#define BKP_DR16_D_Pos                      (0U)                               
+#define BKP_DR16_D_Msk                      (0xFFFFU << BKP_DR16_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR16_D                          BKP_DR16_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR17 register  *******************/
+#define BKP_DR17_D_Pos                      (0U)                               
+#define BKP_DR17_D_Msk                      (0xFFFFU << BKP_DR17_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR17_D                          BKP_DR17_D_Msk                     /*!< Backup data */
+
+/******************  Bit definition for BKP_DR18 register  ********************/
+#define BKP_DR18_D_Pos                      (0U)                               
+#define BKP_DR18_D_Msk                      (0xFFFFU << BKP_DR18_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR18_D                          BKP_DR18_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR19 register  *******************/
+#define BKP_DR19_D_Pos                      (0U)                               
+#define BKP_DR19_D_Msk                      (0xFFFFU << BKP_DR19_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR19_D                          BKP_DR19_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR20 register  *******************/
+#define BKP_DR20_D_Pos                      (0U)                               
+#define BKP_DR20_D_Msk                      (0xFFFFU << BKP_DR20_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR20_D                          BKP_DR20_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR21 register  *******************/
+#define BKP_DR21_D_Pos                      (0U)                               
+#define BKP_DR21_D_Msk                      (0xFFFFU << BKP_DR21_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR21_D                          BKP_DR21_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR22 register  *******************/
+#define BKP_DR22_D_Pos                      (0U)                               
+#define BKP_DR22_D_Msk                      (0xFFFFU << BKP_DR22_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR22_D                          BKP_DR22_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR23 register  *******************/
+#define BKP_DR23_D_Pos                      (0U)                               
+#define BKP_DR23_D_Msk                      (0xFFFFU << BKP_DR23_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR23_D                          BKP_DR23_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR24 register  *******************/
+#define BKP_DR24_D_Pos                      (0U)                               
+#define BKP_DR24_D_Msk                      (0xFFFFU << BKP_DR24_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR24_D                          BKP_DR24_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR25 register  *******************/
+#define BKP_DR25_D_Pos                      (0U)                               
+#define BKP_DR25_D_Msk                      (0xFFFFU << BKP_DR25_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR25_D                          BKP_DR25_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR26 register  *******************/
+#define BKP_DR26_D_Pos                      (0U)                               
+#define BKP_DR26_D_Msk                      (0xFFFFU << BKP_DR26_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR26_D                          BKP_DR26_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR27 register  *******************/
+#define BKP_DR27_D_Pos                      (0U)                               
+#define BKP_DR27_D_Msk                      (0xFFFFU << BKP_DR27_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR27_D                          BKP_DR27_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR28 register  *******************/
+#define BKP_DR28_D_Pos                      (0U)                               
+#define BKP_DR28_D_Msk                      (0xFFFFU << BKP_DR28_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR28_D                          BKP_DR28_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR29 register  *******************/
+#define BKP_DR29_D_Pos                      (0U)                               
+#define BKP_DR29_D_Msk                      (0xFFFFU << BKP_DR29_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR29_D                          BKP_DR29_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR30 register  *******************/
+#define BKP_DR30_D_Pos                      (0U)                               
+#define BKP_DR30_D_Msk                      (0xFFFFU << BKP_DR30_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR30_D                          BKP_DR30_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR31 register  *******************/
+#define BKP_DR31_D_Pos                      (0U)                               
+#define BKP_DR31_D_Msk                      (0xFFFFU << BKP_DR31_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR31_D                          BKP_DR31_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR32 register  *******************/
+#define BKP_DR32_D_Pos                      (0U)                               
+#define BKP_DR32_D_Msk                      (0xFFFFU << BKP_DR32_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR32_D                          BKP_DR32_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR33 register  *******************/
+#define BKP_DR33_D_Pos                      (0U)                               
+#define BKP_DR33_D_Msk                      (0xFFFFU << BKP_DR33_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR33_D                          BKP_DR33_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR34 register  *******************/
+#define BKP_DR34_D_Pos                      (0U)                               
+#define BKP_DR34_D_Msk                      (0xFFFFU << BKP_DR34_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR34_D                          BKP_DR34_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR35 register  *******************/
+#define BKP_DR35_D_Pos                      (0U)                               
+#define BKP_DR35_D_Msk                      (0xFFFFU << BKP_DR35_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR35_D                          BKP_DR35_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR36 register  *******************/
+#define BKP_DR36_D_Pos                      (0U)                               
+#define BKP_DR36_D_Msk                      (0xFFFFU << BKP_DR36_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR36_D                          BKP_DR36_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR37 register  *******************/
+#define BKP_DR37_D_Pos                      (0U)                               
+#define BKP_DR37_D_Msk                      (0xFFFFU << BKP_DR37_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR37_D                          BKP_DR37_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR38 register  *******************/
+#define BKP_DR38_D_Pos                      (0U)                               
+#define BKP_DR38_D_Msk                      (0xFFFFU << BKP_DR38_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR38_D                          BKP_DR38_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR39 register  *******************/
+#define BKP_DR39_D_Pos                      (0U)                               
+#define BKP_DR39_D_Msk                      (0xFFFFU << BKP_DR39_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR39_D                          BKP_DR39_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR40 register  *******************/
+#define BKP_DR40_D_Pos                      (0U)                               
+#define BKP_DR40_D_Msk                      (0xFFFFU << BKP_DR40_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR40_D                          BKP_DR40_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR41 register  *******************/
+#define BKP_DR41_D_Pos                      (0U)                               
+#define BKP_DR41_D_Msk                      (0xFFFFU << BKP_DR41_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR41_D                          BKP_DR41_D_Msk                     /*!< Backup data */
+
+/*******************  Bit definition for BKP_DR42 register  *******************/
+#define BKP_DR42_D_Pos                      (0U)                               
+#define BKP_DR42_D_Msk                      (0xFFFFU << BKP_DR42_D_Pos)        /*!< 0x0000FFFF */
+#define BKP_DR42_D                          BKP_DR42_D_Msk                     /*!< Backup data */
+
+#define RTC_BKP_NUMBER 42
 
 /******************  Bit definition for BKP_RTCCR register  *******************/
 #define BKP_RTCCR_CAL_Pos                   (0U)                               
@@ -977,6 +1331,29 @@ typedef struct
 #define RCC_CR_PLLRDY_Msk                    (0x1U << RCC_CR_PLLRDY_Pos)       /*!< 0x02000000 */
 #define RCC_CR_PLLRDY                        RCC_CR_PLLRDY_Msk                 /*!< PLL clock ready flag */
 
+/*
+ * @brief Specific device feature definitions (not present on all devices in the STM32F1 serie)
+ */
+#define RCC_PLL2_SUPPORT                                                       /*!< Support PLL2 */
+
+#define RCC_CR_PLL2ON_Pos                    (26U)                             
+#define RCC_CR_PLL2ON_Msk                    (0x1U << RCC_CR_PLL2ON_Pos)       /*!< 0x04000000 */
+#define RCC_CR_PLL2ON                        RCC_CR_PLL2ON_Msk                 /*!< PLL2 enable */
+#define RCC_CR_PLL2RDY_Pos                   (27U)                             
+#define RCC_CR_PLL2RDY_Msk                   (0x1U << RCC_CR_PLL2RDY_Pos)      /*!< 0x08000000 */
+#define RCC_CR_PLL2RDY                       RCC_CR_PLL2RDY_Msk                /*!< PLL2 clock ready flag */
+
+/*
+ * @brief Specific device feature definitions (not present on all devices in the STM32F1 serie)
+ */
+#define RCC_PLLI2S_SUPPORT                                                     /*!< Support PLL3 (PLLI2S)*/
+
+#define RCC_CR_PLL3ON_Pos                    (28U)                             
+#define RCC_CR_PLL3ON_Msk                    (0x1U << RCC_CR_PLL3ON_Pos)       /*!< 0x10000000 */
+#define RCC_CR_PLL3ON                        RCC_CR_PLL3ON_Msk                 /*!< PLL3 enable */
+#define RCC_CR_PLL3RDY_Pos                   (29U)                             
+#define RCC_CR_PLL3RDY_Msk                   (0x1U << RCC_CR_PLL3RDY_Pos)      /*!< 0x20000000 */
+#define RCC_CR_PLL3RDY                       RCC_CR_PLL3RDY_Msk                /*!< PLL3 clock ready flag */
 
 /*******************  Bit definition for RCC_CFGR register  *******************/
 /*!< SW configuration */
@@ -1077,80 +1454,67 @@ typedef struct
 #define RCC_CFGR_PLLMULL_2                   (0x4U << RCC_CFGR_PLLMULL_Pos)    /*!< 0x00100000 */
 #define RCC_CFGR_PLLMULL_3                   (0x8U << RCC_CFGR_PLLMULL_Pos)    /*!< 0x00200000 */
 
-#define RCC_CFGR_PLLXTPRE_HSE                0x00000000U                      /*!< HSE clock not divided for PLL entry */
-#define RCC_CFGR_PLLXTPRE_HSE_DIV2           0x00020000U                      /*!< HSE clock divided by 2 for PLL entry */
+#define RCC_CFGR_PLLXTPRE_PREDIV1            0x00000000U                       /*!< PREDIV1 clock not divided for PLL entry */
+#define RCC_CFGR_PLLXTPRE_PREDIV1_DIV2       0x00020000U                       /*!< PREDIV1 clock divided by 2 for PLL entry */
 
-#define RCC_CFGR_PLLMULL2                    0x00000000U                       /*!< PLL input clock*2 */
-#define RCC_CFGR_PLLMULL3_Pos                (18U)                             
-#define RCC_CFGR_PLLMULL3_Msk                (0x1U << RCC_CFGR_PLLMULL3_Pos)   /*!< 0x00040000 */
-#define RCC_CFGR_PLLMULL3                    RCC_CFGR_PLLMULL3_Msk             /*!< PLL input clock*3 */
 #define RCC_CFGR_PLLMULL4_Pos                (19U)                             
 #define RCC_CFGR_PLLMULL4_Msk                (0x1U << RCC_CFGR_PLLMULL4_Pos)   /*!< 0x00080000 */
-#define RCC_CFGR_PLLMULL4                    RCC_CFGR_PLLMULL4_Msk             /*!< PLL input clock*4 */
+#define RCC_CFGR_PLLMULL4                    RCC_CFGR_PLLMULL4_Msk             /*!< PLL input clock * 4 */
 #define RCC_CFGR_PLLMULL5_Pos                (18U)                             
 #define RCC_CFGR_PLLMULL5_Msk                (0x3U << RCC_CFGR_PLLMULL5_Pos)   /*!< 0x000C0000 */
-#define RCC_CFGR_PLLMULL5                    RCC_CFGR_PLLMULL5_Msk             /*!< PLL input clock*5 */
+#define RCC_CFGR_PLLMULL5                    RCC_CFGR_PLLMULL5_Msk             /*!< PLL input clock * 5 */
 #define RCC_CFGR_PLLMULL6_Pos                (20U)                             
 #define RCC_CFGR_PLLMULL6_Msk                (0x1U << RCC_CFGR_PLLMULL6_Pos)   /*!< 0x00100000 */
-#define RCC_CFGR_PLLMULL6                    RCC_CFGR_PLLMULL6_Msk             /*!< PLL input clock*6 */
+#define RCC_CFGR_PLLMULL6                    RCC_CFGR_PLLMULL6_Msk             /*!< PLL input clock * 6 */
 #define RCC_CFGR_PLLMULL7_Pos                (18U)                             
 #define RCC_CFGR_PLLMULL7_Msk                (0x5U << RCC_CFGR_PLLMULL7_Pos)   /*!< 0x00140000 */
-#define RCC_CFGR_PLLMULL7                    RCC_CFGR_PLLMULL7_Msk             /*!< PLL input clock*7 */
+#define RCC_CFGR_PLLMULL7                    RCC_CFGR_PLLMULL7_Msk             /*!< PLL input clock * 7 */
 #define RCC_CFGR_PLLMULL8_Pos                (19U)                             
 #define RCC_CFGR_PLLMULL8_Msk                (0x3U << RCC_CFGR_PLLMULL8_Pos)   /*!< 0x00180000 */
-#define RCC_CFGR_PLLMULL8                    RCC_CFGR_PLLMULL8_Msk             /*!< PLL input clock*8 */
+#define RCC_CFGR_PLLMULL8                    RCC_CFGR_PLLMULL8_Msk             /*!< PLL input clock * 8 */
 #define RCC_CFGR_PLLMULL9_Pos                (18U)                             
 #define RCC_CFGR_PLLMULL9_Msk                (0x7U << RCC_CFGR_PLLMULL9_Pos)   /*!< 0x001C0000 */
-#define RCC_CFGR_PLLMULL9                    RCC_CFGR_PLLMULL9_Msk             /*!< PLL input clock*9 */
-#define RCC_CFGR_PLLMULL10_Pos               (21U)                             
-#define RCC_CFGR_PLLMULL10_Msk               (0x1U << RCC_CFGR_PLLMULL10_Pos)  /*!< 0x00200000 */
-#define RCC_CFGR_PLLMULL10                   RCC_CFGR_PLLMULL10_Msk            /*!< PLL input clock10 */
-#define RCC_CFGR_PLLMULL11_Pos               (18U)                             
-#define RCC_CFGR_PLLMULL11_Msk               (0x9U << RCC_CFGR_PLLMULL11_Pos)  /*!< 0x00240000 */
-#define RCC_CFGR_PLLMULL11                   RCC_CFGR_PLLMULL11_Msk            /*!< PLL input clock*11 */
-#define RCC_CFGR_PLLMULL12_Pos               (19U)                             
-#define RCC_CFGR_PLLMULL12_Msk               (0x5U << RCC_CFGR_PLLMULL12_Pos)  /*!< 0x00280000 */
-#define RCC_CFGR_PLLMULL12                   RCC_CFGR_PLLMULL12_Msk            /*!< PLL input clock*12 */
-#define RCC_CFGR_PLLMULL13_Pos               (18U)                             
-#define RCC_CFGR_PLLMULL13_Msk               (0xBU << RCC_CFGR_PLLMULL13_Pos)  /*!< 0x002C0000 */
-#define RCC_CFGR_PLLMULL13                   RCC_CFGR_PLLMULL13_Msk            /*!< PLL input clock*13 */
-#define RCC_CFGR_PLLMULL14_Pos               (20U)                             
-#define RCC_CFGR_PLLMULL14_Msk               (0x3U << RCC_CFGR_PLLMULL14_Pos)  /*!< 0x00300000 */
-#define RCC_CFGR_PLLMULL14                   RCC_CFGR_PLLMULL14_Msk            /*!< PLL input clock*14 */
-#define RCC_CFGR_PLLMULL15_Pos               (18U)                             
-#define RCC_CFGR_PLLMULL15_Msk               (0xDU << RCC_CFGR_PLLMULL15_Pos)  /*!< 0x00340000 */
-#define RCC_CFGR_PLLMULL15                   RCC_CFGR_PLLMULL15_Msk            /*!< PLL input clock*15 */
-#define RCC_CFGR_PLLMULL16_Pos               (19U)                             
-#define RCC_CFGR_PLLMULL16_Msk               (0x7U << RCC_CFGR_PLLMULL16_Pos)  /*!< 0x00380000 */
-#define RCC_CFGR_PLLMULL16                   RCC_CFGR_PLLMULL16_Msk            /*!< PLL input clock*16 */
-#define RCC_CFGR_USBPRE_Pos                  (22U)                             
-#define RCC_CFGR_USBPRE_Msk                  (0x1U << RCC_CFGR_USBPRE_Pos)     /*!< 0x00400000 */
-#define RCC_CFGR_USBPRE                      RCC_CFGR_USBPRE_Msk               /*!< USB Device prescaler */
-
+#define RCC_CFGR_PLLMULL9                    RCC_CFGR_PLLMULL9_Msk             /*!< PLL input clock * 9 */
+#define RCC_CFGR_PLLMULL6_5                  0x00340000U                       /*!< PLL input clock * 6.5 */
+ 
+#define RCC_CFGR_OTGFSPRE_Pos                (22U)                             
+#define RCC_CFGR_OTGFSPRE_Msk                (0x1U << RCC_CFGR_OTGFSPRE_Pos)   /*!< 0x00400000 */
+#define RCC_CFGR_OTGFSPRE                    RCC_CFGR_OTGFSPRE_Msk             /*!< USB OTG FS prescaler */
+ 
 /*!< MCO configuration */
 #define RCC_CFGR_MCO_Pos                     (24U)                             
-#define RCC_CFGR_MCO_Msk                     (0x7U << RCC_CFGR_MCO_Pos)        /*!< 0x07000000 */
-#define RCC_CFGR_MCO                         RCC_CFGR_MCO_Msk                  /*!< MCO[2:0] bits (Microcontroller Clock Output) */
+#define RCC_CFGR_MCO_Msk                     (0xFU << RCC_CFGR_MCO_Pos)        /*!< 0x0F000000 */
+#define RCC_CFGR_MCO                         RCC_CFGR_MCO_Msk                  /*!< MCO[3:0] bits (Microcontroller Clock Output) */
 #define RCC_CFGR_MCO_0                       (0x1U << RCC_CFGR_MCO_Pos)        /*!< 0x01000000 */
 #define RCC_CFGR_MCO_1                       (0x2U << RCC_CFGR_MCO_Pos)        /*!< 0x02000000 */
 #define RCC_CFGR_MCO_2                       (0x4U << RCC_CFGR_MCO_Pos)        /*!< 0x04000000 */
+#define RCC_CFGR_MCO_3                       (0x8U << RCC_CFGR_MCO_Pos)        /*!< 0x08000000 */
 
-#define RCC_CFGR_MCO_NOCLOCK                 0x00000000U                        /*!< No clock */
-#define RCC_CFGR_MCO_SYSCLK                  0x04000000U                        /*!< System clock selected as MCO source */
-#define RCC_CFGR_MCO_HSI                     0x05000000U                        /*!< HSI clock selected as MCO source */
-#define RCC_CFGR_MCO_HSE                     0x06000000U                        /*!< HSE clock selected as MCO source  */
-#define RCC_CFGR_MCO_PLLCLK_DIV2             0x07000000U                        /*!< PLL clock divided by 2 selected as MCO source */
+#define RCC_CFGR_MCO_NOCLOCK                 0x00000000U                       /*!< No clock */
+#define RCC_CFGR_MCO_SYSCLK                  0x04000000U                       /*!< System clock selected as MCO source */
+#define RCC_CFGR_MCO_HSI                     0x05000000U                       /*!< HSI clock selected as MCO source */
+#define RCC_CFGR_MCO_HSE                     0x06000000U                       /*!< HSE clock selected as MCO source */
+#define RCC_CFGR_MCO_PLLCLK_DIV2             0x07000000U                       /*!< PLL clock divided by 2 selected as MCO source */
+#define RCC_CFGR_MCO_PLL2CLK                 0x08000000U                       /*!< PLL2 clock selected as MCO source*/
+#define RCC_CFGR_MCO_PLL3CLK_DIV2            0x09000000U                       /*!< PLL3 clock divided by 2 selected as MCO source*/
+#define RCC_CFGR_MCO_EXT_HSE                 0x0A000000U                       /*!< XT1 external 3-25 MHz oscillator clock selected as MCO source */
+#define RCC_CFGR_MCO_PLL3CLK                 0x0B000000U                       /*!< PLL3 clock selected as MCO source */
 
  /* Reference defines */
  #define RCC_CFGR_MCOSEL                      RCC_CFGR_MCO
  #define RCC_CFGR_MCOSEL_0                    RCC_CFGR_MCO_0
  #define RCC_CFGR_MCOSEL_1                    RCC_CFGR_MCO_1
  #define RCC_CFGR_MCOSEL_2                    RCC_CFGR_MCO_2
+ #define RCC_CFGR_MCOSEL_3                    RCC_CFGR_MCO_3
  #define RCC_CFGR_MCOSEL_NOCLOCK              RCC_CFGR_MCO_NOCLOCK
  #define RCC_CFGR_MCOSEL_SYSCLK               RCC_CFGR_MCO_SYSCLK
  #define RCC_CFGR_MCOSEL_HSI                  RCC_CFGR_MCO_HSI
  #define RCC_CFGR_MCOSEL_HSE                  RCC_CFGR_MCO_HSE
  #define RCC_CFGR_MCOSEL_PLL_DIV2             RCC_CFGR_MCO_PLLCLK_DIV2
+ #define RCC_CFGR_MCOSEL_PLL2                 RCC_CFGR_MCO_PLL2CLK
+ #define RCC_CFGR_MCOSEL_PLL3_DIV2            RCC_CFGR_MCO_PLL3CLK_DIV2
+ #define RCC_CFGR_MCOSEL_EXT_HSE              RCC_CFGR_MCO_EXT_HSE
+ #define RCC_CFGR_MCOSEL_PLL3CLK              RCC_CFGR_MCO_PLL3CLK
 
 /*!<******************  Bit definition for RCC_CIR register  ********************/
 #define RCC_CIR_LSIRDYF_Pos                  (0U)                              
@@ -1205,6 +1569,24 @@ typedef struct
 #define RCC_CIR_CSSC_Msk                     (0x1U << RCC_CIR_CSSC_Pos)        /*!< 0x00800000 */
 #define RCC_CIR_CSSC                         RCC_CIR_CSSC_Msk                  /*!< Clock Security System Interrupt Clear */
 
+#define RCC_CIR_PLL2RDYF_Pos                 (5U)                              
+#define RCC_CIR_PLL2RDYF_Msk                 (0x1U << RCC_CIR_PLL2RDYF_Pos)    /*!< 0x00000020 */
+#define RCC_CIR_PLL2RDYF                     RCC_CIR_PLL2RDYF_Msk              /*!< PLL2 Ready Interrupt flag */
+#define RCC_CIR_PLL3RDYF_Pos                 (6U)                              
+#define RCC_CIR_PLL3RDYF_Msk                 (0x1U << RCC_CIR_PLL3RDYF_Pos)    /*!< 0x00000040 */
+#define RCC_CIR_PLL3RDYF                     RCC_CIR_PLL3RDYF_Msk              /*!< PLL3 Ready Interrupt flag */
+#define RCC_CIR_PLL2RDYIE_Pos                (13U)                             
+#define RCC_CIR_PLL2RDYIE_Msk                (0x1U << RCC_CIR_PLL2RDYIE_Pos)   /*!< 0x00002000 */
+#define RCC_CIR_PLL2RDYIE                    RCC_CIR_PLL2RDYIE_Msk             /*!< PLL2 Ready Interrupt Enable */
+#define RCC_CIR_PLL3RDYIE_Pos                (14U)                             
+#define RCC_CIR_PLL3RDYIE_Msk                (0x1U << RCC_CIR_PLL3RDYIE_Pos)   /*!< 0x00004000 */
+#define RCC_CIR_PLL3RDYIE                    RCC_CIR_PLL3RDYIE_Msk             /*!< PLL3 Ready Interrupt Enable */
+#define RCC_CIR_PLL2RDYC_Pos                 (21U)                             
+#define RCC_CIR_PLL2RDYC_Msk                 (0x1U << RCC_CIR_PLL2RDYC_Pos)    /*!< 0x00200000 */
+#define RCC_CIR_PLL2RDYC                     RCC_CIR_PLL2RDYC_Msk              /*!< PLL2 Ready Interrupt Clear */
+#define RCC_CIR_PLL3RDYC_Pos                 (22U)                             
+#define RCC_CIR_PLL3RDYC_Msk                 (0x1U << RCC_CIR_PLL3RDYC_Pos)    /*!< 0x00400000 */
+#define RCC_CIR_PLL3RDYC                     RCC_CIR_PLL3RDYC_Msk              /*!< PLL3 Ready Interrupt Clear */
 
 /*****************  Bit definition for RCC_APB2RSTR register  *****************/
 #define RCC_APB2RSTR_AFIORST_Pos             (0U)                              
@@ -1289,14 +1671,35 @@ typedef struct
 #define RCC_APB1RSTR_I2C2RST_Msk             (0x1U << RCC_APB1RSTR_I2C2RST_Pos) /*!< 0x00400000 */
 #define RCC_APB1RSTR_I2C2RST                 RCC_APB1RSTR_I2C2RST_Msk          /*!< I2C 2 reset */
 
-#define RCC_APB1RSTR_USBRST_Pos              (23U)                             
-#define RCC_APB1RSTR_USBRST_Msk              (0x1U << RCC_APB1RSTR_USBRST_Pos) /*!< 0x00800000 */
-#define RCC_APB1RSTR_USBRST                  RCC_APB1RSTR_USBRST_Msk           /*!< USB Device reset */
+
+#define RCC_APB1RSTR_TIM5RST_Pos             (3U)                              
+#define RCC_APB1RSTR_TIM5RST_Msk             (0x1U << RCC_APB1RSTR_TIM5RST_Pos) /*!< 0x00000008 */
+#define RCC_APB1RSTR_TIM5RST                 RCC_APB1RSTR_TIM5RST_Msk          /*!< Timer 5 reset */
+#define RCC_APB1RSTR_TIM6RST_Pos             (4U)                              
+#define RCC_APB1RSTR_TIM6RST_Msk             (0x1U << RCC_APB1RSTR_TIM6RST_Pos) /*!< 0x00000010 */
+#define RCC_APB1RSTR_TIM6RST                 RCC_APB1RSTR_TIM6RST_Msk          /*!< Timer 6 reset */
+#define RCC_APB1RSTR_TIM7RST_Pos             (5U)                              
+#define RCC_APB1RSTR_TIM7RST_Msk             (0x1U << RCC_APB1RSTR_TIM7RST_Pos) /*!< 0x00000020 */
+#define RCC_APB1RSTR_TIM7RST                 RCC_APB1RSTR_TIM7RST_Msk          /*!< Timer 7 reset */
+#define RCC_APB1RSTR_SPI3RST_Pos             (15U)                             
+#define RCC_APB1RSTR_SPI3RST_Msk             (0x1U << RCC_APB1RSTR_SPI3RST_Pos) /*!< 0x00008000 */
+#define RCC_APB1RSTR_SPI3RST                 RCC_APB1RSTR_SPI3RST_Msk          /*!< SPI 3 reset */
+#define RCC_APB1RSTR_UART4RST_Pos            (19U)                             
+#define RCC_APB1RSTR_UART4RST_Msk            (0x1U << RCC_APB1RSTR_UART4RST_Pos) /*!< 0x00080000 */
+#define RCC_APB1RSTR_UART4RST                RCC_APB1RSTR_UART4RST_Msk         /*!< UART 4 reset */
+#define RCC_APB1RSTR_UART5RST_Pos            (20U)                             
+#define RCC_APB1RSTR_UART5RST_Msk            (0x1U << RCC_APB1RSTR_UART5RST_Pos) /*!< 0x00100000 */
+#define RCC_APB1RSTR_UART5RST                RCC_APB1RSTR_UART5RST_Msk         /*!< UART 5 reset */
 
 
 
+#define RCC_APB1RSTR_CAN2RST_Pos             (26U)                             
+#define RCC_APB1RSTR_CAN2RST_Msk             (0x1U << RCC_APB1RSTR_CAN2RST_Pos) /*!< 0x04000000 */
+#define RCC_APB1RSTR_CAN2RST                 RCC_APB1RSTR_CAN2RST_Msk          /*!< CAN2 reset */
 
-
+#define RCC_APB1RSTR_DACRST_Pos              (29U)                             
+#define RCC_APB1RSTR_DACRST_Msk              (0x1U << RCC_APB1RSTR_DACRST_Pos) /*!< 0x20000000 */
+#define RCC_APB1RSTR_DACRST                  RCC_APB1RSTR_DACRST_Msk           /*!< DAC interface reset */
 
 /******************  Bit definition for RCC_AHBENR register  ******************/
 #define RCC_AHBENR_DMA1EN_Pos                (0U)                              
@@ -1312,8 +1715,14 @@ typedef struct
 #define RCC_AHBENR_CRCEN_Msk                 (0x1U << RCC_AHBENR_CRCEN_Pos)    /*!< 0x00000040 */
 #define RCC_AHBENR_CRCEN                     RCC_AHBENR_CRCEN_Msk              /*!< CRC clock enable */
 
+#define RCC_AHBENR_DMA2EN_Pos                (1U)                              
+#define RCC_AHBENR_DMA2EN_Msk                (0x1U << RCC_AHBENR_DMA2EN_Pos)   /*!< 0x00000002 */
+#define RCC_AHBENR_DMA2EN                    RCC_AHBENR_DMA2EN_Msk             /*!< DMA2 clock enable */
 
 
+#define RCC_AHBENR_OTGFSEN_Pos               (12U)                             
+#define RCC_AHBENR_OTGFSEN_Msk               (0x1U << RCC_AHBENR_OTGFSEN_Pos)  /*!< 0x00001000 */
+#define RCC_AHBENR_OTGFSEN                   RCC_AHBENR_OTGFSEN_Msk            /*!< USB OTG FS clock enable */
 
 /******************  Bit definition for RCC_APB2ENR register  *****************/
 #define RCC_APB2ENR_AFIOEN_Pos               (0U)                              
@@ -1398,14 +1807,35 @@ typedef struct
 #define RCC_APB1ENR_I2C2EN_Msk               (0x1U << RCC_APB1ENR_I2C2EN_Pos)  /*!< 0x00400000 */
 #define RCC_APB1ENR_I2C2EN                   RCC_APB1ENR_I2C2EN_Msk            /*!< I2C 2 clock enable */
 
-#define RCC_APB1ENR_USBEN_Pos                (23U)                             
-#define RCC_APB1ENR_USBEN_Msk                (0x1U << RCC_APB1ENR_USBEN_Pos)   /*!< 0x00800000 */
-#define RCC_APB1ENR_USBEN                    RCC_APB1ENR_USBEN_Msk             /*!< USB Device clock enable */
+
+#define RCC_APB1ENR_TIM5EN_Pos               (3U)                              
+#define RCC_APB1ENR_TIM5EN_Msk               (0x1U << RCC_APB1ENR_TIM5EN_Pos)  /*!< 0x00000008 */
+#define RCC_APB1ENR_TIM5EN                   RCC_APB1ENR_TIM5EN_Msk            /*!< Timer 5 clock enable */
+#define RCC_APB1ENR_TIM6EN_Pos               (4U)                              
+#define RCC_APB1ENR_TIM6EN_Msk               (0x1U << RCC_APB1ENR_TIM6EN_Pos)  /*!< 0x00000010 */
+#define RCC_APB1ENR_TIM6EN                   RCC_APB1ENR_TIM6EN_Msk            /*!< Timer 6 clock enable */
+#define RCC_APB1ENR_TIM7EN_Pos               (5U)                              
+#define RCC_APB1ENR_TIM7EN_Msk               (0x1U << RCC_APB1ENR_TIM7EN_Pos)  /*!< 0x00000020 */
+#define RCC_APB1ENR_TIM7EN                   RCC_APB1ENR_TIM7EN_Msk            /*!< Timer 7 clock enable */
+#define RCC_APB1ENR_SPI3EN_Pos               (15U)                             
+#define RCC_APB1ENR_SPI3EN_Msk               (0x1U << RCC_APB1ENR_SPI3EN_Pos)  /*!< 0x00008000 */
+#define RCC_APB1ENR_SPI3EN                   RCC_APB1ENR_SPI3EN_Msk            /*!< SPI 3 clock enable */
+#define RCC_APB1ENR_UART4EN_Pos              (19U)                             
+#define RCC_APB1ENR_UART4EN_Msk              (0x1U << RCC_APB1ENR_UART4EN_Pos) /*!< 0x00080000 */
+#define RCC_APB1ENR_UART4EN                  RCC_APB1ENR_UART4EN_Msk           /*!< UART 4 clock enable */
+#define RCC_APB1ENR_UART5EN_Pos              (20U)                             
+#define RCC_APB1ENR_UART5EN_Msk              (0x1U << RCC_APB1ENR_UART5EN_Pos) /*!< 0x00100000 */
+#define RCC_APB1ENR_UART5EN                  RCC_APB1ENR_UART5EN_Msk           /*!< UART 5 clock enable */
 
 
 
+#define RCC_APB1ENR_CAN2EN_Pos               (26U)                             
+#define RCC_APB1ENR_CAN2EN_Msk               (0x1U << RCC_APB1ENR_CAN2EN_Pos)  /*!< 0x04000000 */
+#define RCC_APB1ENR_CAN2EN                   RCC_APB1ENR_CAN2EN_Msk            /*!< CAN2 clock enable */
 
-
+#define RCC_APB1ENR_DACEN_Pos                (29U)                             
+#define RCC_APB1ENR_DACEN_Msk                (0x1U << RCC_APB1ENR_DACEN_Pos)   /*!< 0x20000000 */
+#define RCC_APB1ENR_DACEN                    RCC_APB1ENR_DACEN_Msk             /*!< DAC interface clock enable */
 
 /*******************  Bit definition for RCC_BDCR register  *******************/
 #define RCC_BDCR_LSEON_Pos                   (0U)                              
@@ -1466,6 +1896,211 @@ typedef struct
 #define RCC_CSR_LPWRRSTF_Msk                 (0x1U << RCC_CSR_LPWRRSTF_Pos)    /*!< 0x80000000 */
 #define RCC_CSR_LPWRRSTF                     RCC_CSR_LPWRRSTF_Msk              /*!< Low-Power reset flag */
 
+/*******************  Bit definition for RCC_AHBRSTR register  ****************/
+#define RCC_AHBRSTR_OTGFSRST_Pos             (12U)                             
+#define RCC_AHBRSTR_OTGFSRST_Msk             (0x1U << RCC_AHBRSTR_OTGFSRST_Pos) /*!< 0x00001000 */
+#define RCC_AHBRSTR_OTGFSRST                 RCC_AHBRSTR_OTGFSRST_Msk          /*!< USB OTG FS reset */
+
+/*******************  Bit definition for RCC_CFGR2 register  ******************/
+/*!< PREDIV1 configuration */
+#define RCC_CFGR2_PREDIV1_Pos                (0U)                              
+#define RCC_CFGR2_PREDIV1_Msk                (0xFU << RCC_CFGR2_PREDIV1_Pos)   /*!< 0x0000000F */
+#define RCC_CFGR2_PREDIV1                    RCC_CFGR2_PREDIV1_Msk             /*!< PREDIV1[3:0] bits */
+#define RCC_CFGR2_PREDIV1_0                  (0x1U << RCC_CFGR2_PREDIV1_Pos)   /*!< 0x00000001 */
+#define RCC_CFGR2_PREDIV1_1                  (0x2U << RCC_CFGR2_PREDIV1_Pos)   /*!< 0x00000002 */
+#define RCC_CFGR2_PREDIV1_2                  (0x4U << RCC_CFGR2_PREDIV1_Pos)   /*!< 0x00000004 */
+#define RCC_CFGR2_PREDIV1_3                  (0x8U << RCC_CFGR2_PREDIV1_Pos)   /*!< 0x00000008 */
+
+#define RCC_CFGR2_PREDIV1_DIV1               0x00000000U                       /*!< PREDIV1 input clock not divided */
+#define RCC_CFGR2_PREDIV1_DIV2_Pos           (0U)                              
+#define RCC_CFGR2_PREDIV1_DIV2_Msk           (0x1U << RCC_CFGR2_PREDIV1_DIV2_Pos) /*!< 0x00000001 */
+#define RCC_CFGR2_PREDIV1_DIV2               RCC_CFGR2_PREDIV1_DIV2_Msk        /*!< PREDIV1 input clock divided by 2 */
+#define RCC_CFGR2_PREDIV1_DIV3_Pos           (1U)                              
+#define RCC_CFGR2_PREDIV1_DIV3_Msk           (0x1U << RCC_CFGR2_PREDIV1_DIV3_Pos) /*!< 0x00000002 */
+#define RCC_CFGR2_PREDIV1_DIV3               RCC_CFGR2_PREDIV1_DIV3_Msk        /*!< PREDIV1 input clock divided by 3 */
+#define RCC_CFGR2_PREDIV1_DIV4_Pos           (0U)                              
+#define RCC_CFGR2_PREDIV1_DIV4_Msk           (0x3U << RCC_CFGR2_PREDIV1_DIV4_Pos) /*!< 0x00000003 */
+#define RCC_CFGR2_PREDIV1_DIV4               RCC_CFGR2_PREDIV1_DIV4_Msk        /*!< PREDIV1 input clock divided by 4 */
+#define RCC_CFGR2_PREDIV1_DIV5_Pos           (2U)                              
+#define RCC_CFGR2_PREDIV1_DIV5_Msk           (0x1U << RCC_CFGR2_PREDIV1_DIV5_Pos) /*!< 0x00000004 */
+#define RCC_CFGR2_PREDIV1_DIV5               RCC_CFGR2_PREDIV1_DIV5_Msk        /*!< PREDIV1 input clock divided by 5 */
+#define RCC_CFGR2_PREDIV1_DIV6_Pos           (0U)                              
+#define RCC_CFGR2_PREDIV1_DIV6_Msk           (0x5U << RCC_CFGR2_PREDIV1_DIV6_Pos) /*!< 0x00000005 */
+#define RCC_CFGR2_PREDIV1_DIV6               RCC_CFGR2_PREDIV1_DIV6_Msk        /*!< PREDIV1 input clock divided by 6 */
+#define RCC_CFGR2_PREDIV1_DIV7_Pos           (1U)                              
+#define RCC_CFGR2_PREDIV1_DIV7_Msk           (0x3U << RCC_CFGR2_PREDIV1_DIV7_Pos) /*!< 0x00000006 */
+#define RCC_CFGR2_PREDIV1_DIV7               RCC_CFGR2_PREDIV1_DIV7_Msk        /*!< PREDIV1 input clock divided by 7 */
+#define RCC_CFGR2_PREDIV1_DIV8_Pos           (0U)                              
+#define RCC_CFGR2_PREDIV1_DIV8_Msk           (0x7U << RCC_CFGR2_PREDIV1_DIV8_Pos) /*!< 0x00000007 */
+#define RCC_CFGR2_PREDIV1_DIV8               RCC_CFGR2_PREDIV1_DIV8_Msk        /*!< PREDIV1 input clock divided by 8 */
+#define RCC_CFGR2_PREDIV1_DIV9_Pos           (3U)                              
+#define RCC_CFGR2_PREDIV1_DIV9_Msk           (0x1U << RCC_CFGR2_PREDIV1_DIV9_Pos) /*!< 0x00000008 */
+#define RCC_CFGR2_PREDIV1_DIV9               RCC_CFGR2_PREDIV1_DIV9_Msk        /*!< PREDIV1 input clock divided by 9 */
+#define RCC_CFGR2_PREDIV1_DIV10_Pos          (0U)                              
+#define RCC_CFGR2_PREDIV1_DIV10_Msk          (0x9U << RCC_CFGR2_PREDIV1_DIV10_Pos) /*!< 0x00000009 */
+#define RCC_CFGR2_PREDIV1_DIV10              RCC_CFGR2_PREDIV1_DIV10_Msk       /*!< PREDIV1 input clock divided by 10 */
+#define RCC_CFGR2_PREDIV1_DIV11_Pos          (1U)                              
+#define RCC_CFGR2_PREDIV1_DIV11_Msk          (0x5U << RCC_CFGR2_PREDIV1_DIV11_Pos) /*!< 0x0000000A */
+#define RCC_CFGR2_PREDIV1_DIV11              RCC_CFGR2_PREDIV1_DIV11_Msk       /*!< PREDIV1 input clock divided by 11 */
+#define RCC_CFGR2_PREDIV1_DIV12_Pos          (0U)                              
+#define RCC_CFGR2_PREDIV1_DIV12_Msk          (0xBU << RCC_CFGR2_PREDIV1_DIV12_Pos) /*!< 0x0000000B */
+#define RCC_CFGR2_PREDIV1_DIV12              RCC_CFGR2_PREDIV1_DIV12_Msk       /*!< PREDIV1 input clock divided by 12 */
+#define RCC_CFGR2_PREDIV1_DIV13_Pos          (2U)                              
+#define RCC_CFGR2_PREDIV1_DIV13_Msk          (0x3U << RCC_CFGR2_PREDIV1_DIV13_Pos) /*!< 0x0000000C */
+#define RCC_CFGR2_PREDIV1_DIV13              RCC_CFGR2_PREDIV1_DIV13_Msk       /*!< PREDIV1 input clock divided by 13 */
+#define RCC_CFGR2_PREDIV1_DIV14_Pos          (0U)                              
+#define RCC_CFGR2_PREDIV1_DIV14_Msk          (0xDU << RCC_CFGR2_PREDIV1_DIV14_Pos) /*!< 0x0000000D */
+#define RCC_CFGR2_PREDIV1_DIV14              RCC_CFGR2_PREDIV1_DIV14_Msk       /*!< PREDIV1 input clock divided by 14 */
+#define RCC_CFGR2_PREDIV1_DIV15_Pos          (1U)                              
+#define RCC_CFGR2_PREDIV1_DIV15_Msk          (0x7U << RCC_CFGR2_PREDIV1_DIV15_Pos) /*!< 0x0000000E */
+#define RCC_CFGR2_PREDIV1_DIV15              RCC_CFGR2_PREDIV1_DIV15_Msk       /*!< PREDIV1 input clock divided by 15 */
+#define RCC_CFGR2_PREDIV1_DIV16_Pos          (0U)                              
+#define RCC_CFGR2_PREDIV1_DIV16_Msk          (0xFU << RCC_CFGR2_PREDIV1_DIV16_Pos) /*!< 0x0000000F */
+#define RCC_CFGR2_PREDIV1_DIV16              RCC_CFGR2_PREDIV1_DIV16_Msk       /*!< PREDIV1 input clock divided by 16 */
+
+/*!< PREDIV2 configuration */
+#define RCC_CFGR2_PREDIV2_Pos                (4U)                              
+#define RCC_CFGR2_PREDIV2_Msk                (0xFU << RCC_CFGR2_PREDIV2_Pos)   /*!< 0x000000F0 */
+#define RCC_CFGR2_PREDIV2                    RCC_CFGR2_PREDIV2_Msk             /*!< PREDIV2[3:0] bits */
+#define RCC_CFGR2_PREDIV2_0                  (0x1U << RCC_CFGR2_PREDIV2_Pos)   /*!< 0x00000010 */
+#define RCC_CFGR2_PREDIV2_1                  (0x2U << RCC_CFGR2_PREDIV2_Pos)   /*!< 0x00000020 */
+#define RCC_CFGR2_PREDIV2_2                  (0x4U << RCC_CFGR2_PREDIV2_Pos)   /*!< 0x00000040 */
+#define RCC_CFGR2_PREDIV2_3                  (0x8U << RCC_CFGR2_PREDIV2_Pos)   /*!< 0x00000080 */
+
+#define RCC_CFGR2_PREDIV2_DIV1               0x00000000U                       /*!< PREDIV2 input clock not divided */
+#define RCC_CFGR2_PREDIV2_DIV2_Pos           (4U)                              
+#define RCC_CFGR2_PREDIV2_DIV2_Msk           (0x1U << RCC_CFGR2_PREDIV2_DIV2_Pos) /*!< 0x00000010 */
+#define RCC_CFGR2_PREDIV2_DIV2               RCC_CFGR2_PREDIV2_DIV2_Msk        /*!< PREDIV2 input clock divided by 2 */
+#define RCC_CFGR2_PREDIV2_DIV3_Pos           (5U)                              
+#define RCC_CFGR2_PREDIV2_DIV3_Msk           (0x1U << RCC_CFGR2_PREDIV2_DIV3_Pos) /*!< 0x00000020 */
+#define RCC_CFGR2_PREDIV2_DIV3               RCC_CFGR2_PREDIV2_DIV3_Msk        /*!< PREDIV2 input clock divided by 3 */
+#define RCC_CFGR2_PREDIV2_DIV4_Pos           (4U)                              
+#define RCC_CFGR2_PREDIV2_DIV4_Msk           (0x3U << RCC_CFGR2_PREDIV2_DIV4_Pos) /*!< 0x00000030 */
+#define RCC_CFGR2_PREDIV2_DIV4               RCC_CFGR2_PREDIV2_DIV4_Msk        /*!< PREDIV2 input clock divided by 4 */
+#define RCC_CFGR2_PREDIV2_DIV5_Pos           (6U)                              
+#define RCC_CFGR2_PREDIV2_DIV5_Msk           (0x1U << RCC_CFGR2_PREDIV2_DIV5_Pos) /*!< 0x00000040 */
+#define RCC_CFGR2_PREDIV2_DIV5               RCC_CFGR2_PREDIV2_DIV5_Msk        /*!< PREDIV2 input clock divided by 5 */
+#define RCC_CFGR2_PREDIV2_DIV6_Pos           (4U)                              
+#define RCC_CFGR2_PREDIV2_DIV6_Msk           (0x5U << RCC_CFGR2_PREDIV2_DIV6_Pos) /*!< 0x00000050 */
+#define RCC_CFGR2_PREDIV2_DIV6               RCC_CFGR2_PREDIV2_DIV6_Msk        /*!< PREDIV2 input clock divided by 6 */
+#define RCC_CFGR2_PREDIV2_DIV7_Pos           (5U)                              
+#define RCC_CFGR2_PREDIV2_DIV7_Msk           (0x3U << RCC_CFGR2_PREDIV2_DIV7_Pos) /*!< 0x00000060 */
+#define RCC_CFGR2_PREDIV2_DIV7               RCC_CFGR2_PREDIV2_DIV7_Msk        /*!< PREDIV2 input clock divided by 7 */
+#define RCC_CFGR2_PREDIV2_DIV8_Pos           (4U)                              
+#define RCC_CFGR2_PREDIV2_DIV8_Msk           (0x7U << RCC_CFGR2_PREDIV2_DIV8_Pos) /*!< 0x00000070 */
+#define RCC_CFGR2_PREDIV2_DIV8               RCC_CFGR2_PREDIV2_DIV8_Msk        /*!< PREDIV2 input clock divided by 8 */
+#define RCC_CFGR2_PREDIV2_DIV9_Pos           (7U)                              
+#define RCC_CFGR2_PREDIV2_DIV9_Msk           (0x1U << RCC_CFGR2_PREDIV2_DIV9_Pos) /*!< 0x00000080 */
+#define RCC_CFGR2_PREDIV2_DIV9               RCC_CFGR2_PREDIV2_DIV9_Msk        /*!< PREDIV2 input clock divided by 9 */
+#define RCC_CFGR2_PREDIV2_DIV10_Pos          (4U)                              
+#define RCC_CFGR2_PREDIV2_DIV10_Msk          (0x9U << RCC_CFGR2_PREDIV2_DIV10_Pos) /*!< 0x00000090 */
+#define RCC_CFGR2_PREDIV2_DIV10              RCC_CFGR2_PREDIV2_DIV10_Msk       /*!< PREDIV2 input clock divided by 10 */
+#define RCC_CFGR2_PREDIV2_DIV11_Pos          (5U)                              
+#define RCC_CFGR2_PREDIV2_DIV11_Msk          (0x5U << RCC_CFGR2_PREDIV2_DIV11_Pos) /*!< 0x000000A0 */
+#define RCC_CFGR2_PREDIV2_DIV11              RCC_CFGR2_PREDIV2_DIV11_Msk       /*!< PREDIV2 input clock divided by 11 */
+#define RCC_CFGR2_PREDIV2_DIV12_Pos          (4U)                              
+#define RCC_CFGR2_PREDIV2_DIV12_Msk          (0xBU << RCC_CFGR2_PREDIV2_DIV12_Pos) /*!< 0x000000B0 */
+#define RCC_CFGR2_PREDIV2_DIV12              RCC_CFGR2_PREDIV2_DIV12_Msk       /*!< PREDIV2 input clock divided by 12 */
+#define RCC_CFGR2_PREDIV2_DIV13_Pos          (6U)                              
+#define RCC_CFGR2_PREDIV2_DIV13_Msk          (0x3U << RCC_CFGR2_PREDIV2_DIV13_Pos) /*!< 0x000000C0 */
+#define RCC_CFGR2_PREDIV2_DIV13              RCC_CFGR2_PREDIV2_DIV13_Msk       /*!< PREDIV2 input clock divided by 13 */
+#define RCC_CFGR2_PREDIV2_DIV14_Pos          (4U)                              
+#define RCC_CFGR2_PREDIV2_DIV14_Msk          (0xDU << RCC_CFGR2_PREDIV2_DIV14_Pos) /*!< 0x000000D0 */
+#define RCC_CFGR2_PREDIV2_DIV14              RCC_CFGR2_PREDIV2_DIV14_Msk       /*!< PREDIV2 input clock divided by 14 */
+#define RCC_CFGR2_PREDIV2_DIV15_Pos          (5U)                              
+#define RCC_CFGR2_PREDIV2_DIV15_Msk          (0x7U << RCC_CFGR2_PREDIV2_DIV15_Pos) /*!< 0x000000E0 */
+#define RCC_CFGR2_PREDIV2_DIV15              RCC_CFGR2_PREDIV2_DIV15_Msk       /*!< PREDIV2 input clock divided by 15 */
+#define RCC_CFGR2_PREDIV2_DIV16_Pos          (4U)                              
+#define RCC_CFGR2_PREDIV2_DIV16_Msk          (0xFU << RCC_CFGR2_PREDIV2_DIV16_Pos) /*!< 0x000000F0 */
+#define RCC_CFGR2_PREDIV2_DIV16              RCC_CFGR2_PREDIV2_DIV16_Msk       /*!< PREDIV2 input clock divided by 16 */
+
+/*!< PLL2MUL configuration */
+#define RCC_CFGR2_PLL2MUL_Pos                (8U)                              
+#define RCC_CFGR2_PLL2MUL_Msk                (0xFU << RCC_CFGR2_PLL2MUL_Pos)   /*!< 0x00000F00 */
+#define RCC_CFGR2_PLL2MUL                    RCC_CFGR2_PLL2MUL_Msk             /*!< PLL2MUL[3:0] bits */
+#define RCC_CFGR2_PLL2MUL_0                  (0x1U << RCC_CFGR2_PLL2MUL_Pos)   /*!< 0x00000100 */
+#define RCC_CFGR2_PLL2MUL_1                  (0x2U << RCC_CFGR2_PLL2MUL_Pos)   /*!< 0x00000200 */
+#define RCC_CFGR2_PLL2MUL_2                  (0x4U << RCC_CFGR2_PLL2MUL_Pos)   /*!< 0x00000400 */
+#define RCC_CFGR2_PLL2MUL_3                  (0x8U << RCC_CFGR2_PLL2MUL_Pos)   /*!< 0x00000800 */
+
+#define RCC_CFGR2_PLL2MUL8_Pos               (9U)                              
+#define RCC_CFGR2_PLL2MUL8_Msk               (0x3U << RCC_CFGR2_PLL2MUL8_Pos)  /*!< 0x00000600 */
+#define RCC_CFGR2_PLL2MUL8                   RCC_CFGR2_PLL2MUL8_Msk            /*!< PLL2 input clock * 8 */
+#define RCC_CFGR2_PLL2MUL9_Pos               (8U)                              
+#define RCC_CFGR2_PLL2MUL9_Msk               (0x7U << RCC_CFGR2_PLL2MUL9_Pos)  /*!< 0x00000700 */
+#define RCC_CFGR2_PLL2MUL9                   RCC_CFGR2_PLL2MUL9_Msk            /*!< PLL2 input clock * 9 */
+#define RCC_CFGR2_PLL2MUL10_Pos              (11U)                             
+#define RCC_CFGR2_PLL2MUL10_Msk              (0x1U << RCC_CFGR2_PLL2MUL10_Pos) /*!< 0x00000800 */
+#define RCC_CFGR2_PLL2MUL10                  RCC_CFGR2_PLL2MUL10_Msk           /*!< PLL2 input clock * 10 */
+#define RCC_CFGR2_PLL2MUL11_Pos              (8U)                              
+#define RCC_CFGR2_PLL2MUL11_Msk              (0x9U << RCC_CFGR2_PLL2MUL11_Pos) /*!< 0x00000900 */
+#define RCC_CFGR2_PLL2MUL11                  RCC_CFGR2_PLL2MUL11_Msk           /*!< PLL2 input clock * 11 */
+#define RCC_CFGR2_PLL2MUL12_Pos              (9U)                              
+#define RCC_CFGR2_PLL2MUL12_Msk              (0x5U << RCC_CFGR2_PLL2MUL12_Pos) /*!< 0x00000A00 */
+#define RCC_CFGR2_PLL2MUL12                  RCC_CFGR2_PLL2MUL12_Msk           /*!< PLL2 input clock * 12 */
+#define RCC_CFGR2_PLL2MUL13_Pos              (8U)                              
+#define RCC_CFGR2_PLL2MUL13_Msk              (0xBU << RCC_CFGR2_PLL2MUL13_Pos) /*!< 0x00000B00 */
+#define RCC_CFGR2_PLL2MUL13                  RCC_CFGR2_PLL2MUL13_Msk           /*!< PLL2 input clock * 13 */
+#define RCC_CFGR2_PLL2MUL14_Pos              (10U)                             
+#define RCC_CFGR2_PLL2MUL14_Msk              (0x3U << RCC_CFGR2_PLL2MUL14_Pos) /*!< 0x00000C00 */
+#define RCC_CFGR2_PLL2MUL14                  RCC_CFGR2_PLL2MUL14_Msk           /*!< PLL2 input clock * 14 */
+#define RCC_CFGR2_PLL2MUL16_Pos              (9U)                              
+#define RCC_CFGR2_PLL2MUL16_Msk              (0x7U << RCC_CFGR2_PLL2MUL16_Pos) /*!< 0x00000E00 */
+#define RCC_CFGR2_PLL2MUL16                  RCC_CFGR2_PLL2MUL16_Msk           /*!< PLL2 input clock * 16 */
+#define RCC_CFGR2_PLL2MUL20_Pos              (8U)                              
+#define RCC_CFGR2_PLL2MUL20_Msk              (0xFU << RCC_CFGR2_PLL2MUL20_Pos) /*!< 0x00000F00 */
+#define RCC_CFGR2_PLL2MUL20                  RCC_CFGR2_PLL2MUL20_Msk           /*!< PLL2 input clock * 20 */
+
+/*!< PLL3MUL configuration */
+#define RCC_CFGR2_PLL3MUL_Pos                (12U)                             
+#define RCC_CFGR2_PLL3MUL_Msk                (0xFU << RCC_CFGR2_PLL3MUL_Pos)   /*!< 0x0000F000 */
+#define RCC_CFGR2_PLL3MUL                    RCC_CFGR2_PLL3MUL_Msk             /*!< PLL3MUL[3:0] bits */
+#define RCC_CFGR2_PLL3MUL_0                  (0x1U << RCC_CFGR2_PLL3MUL_Pos)   /*!< 0x00001000 */
+#define RCC_CFGR2_PLL3MUL_1                  (0x2U << RCC_CFGR2_PLL3MUL_Pos)   /*!< 0x00002000 */
+#define RCC_CFGR2_PLL3MUL_2                  (0x4U << RCC_CFGR2_PLL3MUL_Pos)   /*!< 0x00004000 */
+#define RCC_CFGR2_PLL3MUL_3                  (0x8U << RCC_CFGR2_PLL3MUL_Pos)   /*!< 0x00008000 */
+
+#define RCC_CFGR2_PLL3MUL8_Pos               (13U)                             
+#define RCC_CFGR2_PLL3MUL8_Msk               (0x3U << RCC_CFGR2_PLL3MUL8_Pos)  /*!< 0x00006000 */
+#define RCC_CFGR2_PLL3MUL8                   RCC_CFGR2_PLL3MUL8_Msk            /*!< PLL3 input clock * 8 */
+#define RCC_CFGR2_PLL3MUL9_Pos               (12U)                             
+#define RCC_CFGR2_PLL3MUL9_Msk               (0x7U << RCC_CFGR2_PLL3MUL9_Pos)  /*!< 0x00007000 */
+#define RCC_CFGR2_PLL3MUL9                   RCC_CFGR2_PLL3MUL9_Msk            /*!< PLL3 input clock * 9 */
+#define RCC_CFGR2_PLL3MUL10_Pos              (15U)                             
+#define RCC_CFGR2_PLL3MUL10_Msk              (0x1U << RCC_CFGR2_PLL3MUL10_Pos) /*!< 0x00008000 */
+#define RCC_CFGR2_PLL3MUL10                  RCC_CFGR2_PLL3MUL10_Msk           /*!< PLL3 input clock * 10 */
+#define RCC_CFGR2_PLL3MUL11_Pos              (12U)                             
+#define RCC_CFGR2_PLL3MUL11_Msk              (0x9U << RCC_CFGR2_PLL3MUL11_Pos) /*!< 0x00009000 */
+#define RCC_CFGR2_PLL3MUL11                  RCC_CFGR2_PLL3MUL11_Msk           /*!< PLL3 input clock * 11 */
+#define RCC_CFGR2_PLL3MUL12_Pos              (13U)                             
+#define RCC_CFGR2_PLL3MUL12_Msk              (0x5U << RCC_CFGR2_PLL3MUL12_Pos) /*!< 0x0000A000 */
+#define RCC_CFGR2_PLL3MUL12                  RCC_CFGR2_PLL3MUL12_Msk           /*!< PLL3 input clock * 12 */
+#define RCC_CFGR2_PLL3MUL13_Pos              (12U)                             
+#define RCC_CFGR2_PLL3MUL13_Msk              (0xBU << RCC_CFGR2_PLL3MUL13_Pos) /*!< 0x0000B000 */
+#define RCC_CFGR2_PLL3MUL13                  RCC_CFGR2_PLL3MUL13_Msk           /*!< PLL3 input clock * 13 */
+#define RCC_CFGR2_PLL3MUL14_Pos              (14U)                             
+#define RCC_CFGR2_PLL3MUL14_Msk              (0x3U << RCC_CFGR2_PLL3MUL14_Pos) /*!< 0x0000C000 */
+#define RCC_CFGR2_PLL3MUL14                  RCC_CFGR2_PLL3MUL14_Msk           /*!< PLL3 input clock * 14 */
+#define RCC_CFGR2_PLL3MUL16_Pos              (13U)                             
+#define RCC_CFGR2_PLL3MUL16_Msk              (0x7U << RCC_CFGR2_PLL3MUL16_Pos) /*!< 0x0000E000 */
+#define RCC_CFGR2_PLL3MUL16                  RCC_CFGR2_PLL3MUL16_Msk           /*!< PLL3 input clock * 16 */
+#define RCC_CFGR2_PLL3MUL20_Pos              (12U)                             
+#define RCC_CFGR2_PLL3MUL20_Msk              (0xFU << RCC_CFGR2_PLL3MUL20_Pos) /*!< 0x0000F000 */
+#define RCC_CFGR2_PLL3MUL20                  RCC_CFGR2_PLL3MUL20_Msk           /*!< PLL3 input clock * 20 */
+
+#define RCC_CFGR2_PREDIV1SRC_Pos             (16U)                             
+#define RCC_CFGR2_PREDIV1SRC_Msk             (0x1U << RCC_CFGR2_PREDIV1SRC_Pos) /*!< 0x00010000 */
+#define RCC_CFGR2_PREDIV1SRC                 RCC_CFGR2_PREDIV1SRC_Msk          /*!< PREDIV1 entry clock source */
+#define RCC_CFGR2_PREDIV1SRC_PLL2_Pos        (16U)                             
+#define RCC_CFGR2_PREDIV1SRC_PLL2_Msk        (0x1U << RCC_CFGR2_PREDIV1SRC_PLL2_Pos) /*!< 0x00010000 */
+#define RCC_CFGR2_PREDIV1SRC_PLL2            RCC_CFGR2_PREDIV1SRC_PLL2_Msk     /*!< PLL2 selected as PREDIV1 entry clock source */
+#define RCC_CFGR2_PREDIV1SRC_HSE             0x00000000U                       /*!< HSE selected as PREDIV1 entry clock source */
+#define RCC_CFGR2_I2S2SRC_Pos                (17U)                             
+#define RCC_CFGR2_I2S2SRC_Msk                (0x1U << RCC_CFGR2_I2S2SRC_Pos)   /*!< 0x00020000 */
+#define RCC_CFGR2_I2S2SRC                    RCC_CFGR2_I2S2SRC_Msk             /*!< I2S2 entry clock source */
+#define RCC_CFGR2_I2S3SRC_Pos                (18U)                             
+#define RCC_CFGR2_I2S3SRC_Msk                (0x1U << RCC_CFGR2_I2S3SRC_Pos)   /*!< 0x00040000 */
+#define RCC_CFGR2_I2S3SRC                    RCC_CFGR2_I2S3SRC_Msk             /*!< I2S3 clock source */
 
  
 /******************************************************************************/
@@ -2170,6 +2805,9 @@ typedef struct
 #define AFIO_MAPR_PD01_REMAP_Pos             (15U)                             
 #define AFIO_MAPR_PD01_REMAP_Msk             (0x1U << AFIO_MAPR_PD01_REMAP_Pos) /*!< 0x00008000 */
 #define AFIO_MAPR_PD01_REMAP                 AFIO_MAPR_PD01_REMAP_Msk          /*!< Port D0/Port D1 mapping on OSC_IN/OSC_OUT */
+#define AFIO_MAPR_TIM5CH4_IREMAP_Pos         (16U)                             
+#define AFIO_MAPR_TIM5CH4_IREMAP_Msk         (0x1U << AFIO_MAPR_TIM5CH4_IREMAP_Pos) /*!< 0x00010000 */
+#define AFIO_MAPR_TIM5CH4_IREMAP             AFIO_MAPR_TIM5CH4_IREMAP_Msk      /*!< TIM5 Channel4 Internal Remap */
 
 /*!< SWJ_CFG configuration */
 #define AFIO_MAPR_SWJ_CFG_Pos                (24U)                             
@@ -2190,6 +2828,35 @@ typedef struct
 #define AFIO_MAPR_SWJ_CFG_DISABLE_Msk        (0x1U << AFIO_MAPR_SWJ_CFG_DISABLE_Pos) /*!< 0x04000000 */
 #define AFIO_MAPR_SWJ_CFG_DISABLE            AFIO_MAPR_SWJ_CFG_DISABLE_Msk     /*!< JTAG-DP Disabled and SW-DP Disabled */
 
+/*!< ETH_REMAP configuration */
+#define AFIO_MAPR_ETH_REMAP_Pos              (21U)                             
+#define AFIO_MAPR_ETH_REMAP_Msk              (0x1U << AFIO_MAPR_ETH_REMAP_Pos) /*!< 0x00200000 */
+#define AFIO_MAPR_ETH_REMAP                  AFIO_MAPR_ETH_REMAP_Msk           /*!< SPI3_REMAP bit (Ethernet MAC I/O remapping) */
+
+/*!< CAN2_REMAP configuration */
+#define AFIO_MAPR_CAN2_REMAP_Pos             (22U)                             
+#define AFIO_MAPR_CAN2_REMAP_Msk             (0x1U << AFIO_MAPR_CAN2_REMAP_Pos) /*!< 0x00400000 */
+#define AFIO_MAPR_CAN2_REMAP                 AFIO_MAPR_CAN2_REMAP_Msk          /*!< CAN2_REMAP bit (CAN2 I/O remapping) */
+
+/*!< MII_RMII_SEL configuration */
+#define AFIO_MAPR_MII_RMII_SEL_Pos           (23U)                             
+#define AFIO_MAPR_MII_RMII_SEL_Msk           (0x1U << AFIO_MAPR_MII_RMII_SEL_Pos) /*!< 0x00800000 */
+#define AFIO_MAPR_MII_RMII_SEL               AFIO_MAPR_MII_RMII_SEL_Msk        /*!< MII_RMII_SEL bit (Ethernet MII or RMII selection) */
+
+/*!< SPI3_REMAP configuration */
+#define AFIO_MAPR_SPI3_REMAP_Pos             (28U)                             
+#define AFIO_MAPR_SPI3_REMAP_Msk             (0x1U << AFIO_MAPR_SPI3_REMAP_Pos) /*!< 0x10000000 */
+#define AFIO_MAPR_SPI3_REMAP                 AFIO_MAPR_SPI3_REMAP_Msk          /*!< SPI3_REMAP bit (SPI3 remapping) */
+
+/*!< TIM2ITR1_IREMAP configuration */
+#define AFIO_MAPR_TIM2ITR1_IREMAP_Pos        (29U)                             
+#define AFIO_MAPR_TIM2ITR1_IREMAP_Msk        (0x1U << AFIO_MAPR_TIM2ITR1_IREMAP_Pos) /*!< 0x20000000 */
+#define AFIO_MAPR_TIM2ITR1_IREMAP            AFIO_MAPR_TIM2ITR1_IREMAP_Msk     /*!< TIM2ITR1_IREMAP bit (TIM2 internal trigger 1 remapping) */
+
+/*!< PTP_PPS_REMAP configuration */
+#define AFIO_MAPR_PTP_PPS_REMAP_Pos          (30U)                             
+#define AFIO_MAPR_PTP_PPS_REMAP_Msk          (0x1U << AFIO_MAPR_PTP_PPS_REMAP_Pos) /*!< 0x40000000 */
+#define AFIO_MAPR_PTP_PPS_REMAP              AFIO_MAPR_PTP_PPS_REMAP_Msk       /*!< PTP_PPS_REMAP bit (Ethernet PTP PPS remapping) */
 
 /*****************  Bit definition for AFIO_EXTICR1 register  *****************/
 #define AFIO_EXTICR1_EXTI0_Pos               (0U)                              
@@ -2651,6 +3318,9 @@ typedef struct
 #define EXTI_IMR_MR18_Pos                   (18U)                              
 #define EXTI_IMR_MR18_Msk                   (0x1U << EXTI_IMR_MR18_Pos)        /*!< 0x00040000 */
 #define EXTI_IMR_MR18                       EXTI_IMR_MR18_Msk                  /*!< Interrupt Mask on line 18 */
+#define EXTI_IMR_MR19_Pos                   (19U)                              
+#define EXTI_IMR_MR19_Msk                   (0x1U << EXTI_IMR_MR19_Pos)        /*!< 0x00080000 */
+#define EXTI_IMR_MR19                       EXTI_IMR_MR19_Msk                  /*!< Interrupt Mask on line 19 */
 
 /* References Defines */
 #define  EXTI_IMR_IM0 EXTI_IMR_MR0
@@ -2672,7 +3342,8 @@ typedef struct
 #define  EXTI_IMR_IM16 EXTI_IMR_MR16
 #define  EXTI_IMR_IM17 EXTI_IMR_MR17
 #define  EXTI_IMR_IM18 EXTI_IMR_MR18
-#define  EXTI_IMR_IM   0x0007FFFFU        /*!< Interrupt Mask All */
+#define  EXTI_IMR_IM19 EXTI_IMR_MR19
+#define  EXTI_IMR_IM   0x000FFFFFU        /*!< Interrupt Mask All */
  
 /*******************  Bit definition for EXTI_EMR register  *******************/
 #define EXTI_EMR_MR0_Pos                    (0U)                               
@@ -2732,6 +3403,9 @@ typedef struct
 #define EXTI_EMR_MR18_Pos                   (18U)                              
 #define EXTI_EMR_MR18_Msk                   (0x1U << EXTI_EMR_MR18_Pos)        /*!< 0x00040000 */
 #define EXTI_EMR_MR18                       EXTI_EMR_MR18_Msk                  /*!< Event Mask on line 18 */
+#define EXTI_EMR_MR19_Pos                   (19U)                              
+#define EXTI_EMR_MR19_Msk                   (0x1U << EXTI_EMR_MR19_Pos)        /*!< 0x00080000 */
+#define EXTI_EMR_MR19                       EXTI_EMR_MR19_Msk                  /*!< Event Mask on line 19 */
 
 /* References Defines */
 #define  EXTI_EMR_EM0 EXTI_EMR_MR0
@@ -2753,6 +3427,7 @@ typedef struct
 #define  EXTI_EMR_EM16 EXTI_EMR_MR16
 #define  EXTI_EMR_EM17 EXTI_EMR_MR17
 #define  EXTI_EMR_EM18 EXTI_EMR_MR18
+#define  EXTI_EMR_EM19 EXTI_EMR_MR19
 
 /******************  Bit definition for EXTI_RTSR register  *******************/
 #define EXTI_RTSR_TR0_Pos                   (0U)                               
@@ -2812,6 +3487,9 @@ typedef struct
 #define EXTI_RTSR_TR18_Pos                  (18U)                              
 #define EXTI_RTSR_TR18_Msk                  (0x1U << EXTI_RTSR_TR18_Pos)       /*!< 0x00040000 */
 #define EXTI_RTSR_TR18                      EXTI_RTSR_TR18_Msk                 /*!< Rising trigger event configuration bit of line 18 */
+#define EXTI_RTSR_TR19_Pos                  (19U)                              
+#define EXTI_RTSR_TR19_Msk                  (0x1U << EXTI_RTSR_TR19_Pos)       /*!< 0x00080000 */
+#define EXTI_RTSR_TR19                      EXTI_RTSR_TR19_Msk                 /*!< Rising trigger event configuration bit of line 19 */
 
 /* References Defines */
 #define  EXTI_RTSR_RT0 EXTI_RTSR_TR0
@@ -2833,6 +3511,7 @@ typedef struct
 #define  EXTI_RTSR_RT16 EXTI_RTSR_TR16
 #define  EXTI_RTSR_RT17 EXTI_RTSR_TR17
 #define  EXTI_RTSR_RT18 EXTI_RTSR_TR18
+#define  EXTI_RTSR_RT19 EXTI_RTSR_TR19
 
 /******************  Bit definition for EXTI_FTSR register  *******************/
 #define EXTI_FTSR_TR0_Pos                   (0U)                               
@@ -2892,6 +3571,9 @@ typedef struct
 #define EXTI_FTSR_TR18_Pos                  (18U)                              
 #define EXTI_FTSR_TR18_Msk                  (0x1U << EXTI_FTSR_TR18_Pos)       /*!< 0x00040000 */
 #define EXTI_FTSR_TR18                      EXTI_FTSR_TR18_Msk                 /*!< Falling trigger event configuration bit of line 18 */
+#define EXTI_FTSR_TR19_Pos                  (19U)                              
+#define EXTI_FTSR_TR19_Msk                  (0x1U << EXTI_FTSR_TR19_Pos)       /*!< 0x00080000 */
+#define EXTI_FTSR_TR19                      EXTI_FTSR_TR19_Msk                 /*!< Falling trigger event configuration bit of line 19 */
 
 /* References Defines */
 #define  EXTI_FTSR_FT0 EXTI_FTSR_TR0
@@ -2913,6 +3595,7 @@ typedef struct
 #define  EXTI_FTSR_FT16 EXTI_FTSR_TR16
 #define  EXTI_FTSR_FT17 EXTI_FTSR_TR17
 #define  EXTI_FTSR_FT18 EXTI_FTSR_TR18
+#define  EXTI_FTSR_FT19 EXTI_FTSR_TR19
 
 /******************  Bit definition for EXTI_SWIER register  ******************/
 #define EXTI_SWIER_SWIER0_Pos               (0U)                               
@@ -2972,6 +3655,9 @@ typedef struct
 #define EXTI_SWIER_SWIER18_Pos              (18U)                              
 #define EXTI_SWIER_SWIER18_Msk              (0x1U << EXTI_SWIER_SWIER18_Pos)   /*!< 0x00040000 */
 #define EXTI_SWIER_SWIER18                  EXTI_SWIER_SWIER18_Msk             /*!< Software Interrupt on line 18 */
+#define EXTI_SWIER_SWIER19_Pos              (19U)                              
+#define EXTI_SWIER_SWIER19_Msk              (0x1U << EXTI_SWIER_SWIER19_Pos)   /*!< 0x00080000 */
+#define EXTI_SWIER_SWIER19                  EXTI_SWIER_SWIER19_Msk             /*!< Software Interrupt on line 19 */
 
 /* References Defines */
 #define  EXTI_SWIER_SWI0 EXTI_SWIER_SWIER0
@@ -2993,6 +3679,7 @@ typedef struct
 #define  EXTI_SWIER_SWI16 EXTI_SWIER_SWIER16
 #define  EXTI_SWIER_SWI17 EXTI_SWIER_SWIER17
 #define  EXTI_SWIER_SWI18 EXTI_SWIER_SWIER18
+#define  EXTI_SWIER_SWI19 EXTI_SWIER_SWIER19
 
 /*******************  Bit definition for EXTI_PR register  ********************/
 #define EXTI_PR_PR0_Pos                     (0U)                               
@@ -3052,6 +3739,9 @@ typedef struct
 #define EXTI_PR_PR18_Pos                    (18U)                              
 #define EXTI_PR_PR18_Msk                    (0x1U << EXTI_PR_PR18_Pos)         /*!< 0x00040000 */
 #define EXTI_PR_PR18                        EXTI_PR_PR18_Msk                   /*!< Pending bit for line 18 */
+#define EXTI_PR_PR19_Pos                    (19U)                              
+#define EXTI_PR_PR19_Msk                    (0x1U << EXTI_PR_PR19_Pos)         /*!< 0x00080000 */
+#define EXTI_PR_PR19                        EXTI_PR_PR19_Msk                   /*!< Pending bit for line 19 */
 
 /* References Defines */
 #define  EXTI_PR_PIF0 EXTI_PR_PR0
@@ -3073,6 +3763,7 @@ typedef struct
 #define  EXTI_PR_PIF16 EXTI_PR_PR16
 #define  EXTI_PR_PIF17 EXTI_PR_PR17
 #define  EXTI_PR_PIF18 EXTI_PR_PR18
+#define  EXTI_PR_PIF19 EXTI_PR_PR19
 
 /******************************************************************************/
 /*                                                                            */
@@ -3842,6 +4533,155 @@ typedef struct
 #define ADC_DR_ADC2DATA_Pos                 (16U)                              
 #define ADC_DR_ADC2DATA_Msk                 (0xFFFFU << ADC_DR_ADC2DATA_Pos)   /*!< 0xFFFF0000 */
 #define ADC_DR_ADC2DATA                     ADC_DR_ADC2DATA_Msk                /*!< ADC group regular conversion data for ADC slave, in multimode */
+/******************************************************************************/
+/*                                                                            */
+/*                      Digital to Analog Converter                           */
+/*                                                                            */
+/******************************************************************************/
+
+/********************  Bit definition for DAC_CR register  ********************/
+#define DAC_CR_EN1_Pos                      (0U)                               
+#define DAC_CR_EN1_Msk                      (0x1U << DAC_CR_EN1_Pos)           /*!< 0x00000001 */
+#define DAC_CR_EN1                          DAC_CR_EN1_Msk                     /*!< DAC channel1 enable */
+#define DAC_CR_BOFF1_Pos                    (1U)                               
+#define DAC_CR_BOFF1_Msk                    (0x1U << DAC_CR_BOFF1_Pos)         /*!< 0x00000002 */
+#define DAC_CR_BOFF1                        DAC_CR_BOFF1_Msk                   /*!< DAC channel1 output buffer disable */
+#define DAC_CR_TEN1_Pos                     (2U)                               
+#define DAC_CR_TEN1_Msk                     (0x1U << DAC_CR_TEN1_Pos)          /*!< 0x00000004 */
+#define DAC_CR_TEN1                         DAC_CR_TEN1_Msk                    /*!< DAC channel1 Trigger enable */
+
+#define DAC_CR_TSEL1_Pos                    (3U)                               
+#define DAC_CR_TSEL1_Msk                    (0x7U << DAC_CR_TSEL1_Pos)         /*!< 0x00000038 */
+#define DAC_CR_TSEL1                        DAC_CR_TSEL1_Msk                   /*!< TSEL1[2:0] (DAC channel1 Trigger selection) */
+#define DAC_CR_TSEL1_0                      (0x1U << DAC_CR_TSEL1_Pos)         /*!< 0x00000008 */
+#define DAC_CR_TSEL1_1                      (0x2U << DAC_CR_TSEL1_Pos)         /*!< 0x00000010 */
+#define DAC_CR_TSEL1_2                      (0x4U << DAC_CR_TSEL1_Pos)         /*!< 0x00000020 */
+
+#define DAC_CR_WAVE1_Pos                    (6U)                               
+#define DAC_CR_WAVE1_Msk                    (0x3U << DAC_CR_WAVE1_Pos)         /*!< 0x000000C0 */
+#define DAC_CR_WAVE1                        DAC_CR_WAVE1_Msk                   /*!< WAVE1[1:0] (DAC channel1 noise/triangle wave generation enable) */
+#define DAC_CR_WAVE1_0                      (0x1U << DAC_CR_WAVE1_Pos)         /*!< 0x00000040 */
+#define DAC_CR_WAVE1_1                      (0x2U << DAC_CR_WAVE1_Pos)         /*!< 0x00000080 */
+
+#define DAC_CR_MAMP1_Pos                    (8U)                               
+#define DAC_CR_MAMP1_Msk                    (0xFU << DAC_CR_MAMP1_Pos)         /*!< 0x00000F00 */
+#define DAC_CR_MAMP1                        DAC_CR_MAMP1_Msk                   /*!< MAMP1[3:0] (DAC channel1 Mask/Amplitude selector) */
+#define DAC_CR_MAMP1_0                      (0x1U << DAC_CR_MAMP1_Pos)         /*!< 0x00000100 */
+#define DAC_CR_MAMP1_1                      (0x2U << DAC_CR_MAMP1_Pos)         /*!< 0x00000200 */
+#define DAC_CR_MAMP1_2                      (0x4U << DAC_CR_MAMP1_Pos)         /*!< 0x00000400 */
+#define DAC_CR_MAMP1_3                      (0x8U << DAC_CR_MAMP1_Pos)         /*!< 0x00000800 */
+
+#define DAC_CR_DMAEN1_Pos                   (12U)                              
+#define DAC_CR_DMAEN1_Msk                   (0x1U << DAC_CR_DMAEN1_Pos)        /*!< 0x00001000 */
+#define DAC_CR_DMAEN1                       DAC_CR_DMAEN1_Msk                  /*!< DAC channel1 DMA enable */
+#define DAC_CR_EN2_Pos                      (16U)                              
+#define DAC_CR_EN2_Msk                      (0x1U << DAC_CR_EN2_Pos)           /*!< 0x00010000 */
+#define DAC_CR_EN2                          DAC_CR_EN2_Msk                     /*!< DAC channel2 enable */
+#define DAC_CR_BOFF2_Pos                    (17U)                              
+#define DAC_CR_BOFF2_Msk                    (0x1U << DAC_CR_BOFF2_Pos)         /*!< 0x00020000 */
+#define DAC_CR_BOFF2                        DAC_CR_BOFF2_Msk                   /*!< DAC channel2 output buffer disable */
+#define DAC_CR_TEN2_Pos                     (18U)                              
+#define DAC_CR_TEN2_Msk                     (0x1U << DAC_CR_TEN2_Pos)          /*!< 0x00040000 */
+#define DAC_CR_TEN2                         DAC_CR_TEN2_Msk                    /*!< DAC channel2 Trigger enable */
+
+#define DAC_CR_TSEL2_Pos                    (19U)                              
+#define DAC_CR_TSEL2_Msk                    (0x7U << DAC_CR_TSEL2_Pos)         /*!< 0x00380000 */
+#define DAC_CR_TSEL2                        DAC_CR_TSEL2_Msk                   /*!< TSEL2[2:0] (DAC channel2 Trigger selection) */
+#define DAC_CR_TSEL2_0                      (0x1U << DAC_CR_TSEL2_Pos)         /*!< 0x00080000 */
+#define DAC_CR_TSEL2_1                      (0x2U << DAC_CR_TSEL2_Pos)         /*!< 0x00100000 */
+#define DAC_CR_TSEL2_2                      (0x4U << DAC_CR_TSEL2_Pos)         /*!< 0x00200000 */
+
+#define DAC_CR_WAVE2_Pos                    (22U)                              
+#define DAC_CR_WAVE2_Msk                    (0x3U << DAC_CR_WAVE2_Pos)         /*!< 0x00C00000 */
+#define DAC_CR_WAVE2                        DAC_CR_WAVE2_Msk                   /*!< WAVE2[1:0] (DAC channel2 noise/triangle wave generation enable) */
+#define DAC_CR_WAVE2_0                      (0x1U << DAC_CR_WAVE2_Pos)         /*!< 0x00400000 */
+#define DAC_CR_WAVE2_1                      (0x2U << DAC_CR_WAVE2_Pos)         /*!< 0x00800000 */
+
+#define DAC_CR_MAMP2_Pos                    (24U)                              
+#define DAC_CR_MAMP2_Msk                    (0xFU << DAC_CR_MAMP2_Pos)         /*!< 0x0F000000 */
+#define DAC_CR_MAMP2                        DAC_CR_MAMP2_Msk                   /*!< MAMP2[3:0] (DAC channel2 Mask/Amplitude selector) */
+#define DAC_CR_MAMP2_0                      (0x1U << DAC_CR_MAMP2_Pos)         /*!< 0x01000000 */
+#define DAC_CR_MAMP2_1                      (0x2U << DAC_CR_MAMP2_Pos)         /*!< 0x02000000 */
+#define DAC_CR_MAMP2_2                      (0x4U << DAC_CR_MAMP2_Pos)         /*!< 0x04000000 */
+#define DAC_CR_MAMP2_3                      (0x8U << DAC_CR_MAMP2_Pos)         /*!< 0x08000000 */
+
+#define DAC_CR_DMAEN2_Pos                   (28U)                              
+#define DAC_CR_DMAEN2_Msk                   (0x1U << DAC_CR_DMAEN2_Pos)        /*!< 0x10000000 */
+#define DAC_CR_DMAEN2                       DAC_CR_DMAEN2_Msk                  /*!< DAC channel2 DMA enabled */
+
+
+/*****************  Bit definition for DAC_SWTRIGR register  ******************/
+#define DAC_SWTRIGR_SWTRIG1_Pos             (0U)                               
+#define DAC_SWTRIGR_SWTRIG1_Msk             (0x1U << DAC_SWTRIGR_SWTRIG1_Pos)  /*!< 0x00000001 */
+#define DAC_SWTRIGR_SWTRIG1                 DAC_SWTRIGR_SWTRIG1_Msk            /*!< DAC channel1 software trigger */
+#define DAC_SWTRIGR_SWTRIG2_Pos             (1U)                               
+#define DAC_SWTRIGR_SWTRIG2_Msk             (0x1U << DAC_SWTRIGR_SWTRIG2_Pos)  /*!< 0x00000002 */
+#define DAC_SWTRIGR_SWTRIG2                 DAC_SWTRIGR_SWTRIG2_Msk            /*!< DAC channel2 software trigger */
+
+/*****************  Bit definition for DAC_DHR12R1 register  ******************/
+#define DAC_DHR12R1_DACC1DHR_Pos            (0U)                               
+#define DAC_DHR12R1_DACC1DHR_Msk            (0xFFFU << DAC_DHR12R1_DACC1DHR_Pos) /*!< 0x00000FFF */
+#define DAC_DHR12R1_DACC1DHR                DAC_DHR12R1_DACC1DHR_Msk           /*!< DAC channel1 12-bit Right aligned data */
+
+/*****************  Bit definition for DAC_DHR12L1 register  ******************/
+#define DAC_DHR12L1_DACC1DHR_Pos            (4U)                               
+#define DAC_DHR12L1_DACC1DHR_Msk            (0xFFFU << DAC_DHR12L1_DACC1DHR_Pos) /*!< 0x0000FFF0 */
+#define DAC_DHR12L1_DACC1DHR                DAC_DHR12L1_DACC1DHR_Msk           /*!< DAC channel1 12-bit Left aligned data */
+
+/******************  Bit definition for DAC_DHR8R1 register  ******************/
+#define DAC_DHR8R1_DACC1DHR_Pos             (0U)                               
+#define DAC_DHR8R1_DACC1DHR_Msk             (0xFFU << DAC_DHR8R1_DACC1DHR_Pos) /*!< 0x000000FF */
+#define DAC_DHR8R1_DACC1DHR                 DAC_DHR8R1_DACC1DHR_Msk            /*!< DAC channel1 8-bit Right aligned data */
+
+/*****************  Bit definition for DAC_DHR12R2 register  ******************/
+#define DAC_DHR12R2_DACC2DHR_Pos            (0U)                               
+#define DAC_DHR12R2_DACC2DHR_Msk            (0xFFFU << DAC_DHR12R2_DACC2DHR_Pos) /*!< 0x00000FFF */
+#define DAC_DHR12R2_DACC2DHR                DAC_DHR12R2_DACC2DHR_Msk           /*!< DAC channel2 12-bit Right aligned data */
+
+/*****************  Bit definition for DAC_DHR12L2 register  ******************/
+#define DAC_DHR12L2_DACC2DHR_Pos            (4U)                               
+#define DAC_DHR12L2_DACC2DHR_Msk            (0xFFFU << DAC_DHR12L2_DACC2DHR_Pos) /*!< 0x0000FFF0 */
+#define DAC_DHR12L2_DACC2DHR                DAC_DHR12L2_DACC2DHR_Msk           /*!< DAC channel2 12-bit Left aligned data */
+
+/******************  Bit definition for DAC_DHR8R2 register  ******************/
+#define DAC_DHR8R2_DACC2DHR_Pos             (0U)                               
+#define DAC_DHR8R2_DACC2DHR_Msk             (0xFFU << DAC_DHR8R2_DACC2DHR_Pos) /*!< 0x000000FF */
+#define DAC_DHR8R2_DACC2DHR                 DAC_DHR8R2_DACC2DHR_Msk            /*!< DAC channel2 8-bit Right aligned data */
+
+/*****************  Bit definition for DAC_DHR12RD register  ******************/
+#define DAC_DHR12RD_DACC1DHR_Pos            (0U)                               
+#define DAC_DHR12RD_DACC1DHR_Msk            (0xFFFU << DAC_DHR12RD_DACC1DHR_Pos) /*!< 0x00000FFF */
+#define DAC_DHR12RD_DACC1DHR                DAC_DHR12RD_DACC1DHR_Msk           /*!< DAC channel1 12-bit Right aligned data */
+#define DAC_DHR12RD_DACC2DHR_Pos            (16U)                              
+#define DAC_DHR12RD_DACC2DHR_Msk            (0xFFFU << DAC_DHR12RD_DACC2DHR_Pos) /*!< 0x0FFF0000 */
+#define DAC_DHR12RD_DACC2DHR                DAC_DHR12RD_DACC2DHR_Msk           /*!< DAC channel2 12-bit Right aligned data */
+
+/*****************  Bit definition for DAC_DHR12LD register  ******************/
+#define DAC_DHR12LD_DACC1DHR_Pos            (4U)                               
+#define DAC_DHR12LD_DACC1DHR_Msk            (0xFFFU << DAC_DHR12LD_DACC1DHR_Pos) /*!< 0x0000FFF0 */
+#define DAC_DHR12LD_DACC1DHR                DAC_DHR12LD_DACC1DHR_Msk           /*!< DAC channel1 12-bit Left aligned data */
+#define DAC_DHR12LD_DACC2DHR_Pos            (20U)                              
+#define DAC_DHR12LD_DACC2DHR_Msk            (0xFFFU << DAC_DHR12LD_DACC2DHR_Pos) /*!< 0xFFF00000 */
+#define DAC_DHR12LD_DACC2DHR                DAC_DHR12LD_DACC2DHR_Msk           /*!< DAC channel2 12-bit Left aligned data */
+
+/******************  Bit definition for DAC_DHR8RD register  ******************/
+#define DAC_DHR8RD_DACC1DHR_Pos             (0U)                               
+#define DAC_DHR8RD_DACC1DHR_Msk             (0xFFU << DAC_DHR8RD_DACC1DHR_Pos) /*!< 0x000000FF */
+#define DAC_DHR8RD_DACC1DHR                 DAC_DHR8RD_DACC1DHR_Msk            /*!< DAC channel1 8-bit Right aligned data */
+#define DAC_DHR8RD_DACC2DHR_Pos             (8U)                               
+#define DAC_DHR8RD_DACC2DHR_Msk             (0xFFU << DAC_DHR8RD_DACC2DHR_Pos) /*!< 0x0000FF00 */
+#define DAC_DHR8RD_DACC2DHR                 DAC_DHR8RD_DACC2DHR_Msk            /*!< DAC channel2 8-bit Right aligned data */
+
+/*******************  Bit definition for DAC_DOR1 register  *******************/
+#define DAC_DOR1_DACC1DOR_Pos               (0U)                               
+#define DAC_DOR1_DACC1DOR_Msk               (0xFFFU << DAC_DOR1_DACC1DOR_Pos)  /*!< 0x00000FFF */
+#define DAC_DOR1_DACC1DOR                   DAC_DOR1_DACC1DOR_Msk              /*!< DAC channel1 data output */
+
+/*******************  Bit definition for DAC_DOR2 register  *******************/
+#define DAC_DOR2_DACC2DOR_Pos               (0U)                               
+#define DAC_DOR2_DACC2DOR_Msk               (0xFFFU << DAC_DOR2_DACC2DOR_Pos)  /*!< 0x00000FFF */
+#define DAC_DOR2_DACC2DOR                   DAC_DOR2_DACC2DOR_Msk              /*!< DAC channel2 data output */
+
 
 
 /*****************************************************************************/
@@ -4918,1076 +5758,6 @@ typedef struct
 #define SDIO_FIFO_FIFODATA_Msk              (0xFFFFFFFFU << SDIO_FIFO_FIFODATA_Pos) /*!< 0xFFFFFFFF */
 #define SDIO_FIFO_FIFODATA                  SDIO_FIFO_FIFODATA_Msk             /*!< Receive and transmit FIFO data */
 
-/******************************************************************************/
-/*                                                                            */
-/*                                   USB Device FS                            */
-/*                                                                            */
-/******************************************************************************/
-
-/*!< Endpoint-specific registers */
-#define  USB_EP0R                            USB_BASE                      /*!< Endpoint 0 register address */
-#define  USB_EP1R                            (USB_BASE + 0x00000004)       /*!< Endpoint 1 register address */
-#define  USB_EP2R                            (USB_BASE + 0x00000008)       /*!< Endpoint 2 register address */
-#define  USB_EP3R                            (USB_BASE + 0x0000000C)       /*!< Endpoint 3 register address */
-#define  USB_EP4R                            (USB_BASE + 0x00000010)       /*!< Endpoint 4 register address */
-#define  USB_EP5R                            (USB_BASE + 0x00000014)       /*!< Endpoint 5 register address */
-#define  USB_EP6R                            (USB_BASE + 0x00000018)       /*!< Endpoint 6 register address */
-#define  USB_EP7R                            (USB_BASE + 0x0000001C)       /*!< Endpoint 7 register address */
-
-/* bit positions */ 
-#define USB_EP_CTR_RX_Pos                       (15U)                          
-#define USB_EP_CTR_RX_Msk                       (0x1U << USB_EP_CTR_RX_Pos)    /*!< 0x00008000 */
-#define USB_EP_CTR_RX                           USB_EP_CTR_RX_Msk              /*!< EndPoint Correct TRansfer RX */
-#define USB_EP_DTOG_RX_Pos                      (14U)                          
-#define USB_EP_DTOG_RX_Msk                      (0x1U << USB_EP_DTOG_RX_Pos)   /*!< 0x00004000 */
-#define USB_EP_DTOG_RX                          USB_EP_DTOG_RX_Msk             /*!< EndPoint Data TOGGLE RX */
-#define USB_EPRX_STAT_Pos                       (12U)                          
-#define USB_EPRX_STAT_Msk                       (0x3U << USB_EPRX_STAT_Pos)    /*!< 0x00003000 */
-#define USB_EPRX_STAT                           USB_EPRX_STAT_Msk              /*!< EndPoint RX STATus bit field */
-#define USB_EP_SETUP_Pos                        (11U)                          
-#define USB_EP_SETUP_Msk                        (0x1U << USB_EP_SETUP_Pos)     /*!< 0x00000800 */
-#define USB_EP_SETUP                            USB_EP_SETUP_Msk               /*!< EndPoint SETUP */
-#define USB_EP_T_FIELD_Pos                      (9U)                           
-#define USB_EP_T_FIELD_Msk                      (0x3U << USB_EP_T_FIELD_Pos)   /*!< 0x00000600 */
-#define USB_EP_T_FIELD                          USB_EP_T_FIELD_Msk             /*!< EndPoint TYPE */
-#define USB_EP_KIND_Pos                         (8U)                           
-#define USB_EP_KIND_Msk                         (0x1U << USB_EP_KIND_Pos)      /*!< 0x00000100 */
-#define USB_EP_KIND                             USB_EP_KIND_Msk                /*!< EndPoint KIND */
-#define USB_EP_CTR_TX_Pos                       (7U)                           
-#define USB_EP_CTR_TX_Msk                       (0x1U << USB_EP_CTR_TX_Pos)    /*!< 0x00000080 */
-#define USB_EP_CTR_TX                           USB_EP_CTR_TX_Msk              /*!< EndPoint Correct TRansfer TX */
-#define USB_EP_DTOG_TX_Pos                      (6U)                           
-#define USB_EP_DTOG_TX_Msk                      (0x1U << USB_EP_DTOG_TX_Pos)   /*!< 0x00000040 */
-#define USB_EP_DTOG_TX                          USB_EP_DTOG_TX_Msk             /*!< EndPoint Data TOGGLE TX */
-#define USB_EPTX_STAT_Pos                       (4U)                           
-#define USB_EPTX_STAT_Msk                       (0x3U << USB_EPTX_STAT_Pos)    /*!< 0x00000030 */
-#define USB_EPTX_STAT                           USB_EPTX_STAT_Msk              /*!< EndPoint TX STATus bit field */
-#define USB_EPADDR_FIELD_Pos                    (0U)                           
-#define USB_EPADDR_FIELD_Msk                    (0xFU << USB_EPADDR_FIELD_Pos) /*!< 0x0000000F */
-#define USB_EPADDR_FIELD                        USB_EPADDR_FIELD_Msk           /*!< EndPoint ADDRess FIELD */
-
-/* EndPoint REGister MASK (no toggle fields) */
-#define  USB_EPREG_MASK                      (USB_EP_CTR_RX|USB_EP_SETUP|USB_EP_T_FIELD|USB_EP_KIND|USB_EP_CTR_TX|USB_EPADDR_FIELD)
-                                                                           /*!< EP_TYPE[1:0] EndPoint TYPE */
-#define USB_EP_TYPE_MASK_Pos                    (9U)                           
-#define USB_EP_TYPE_MASK_Msk                    (0x3U << USB_EP_TYPE_MASK_Pos) /*!< 0x00000600 */
-#define USB_EP_TYPE_MASK                        USB_EP_TYPE_MASK_Msk           /*!< EndPoint TYPE Mask */
-#define USB_EP_BULK                             0x00000000U                    /*!< EndPoint BULK */
-#define USB_EP_CONTROL                          0x00000200U                    /*!< EndPoint CONTROL */
-#define USB_EP_ISOCHRONOUS                      0x00000400U                    /*!< EndPoint ISOCHRONOUS */
-#define USB_EP_INTERRUPT                        0x00000600U                    /*!< EndPoint INTERRUPT */
-#define  USB_EP_T_MASK                          (~USB_EP_T_FIELD & USB_EPREG_MASK)
-
-#define  USB_EPKIND_MASK                        (~USB_EP_KIND & USB_EPREG_MASK)  /*!< EP_KIND EndPoint KIND */
-                                                                               /*!< STAT_TX[1:0] STATus for TX transfer */
-#define USB_EP_TX_DIS                           0x00000000U                    /*!< EndPoint TX DISabled */
-#define USB_EP_TX_STALL                         0x00000010U                    /*!< EndPoint TX STALLed */
-#define USB_EP_TX_NAK                           0x00000020U                    /*!< EndPoint TX NAKed */
-#define USB_EP_TX_VALID                         0x00000030U                    /*!< EndPoint TX VALID */
-#define USB_EPTX_DTOG1                          0x00000010U                    /*!< EndPoint TX Data TOGgle bit1 */
-#define USB_EPTX_DTOG2                          0x00000020U                    /*!< EndPoint TX Data TOGgle bit2 */
-#define  USB_EPTX_DTOGMASK  (USB_EPTX_STAT|USB_EPREG_MASK)
-                                                                               /*!< STAT_RX[1:0] STATus for RX transfer */
-#define USB_EP_RX_DIS                           0x00000000U                    /*!< EndPoint RX DISabled */
-#define USB_EP_RX_STALL                         0x00001000U                    /*!< EndPoint RX STALLed */
-#define USB_EP_RX_NAK                           0x00002000U                    /*!< EndPoint RX NAKed */
-#define USB_EP_RX_VALID                         0x00003000U                    /*!< EndPoint RX VALID */
-#define USB_EPRX_DTOG1                          0x00001000U                    /*!< EndPoint RX Data TOGgle bit1 */
-#define USB_EPRX_DTOG2                          0x00002000U                    /*!< EndPoint RX Data TOGgle bit1 */
-#define  USB_EPRX_DTOGMASK  (USB_EPRX_STAT|USB_EPREG_MASK)
-
-/*******************  Bit definition for USB_EP0R register  *******************/
-#define USB_EP0R_EA_Pos                         (0U)                           
-#define USB_EP0R_EA_Msk                         (0xFU << USB_EP0R_EA_Pos)      /*!< 0x0000000F */
-#define USB_EP0R_EA                             USB_EP0R_EA_Msk                /*!< Endpoint Address */
-
-#define USB_EP0R_STAT_TX_Pos                    (4U)                           
-#define USB_EP0R_STAT_TX_Msk                    (0x3U << USB_EP0R_STAT_TX_Pos) /*!< 0x00000030 */
-#define USB_EP0R_STAT_TX                        USB_EP0R_STAT_TX_Msk           /*!< STAT_TX[1:0] bits (Status bits, for transmission transfers) */
-#define USB_EP0R_STAT_TX_0                      (0x1U << USB_EP0R_STAT_TX_Pos) /*!< 0x00000010 */
-#define USB_EP0R_STAT_TX_1                      (0x2U << USB_EP0R_STAT_TX_Pos) /*!< 0x00000020 */
-
-#define USB_EP0R_DTOG_TX_Pos                    (6U)                           
-#define USB_EP0R_DTOG_TX_Msk                    (0x1U << USB_EP0R_DTOG_TX_Pos) /*!< 0x00000040 */
-#define USB_EP0R_DTOG_TX                        USB_EP0R_DTOG_TX_Msk           /*!< Data Toggle, for transmission transfers */
-#define USB_EP0R_CTR_TX_Pos                     (7U)                           
-#define USB_EP0R_CTR_TX_Msk                     (0x1U << USB_EP0R_CTR_TX_Pos)  /*!< 0x00000080 */
-#define USB_EP0R_CTR_TX                         USB_EP0R_CTR_TX_Msk            /*!< Correct Transfer for transmission */
-#define USB_EP0R_EP_KIND_Pos                    (8U)                           
-#define USB_EP0R_EP_KIND_Msk                    (0x1U << USB_EP0R_EP_KIND_Pos) /*!< 0x00000100 */
-#define USB_EP0R_EP_KIND                        USB_EP0R_EP_KIND_Msk           /*!< Endpoint Kind */
-                                                                           
-#define USB_EP0R_EP_TYPE_Pos                    (9U)                           
-#define USB_EP0R_EP_TYPE_Msk                    (0x3U << USB_EP0R_EP_TYPE_Pos) /*!< 0x00000600 */
-#define USB_EP0R_EP_TYPE                        USB_EP0R_EP_TYPE_Msk           /*!< EP_TYPE[1:0] bits (Endpoint type) */
-#define USB_EP0R_EP_TYPE_0                      (0x1U << USB_EP0R_EP_TYPE_Pos) /*!< 0x00000200 */
-#define USB_EP0R_EP_TYPE_1                      (0x2U << USB_EP0R_EP_TYPE_Pos) /*!< 0x00000400 */
-
-#define USB_EP0R_SETUP_Pos                      (11U)                          
-#define USB_EP0R_SETUP_Msk                      (0x1U << USB_EP0R_SETUP_Pos)   /*!< 0x00000800 */
-#define USB_EP0R_SETUP                          USB_EP0R_SETUP_Msk             /*!< Setup transaction completed */
-
-#define USB_EP0R_STAT_RX_Pos                    (12U)                          
-#define USB_EP0R_STAT_RX_Msk                    (0x3U << USB_EP0R_STAT_RX_Pos) /*!< 0x00003000 */
-#define USB_EP0R_STAT_RX                        USB_EP0R_STAT_RX_Msk           /*!< STAT_RX[1:0] bits (Status bits, for reception transfers) */
-#define USB_EP0R_STAT_RX_0                      (0x1U << USB_EP0R_STAT_RX_Pos) /*!< 0x00001000 */
-#define USB_EP0R_STAT_RX_1                      (0x2U << USB_EP0R_STAT_RX_Pos) /*!< 0x00002000 */
-
-#define USB_EP0R_DTOG_RX_Pos                    (14U)                          
-#define USB_EP0R_DTOG_RX_Msk                    (0x1U << USB_EP0R_DTOG_RX_Pos) /*!< 0x00004000 */
-#define USB_EP0R_DTOG_RX                        USB_EP0R_DTOG_RX_Msk           /*!< Data Toggle, for reception transfers */
-#define USB_EP0R_CTR_RX_Pos                     (15U)                          
-#define USB_EP0R_CTR_RX_Msk                     (0x1U << USB_EP0R_CTR_RX_Pos)  /*!< 0x00008000 */
-#define USB_EP0R_CTR_RX                         USB_EP0R_CTR_RX_Msk            /*!< Correct Transfer for reception */
-
-/*******************  Bit definition for USB_EP1R register  *******************/
-#define USB_EP1R_EA_Pos                         (0U)                           
-#define USB_EP1R_EA_Msk                         (0xFU << USB_EP1R_EA_Pos)      /*!< 0x0000000F */
-#define USB_EP1R_EA                             USB_EP1R_EA_Msk                /*!< Endpoint Address */
-                                                                          
-#define USB_EP1R_STAT_TX_Pos                    (4U)                           
-#define USB_EP1R_STAT_TX_Msk                    (0x3U << USB_EP1R_STAT_TX_Pos) /*!< 0x00000030 */
-#define USB_EP1R_STAT_TX                        USB_EP1R_STAT_TX_Msk           /*!< STAT_TX[1:0] bits (Status bits, for transmission transfers) */
-#define USB_EP1R_STAT_TX_0                      (0x1U << USB_EP1R_STAT_TX_Pos) /*!< 0x00000010 */
-#define USB_EP1R_STAT_TX_1                      (0x2U << USB_EP1R_STAT_TX_Pos) /*!< 0x00000020 */
-
-#define USB_EP1R_DTOG_TX_Pos                    (6U)                           
-#define USB_EP1R_DTOG_TX_Msk                    (0x1U << USB_EP1R_DTOG_TX_Pos) /*!< 0x00000040 */
-#define USB_EP1R_DTOG_TX                        USB_EP1R_DTOG_TX_Msk           /*!< Data Toggle, for transmission transfers */
-#define USB_EP1R_CTR_TX_Pos                     (7U)                           
-#define USB_EP1R_CTR_TX_Msk                     (0x1U << USB_EP1R_CTR_TX_Pos)  /*!< 0x00000080 */
-#define USB_EP1R_CTR_TX                         USB_EP1R_CTR_TX_Msk            /*!< Correct Transfer for transmission */
-#define USB_EP1R_EP_KIND_Pos                    (8U)                           
-#define USB_EP1R_EP_KIND_Msk                    (0x1U << USB_EP1R_EP_KIND_Pos) /*!< 0x00000100 */
-#define USB_EP1R_EP_KIND                        USB_EP1R_EP_KIND_Msk           /*!< Endpoint Kind */
-
-#define USB_EP1R_EP_TYPE_Pos                    (9U)                           
-#define USB_EP1R_EP_TYPE_Msk                    (0x3U << USB_EP1R_EP_TYPE_Pos) /*!< 0x00000600 */
-#define USB_EP1R_EP_TYPE                        USB_EP1R_EP_TYPE_Msk           /*!< EP_TYPE[1:0] bits (Endpoint type) */
-#define USB_EP1R_EP_TYPE_0                      (0x1U << USB_EP1R_EP_TYPE_Pos) /*!< 0x00000200 */
-#define USB_EP1R_EP_TYPE_1                      (0x2U << USB_EP1R_EP_TYPE_Pos) /*!< 0x00000400 */
-
-#define USB_EP1R_SETUP_Pos                      (11U)                          
-#define USB_EP1R_SETUP_Msk                      (0x1U << USB_EP1R_SETUP_Pos)   /*!< 0x00000800 */
-#define USB_EP1R_SETUP                          USB_EP1R_SETUP_Msk             /*!< Setup transaction completed */
-                                                                           
-#define USB_EP1R_STAT_RX_Pos                    (12U)                          
-#define USB_EP1R_STAT_RX_Msk                    (0x3U << USB_EP1R_STAT_RX_Pos) /*!< 0x00003000 */
-#define USB_EP1R_STAT_RX                        USB_EP1R_STAT_RX_Msk           /*!< STAT_RX[1:0] bits (Status bits, for reception transfers) */
-#define USB_EP1R_STAT_RX_0                      (0x1U << USB_EP1R_STAT_RX_Pos) /*!< 0x00001000 */
-#define USB_EP1R_STAT_RX_1                      (0x2U << USB_EP1R_STAT_RX_Pos) /*!< 0x00002000 */
-
-#define USB_EP1R_DTOG_RX_Pos                    (14U)                          
-#define USB_EP1R_DTOG_RX_Msk                    (0x1U << USB_EP1R_DTOG_RX_Pos) /*!< 0x00004000 */
-#define USB_EP1R_DTOG_RX                        USB_EP1R_DTOG_RX_Msk           /*!< Data Toggle, for reception transfers */
-#define USB_EP1R_CTR_RX_Pos                     (15U)                          
-#define USB_EP1R_CTR_RX_Msk                     (0x1U << USB_EP1R_CTR_RX_Pos)  /*!< 0x00008000 */
-#define USB_EP1R_CTR_RX                         USB_EP1R_CTR_RX_Msk            /*!< Correct Transfer for reception */
-
-/*******************  Bit definition for USB_EP2R register  *******************/
-#define USB_EP2R_EA_Pos                         (0U)                           
-#define USB_EP2R_EA_Msk                         (0xFU << USB_EP2R_EA_Pos)      /*!< 0x0000000F */
-#define USB_EP2R_EA                             USB_EP2R_EA_Msk                /*!< Endpoint Address */
-
-#define USB_EP2R_STAT_TX_Pos                    (4U)                           
-#define USB_EP2R_STAT_TX_Msk                    (0x3U << USB_EP2R_STAT_TX_Pos) /*!< 0x00000030 */
-#define USB_EP2R_STAT_TX                        USB_EP2R_STAT_TX_Msk           /*!< STAT_TX[1:0] bits (Status bits, for transmission transfers) */
-#define USB_EP2R_STAT_TX_0                      (0x1U << USB_EP2R_STAT_TX_Pos) /*!< 0x00000010 */
-#define USB_EP2R_STAT_TX_1                      (0x2U << USB_EP2R_STAT_TX_Pos) /*!< 0x00000020 */
-
-#define USB_EP2R_DTOG_TX_Pos                    (6U)                           
-#define USB_EP2R_DTOG_TX_Msk                    (0x1U << USB_EP2R_DTOG_TX_Pos) /*!< 0x00000040 */
-#define USB_EP2R_DTOG_TX                        USB_EP2R_DTOG_TX_Msk           /*!< Data Toggle, for transmission transfers */
-#define USB_EP2R_CTR_TX_Pos                     (7U)                           
-#define USB_EP2R_CTR_TX_Msk                     (0x1U << USB_EP2R_CTR_TX_Pos)  /*!< 0x00000080 */
-#define USB_EP2R_CTR_TX                         USB_EP2R_CTR_TX_Msk            /*!< Correct Transfer for transmission */
-#define USB_EP2R_EP_KIND_Pos                    (8U)                           
-#define USB_EP2R_EP_KIND_Msk                    (0x1U << USB_EP2R_EP_KIND_Pos) /*!< 0x00000100 */
-#define USB_EP2R_EP_KIND                        USB_EP2R_EP_KIND_Msk           /*!< Endpoint Kind */
-
-#define USB_EP2R_EP_TYPE_Pos                    (9U)                           
-#define USB_EP2R_EP_TYPE_Msk                    (0x3U << USB_EP2R_EP_TYPE_Pos) /*!< 0x00000600 */
-#define USB_EP2R_EP_TYPE                        USB_EP2R_EP_TYPE_Msk           /*!< EP_TYPE[1:0] bits (Endpoint type) */
-#define USB_EP2R_EP_TYPE_0                      (0x1U << USB_EP2R_EP_TYPE_Pos) /*!< 0x00000200 */
-#define USB_EP2R_EP_TYPE_1                      (0x2U << USB_EP2R_EP_TYPE_Pos) /*!< 0x00000400 */
-
-#define USB_EP2R_SETUP_Pos                      (11U)                          
-#define USB_EP2R_SETUP_Msk                      (0x1U << USB_EP2R_SETUP_Pos)   /*!< 0x00000800 */
-#define USB_EP2R_SETUP                          USB_EP2R_SETUP_Msk             /*!< Setup transaction completed */
-
-#define USB_EP2R_STAT_RX_Pos                    (12U)                          
-#define USB_EP2R_STAT_RX_Msk                    (0x3U << USB_EP2R_STAT_RX_Pos) /*!< 0x00003000 */
-#define USB_EP2R_STAT_RX                        USB_EP2R_STAT_RX_Msk           /*!< STAT_RX[1:0] bits (Status bits, for reception transfers) */
-#define USB_EP2R_STAT_RX_0                      (0x1U << USB_EP2R_STAT_RX_Pos) /*!< 0x00001000 */
-#define USB_EP2R_STAT_RX_1                      (0x2U << USB_EP2R_STAT_RX_Pos) /*!< 0x00002000 */
-
-#define USB_EP2R_DTOG_RX_Pos                    (14U)                          
-#define USB_EP2R_DTOG_RX_Msk                    (0x1U << USB_EP2R_DTOG_RX_Pos) /*!< 0x00004000 */
-#define USB_EP2R_DTOG_RX                        USB_EP2R_DTOG_RX_Msk           /*!< Data Toggle, for reception transfers */
-#define USB_EP2R_CTR_RX_Pos                     (15U)                          
-#define USB_EP2R_CTR_RX_Msk                     (0x1U << USB_EP2R_CTR_RX_Pos)  /*!< 0x00008000 */
-#define USB_EP2R_CTR_RX                         USB_EP2R_CTR_RX_Msk            /*!< Correct Transfer for reception */
-
-/*******************  Bit definition for USB_EP3R register  *******************/
-#define USB_EP3R_EA_Pos                         (0U)                           
-#define USB_EP3R_EA_Msk                         (0xFU << USB_EP3R_EA_Pos)      /*!< 0x0000000F */
-#define USB_EP3R_EA                             USB_EP3R_EA_Msk                /*!< Endpoint Address */
-
-#define USB_EP3R_STAT_TX_Pos                    (4U)                           
-#define USB_EP3R_STAT_TX_Msk                    (0x3U << USB_EP3R_STAT_TX_Pos) /*!< 0x00000030 */
-#define USB_EP3R_STAT_TX                        USB_EP3R_STAT_TX_Msk           /*!< STAT_TX[1:0] bits (Status bits, for transmission transfers) */
-#define USB_EP3R_STAT_TX_0                      (0x1U << USB_EP3R_STAT_TX_Pos) /*!< 0x00000010 */
-#define USB_EP3R_STAT_TX_1                      (0x2U << USB_EP3R_STAT_TX_Pos) /*!< 0x00000020 */
-
-#define USB_EP3R_DTOG_TX_Pos                    (6U)                           
-#define USB_EP3R_DTOG_TX_Msk                    (0x1U << USB_EP3R_DTOG_TX_Pos) /*!< 0x00000040 */
-#define USB_EP3R_DTOG_TX                        USB_EP3R_DTOG_TX_Msk           /*!< Data Toggle, for transmission transfers */
-#define USB_EP3R_CTR_TX_Pos                     (7U)                           
-#define USB_EP3R_CTR_TX_Msk                     (0x1U << USB_EP3R_CTR_TX_Pos)  /*!< 0x00000080 */
-#define USB_EP3R_CTR_TX                         USB_EP3R_CTR_TX_Msk            /*!< Correct Transfer for transmission */
-#define USB_EP3R_EP_KIND_Pos                    (8U)                           
-#define USB_EP3R_EP_KIND_Msk                    (0x1U << USB_EP3R_EP_KIND_Pos) /*!< 0x00000100 */
-#define USB_EP3R_EP_KIND                        USB_EP3R_EP_KIND_Msk           /*!< Endpoint Kind */
-
-#define USB_EP3R_EP_TYPE_Pos                    (9U)                           
-#define USB_EP3R_EP_TYPE_Msk                    (0x3U << USB_EP3R_EP_TYPE_Pos) /*!< 0x00000600 */
-#define USB_EP3R_EP_TYPE                        USB_EP3R_EP_TYPE_Msk           /*!< EP_TYPE[1:0] bits (Endpoint type) */
-#define USB_EP3R_EP_TYPE_0                      (0x1U << USB_EP3R_EP_TYPE_Pos) /*!< 0x00000200 */
-#define USB_EP3R_EP_TYPE_1                      (0x2U << USB_EP3R_EP_TYPE_Pos) /*!< 0x00000400 */
-
-#define USB_EP3R_SETUP_Pos                      (11U)                          
-#define USB_EP3R_SETUP_Msk                      (0x1U << USB_EP3R_SETUP_Pos)   /*!< 0x00000800 */
-#define USB_EP3R_SETUP                          USB_EP3R_SETUP_Msk             /*!< Setup transaction completed */
-
-#define USB_EP3R_STAT_RX_Pos                    (12U)                          
-#define USB_EP3R_STAT_RX_Msk                    (0x3U << USB_EP3R_STAT_RX_Pos) /*!< 0x00003000 */
-#define USB_EP3R_STAT_RX                        USB_EP3R_STAT_RX_Msk           /*!< STAT_RX[1:0] bits (Status bits, for reception transfers) */
-#define USB_EP3R_STAT_RX_0                      (0x1U << USB_EP3R_STAT_RX_Pos) /*!< 0x00001000 */
-#define USB_EP3R_STAT_RX_1                      (0x2U << USB_EP3R_STAT_RX_Pos) /*!< 0x00002000 */
-
-#define USB_EP3R_DTOG_RX_Pos                    (14U)                          
-#define USB_EP3R_DTOG_RX_Msk                    (0x1U << USB_EP3R_DTOG_RX_Pos) /*!< 0x00004000 */
-#define USB_EP3R_DTOG_RX                        USB_EP3R_DTOG_RX_Msk           /*!< Data Toggle, for reception transfers */
-#define USB_EP3R_CTR_RX_Pos                     (15U)                          
-#define USB_EP3R_CTR_RX_Msk                     (0x1U << USB_EP3R_CTR_RX_Pos)  /*!< 0x00008000 */
-#define USB_EP3R_CTR_RX                         USB_EP3R_CTR_RX_Msk            /*!< Correct Transfer for reception */
-
-/*******************  Bit definition for USB_EP4R register  *******************/
-#define USB_EP4R_EA_Pos                         (0U)                           
-#define USB_EP4R_EA_Msk                         (0xFU << USB_EP4R_EA_Pos)      /*!< 0x0000000F */
-#define USB_EP4R_EA                             USB_EP4R_EA_Msk                /*!< Endpoint Address */
-
-#define USB_EP4R_STAT_TX_Pos                    (4U)                           
-#define USB_EP4R_STAT_TX_Msk                    (0x3U << USB_EP4R_STAT_TX_Pos) /*!< 0x00000030 */
-#define USB_EP4R_STAT_TX                        USB_EP4R_STAT_TX_Msk           /*!< STAT_TX[1:0] bits (Status bits, for transmission transfers) */
-#define USB_EP4R_STAT_TX_0                      (0x1U << USB_EP4R_STAT_TX_Pos) /*!< 0x00000010 */
-#define USB_EP4R_STAT_TX_1                      (0x2U << USB_EP4R_STAT_TX_Pos) /*!< 0x00000020 */
-
-#define USB_EP4R_DTOG_TX_Pos                    (6U)                           
-#define USB_EP4R_DTOG_TX_Msk                    (0x1U << USB_EP4R_DTOG_TX_Pos) /*!< 0x00000040 */
-#define USB_EP4R_DTOG_TX                        USB_EP4R_DTOG_TX_Msk           /*!< Data Toggle, for transmission transfers */
-#define USB_EP4R_CTR_TX_Pos                     (7U)                           
-#define USB_EP4R_CTR_TX_Msk                     (0x1U << USB_EP4R_CTR_TX_Pos)  /*!< 0x00000080 */
-#define USB_EP4R_CTR_TX                         USB_EP4R_CTR_TX_Msk            /*!< Correct Transfer for transmission */
-#define USB_EP4R_EP_KIND_Pos                    (8U)                           
-#define USB_EP4R_EP_KIND_Msk                    (0x1U << USB_EP4R_EP_KIND_Pos) /*!< 0x00000100 */
-#define USB_EP4R_EP_KIND                        USB_EP4R_EP_KIND_Msk           /*!< Endpoint Kind */
-
-#define USB_EP4R_EP_TYPE_Pos                    (9U)                           
-#define USB_EP4R_EP_TYPE_Msk                    (0x3U << USB_EP4R_EP_TYPE_Pos) /*!< 0x00000600 */
-#define USB_EP4R_EP_TYPE                        USB_EP4R_EP_TYPE_Msk           /*!< EP_TYPE[1:0] bits (Endpoint type) */
-#define USB_EP4R_EP_TYPE_0                      (0x1U << USB_EP4R_EP_TYPE_Pos) /*!< 0x00000200 */
-#define USB_EP4R_EP_TYPE_1                      (0x2U << USB_EP4R_EP_TYPE_Pos) /*!< 0x00000400 */
-
-#define USB_EP4R_SETUP_Pos                      (11U)                          
-#define USB_EP4R_SETUP_Msk                      (0x1U << USB_EP4R_SETUP_Pos)   /*!< 0x00000800 */
-#define USB_EP4R_SETUP                          USB_EP4R_SETUP_Msk             /*!< Setup transaction completed */
-
-#define USB_EP4R_STAT_RX_Pos                    (12U)                          
-#define USB_EP4R_STAT_RX_Msk                    (0x3U << USB_EP4R_STAT_RX_Pos) /*!< 0x00003000 */
-#define USB_EP4R_STAT_RX                        USB_EP4R_STAT_RX_Msk           /*!< STAT_RX[1:0] bits (Status bits, for reception transfers) */
-#define USB_EP4R_STAT_RX_0                      (0x1U << USB_EP4R_STAT_RX_Pos) /*!< 0x00001000 */
-#define USB_EP4R_STAT_RX_1                      (0x2U << USB_EP4R_STAT_RX_Pos) /*!< 0x00002000 */
-
-#define USB_EP4R_DTOG_RX_Pos                    (14U)                          
-#define USB_EP4R_DTOG_RX_Msk                    (0x1U << USB_EP4R_DTOG_RX_Pos) /*!< 0x00004000 */
-#define USB_EP4R_DTOG_RX                        USB_EP4R_DTOG_RX_Msk           /*!< Data Toggle, for reception transfers */
-#define USB_EP4R_CTR_RX_Pos                     (15U)                          
-#define USB_EP4R_CTR_RX_Msk                     (0x1U << USB_EP4R_CTR_RX_Pos)  /*!< 0x00008000 */
-#define USB_EP4R_CTR_RX                         USB_EP4R_CTR_RX_Msk            /*!< Correct Transfer for reception */
-
-/*******************  Bit definition for USB_EP5R register  *******************/
-#define USB_EP5R_EA_Pos                         (0U)                           
-#define USB_EP5R_EA_Msk                         (0xFU << USB_EP5R_EA_Pos)      /*!< 0x0000000F */
-#define USB_EP5R_EA                             USB_EP5R_EA_Msk                /*!< Endpoint Address */
-
-#define USB_EP5R_STAT_TX_Pos                    (4U)                           
-#define USB_EP5R_STAT_TX_Msk                    (0x3U << USB_EP5R_STAT_TX_Pos) /*!< 0x00000030 */
-#define USB_EP5R_STAT_TX                        USB_EP5R_STAT_TX_Msk           /*!< STAT_TX[1:0] bits (Status bits, for transmission transfers) */
-#define USB_EP5R_STAT_TX_0                      (0x1U << USB_EP5R_STAT_TX_Pos) /*!< 0x00000010 */
-#define USB_EP5R_STAT_TX_1                      (0x2U << USB_EP5R_STAT_TX_Pos) /*!< 0x00000020 */
-
-#define USB_EP5R_DTOG_TX_Pos                    (6U)                           
-#define USB_EP5R_DTOG_TX_Msk                    (0x1U << USB_EP5R_DTOG_TX_Pos) /*!< 0x00000040 */
-#define USB_EP5R_DTOG_TX                        USB_EP5R_DTOG_TX_Msk           /*!< Data Toggle, for transmission transfers */
-#define USB_EP5R_CTR_TX_Pos                     (7U)                           
-#define USB_EP5R_CTR_TX_Msk                     (0x1U << USB_EP5R_CTR_TX_Pos)  /*!< 0x00000080 */
-#define USB_EP5R_CTR_TX                         USB_EP5R_CTR_TX_Msk            /*!< Correct Transfer for transmission */
-#define USB_EP5R_EP_KIND_Pos                    (8U)                           
-#define USB_EP5R_EP_KIND_Msk                    (0x1U << USB_EP5R_EP_KIND_Pos) /*!< 0x00000100 */
-#define USB_EP5R_EP_KIND                        USB_EP5R_EP_KIND_Msk           /*!< Endpoint Kind */
-
-#define USB_EP5R_EP_TYPE_Pos                    (9U)                           
-#define USB_EP5R_EP_TYPE_Msk                    (0x3U << USB_EP5R_EP_TYPE_Pos) /*!< 0x00000600 */
-#define USB_EP5R_EP_TYPE                        USB_EP5R_EP_TYPE_Msk           /*!< EP_TYPE[1:0] bits (Endpoint type) */
-#define USB_EP5R_EP_TYPE_0                      (0x1U << USB_EP5R_EP_TYPE_Pos) /*!< 0x00000200 */
-#define USB_EP5R_EP_TYPE_1                      (0x2U << USB_EP5R_EP_TYPE_Pos) /*!< 0x00000400 */
-
-#define USB_EP5R_SETUP_Pos                      (11U)                          
-#define USB_EP5R_SETUP_Msk                      (0x1U << USB_EP5R_SETUP_Pos)   /*!< 0x00000800 */
-#define USB_EP5R_SETUP                          USB_EP5R_SETUP_Msk             /*!< Setup transaction completed */
-
-#define USB_EP5R_STAT_RX_Pos                    (12U)                          
-#define USB_EP5R_STAT_RX_Msk                    (0x3U << USB_EP5R_STAT_RX_Pos) /*!< 0x00003000 */
-#define USB_EP5R_STAT_RX                        USB_EP5R_STAT_RX_Msk           /*!< STAT_RX[1:0] bits (Status bits, for reception transfers) */
-#define USB_EP5R_STAT_RX_0                      (0x1U << USB_EP5R_STAT_RX_Pos) /*!< 0x00001000 */
-#define USB_EP5R_STAT_RX_1                      (0x2U << USB_EP5R_STAT_RX_Pos) /*!< 0x00002000 */
-
-#define USB_EP5R_DTOG_RX_Pos                    (14U)                          
-#define USB_EP5R_DTOG_RX_Msk                    (0x1U << USB_EP5R_DTOG_RX_Pos) /*!< 0x00004000 */
-#define USB_EP5R_DTOG_RX                        USB_EP5R_DTOG_RX_Msk           /*!< Data Toggle, for reception transfers */
-#define USB_EP5R_CTR_RX_Pos                     (15U)                          
-#define USB_EP5R_CTR_RX_Msk                     (0x1U << USB_EP5R_CTR_RX_Pos)  /*!< 0x00008000 */
-#define USB_EP5R_CTR_RX                         USB_EP5R_CTR_RX_Msk            /*!< Correct Transfer for reception */
-
-/*******************  Bit definition for USB_EP6R register  *******************/
-#define USB_EP6R_EA_Pos                         (0U)                           
-#define USB_EP6R_EA_Msk                         (0xFU << USB_EP6R_EA_Pos)      /*!< 0x0000000F */
-#define USB_EP6R_EA                             USB_EP6R_EA_Msk                /*!< Endpoint Address */
-
-#define USB_EP6R_STAT_TX_Pos                    (4U)                           
-#define USB_EP6R_STAT_TX_Msk                    (0x3U << USB_EP6R_STAT_TX_Pos) /*!< 0x00000030 */
-#define USB_EP6R_STAT_TX                        USB_EP6R_STAT_TX_Msk           /*!< STAT_TX[1:0] bits (Status bits, for transmission transfers) */
-#define USB_EP6R_STAT_TX_0                      (0x1U << USB_EP6R_STAT_TX_Pos) /*!< 0x00000010 */
-#define USB_EP6R_STAT_TX_1                      (0x2U << USB_EP6R_STAT_TX_Pos) /*!< 0x00000020 */
-
-#define USB_EP6R_DTOG_TX_Pos                    (6U)                           
-#define USB_EP6R_DTOG_TX_Msk                    (0x1U << USB_EP6R_DTOG_TX_Pos) /*!< 0x00000040 */
-#define USB_EP6R_DTOG_TX                        USB_EP6R_DTOG_TX_Msk           /*!< Data Toggle, for transmission transfers */
-#define USB_EP6R_CTR_TX_Pos                     (7U)                           
-#define USB_EP6R_CTR_TX_Msk                     (0x1U << USB_EP6R_CTR_TX_Pos)  /*!< 0x00000080 */
-#define USB_EP6R_CTR_TX                         USB_EP6R_CTR_TX_Msk            /*!< Correct Transfer for transmission */
-#define USB_EP6R_EP_KIND_Pos                    (8U)                           
-#define USB_EP6R_EP_KIND_Msk                    (0x1U << USB_EP6R_EP_KIND_Pos) /*!< 0x00000100 */
-#define USB_EP6R_EP_KIND                        USB_EP6R_EP_KIND_Msk           /*!< Endpoint Kind */
-
-#define USB_EP6R_EP_TYPE_Pos                    (9U)                           
-#define USB_EP6R_EP_TYPE_Msk                    (0x3U << USB_EP6R_EP_TYPE_Pos) /*!< 0x00000600 */
-#define USB_EP6R_EP_TYPE                        USB_EP6R_EP_TYPE_Msk           /*!< EP_TYPE[1:0] bits (Endpoint type) */
-#define USB_EP6R_EP_TYPE_0                      (0x1U << USB_EP6R_EP_TYPE_Pos) /*!< 0x00000200 */
-#define USB_EP6R_EP_TYPE_1                      (0x2U << USB_EP6R_EP_TYPE_Pos) /*!< 0x00000400 */
-
-#define USB_EP6R_SETUP_Pos                      (11U)                          
-#define USB_EP6R_SETUP_Msk                      (0x1U << USB_EP6R_SETUP_Pos)   /*!< 0x00000800 */
-#define USB_EP6R_SETUP                          USB_EP6R_SETUP_Msk             /*!< Setup transaction completed */
-
-#define USB_EP6R_STAT_RX_Pos                    (12U)                          
-#define USB_EP6R_STAT_RX_Msk                    (0x3U << USB_EP6R_STAT_RX_Pos) /*!< 0x00003000 */
-#define USB_EP6R_STAT_RX                        USB_EP6R_STAT_RX_Msk           /*!< STAT_RX[1:0] bits (Status bits, for reception transfers) */
-#define USB_EP6R_STAT_RX_0                      (0x1U << USB_EP6R_STAT_RX_Pos) /*!< 0x00001000 */
-#define USB_EP6R_STAT_RX_1                      (0x2U << USB_EP6R_STAT_RX_Pos) /*!< 0x00002000 */
-
-#define USB_EP6R_DTOG_RX_Pos                    (14U)                          
-#define USB_EP6R_DTOG_RX_Msk                    (0x1U << USB_EP6R_DTOG_RX_Pos) /*!< 0x00004000 */
-#define USB_EP6R_DTOG_RX                        USB_EP6R_DTOG_RX_Msk           /*!< Data Toggle, for reception transfers */
-#define USB_EP6R_CTR_RX_Pos                     (15U)                          
-#define USB_EP6R_CTR_RX_Msk                     (0x1U << USB_EP6R_CTR_RX_Pos)  /*!< 0x00008000 */
-#define USB_EP6R_CTR_RX                         USB_EP6R_CTR_RX_Msk            /*!< Correct Transfer for reception */
-
-/*******************  Bit definition for USB_EP7R register  *******************/
-#define USB_EP7R_EA_Pos                         (0U)                           
-#define USB_EP7R_EA_Msk                         (0xFU << USB_EP7R_EA_Pos)      /*!< 0x0000000F */
-#define USB_EP7R_EA                             USB_EP7R_EA_Msk                /*!< Endpoint Address */
-
-#define USB_EP7R_STAT_TX_Pos                    (4U)                           
-#define USB_EP7R_STAT_TX_Msk                    (0x3U << USB_EP7R_STAT_TX_Pos) /*!< 0x00000030 */
-#define USB_EP7R_STAT_TX                        USB_EP7R_STAT_TX_Msk           /*!< STAT_TX[1:0] bits (Status bits, for transmission transfers) */
-#define USB_EP7R_STAT_TX_0                      (0x1U << USB_EP7R_STAT_TX_Pos) /*!< 0x00000010 */
-#define USB_EP7R_STAT_TX_1                      (0x2U << USB_EP7R_STAT_TX_Pos) /*!< 0x00000020 */
-
-#define USB_EP7R_DTOG_TX_Pos                    (6U)                           
-#define USB_EP7R_DTOG_TX_Msk                    (0x1U << USB_EP7R_DTOG_TX_Pos) /*!< 0x00000040 */
-#define USB_EP7R_DTOG_TX                        USB_EP7R_DTOG_TX_Msk           /*!< Data Toggle, for transmission transfers */
-#define USB_EP7R_CTR_TX_Pos                     (7U)                           
-#define USB_EP7R_CTR_TX_Msk                     (0x1U << USB_EP7R_CTR_TX_Pos)  /*!< 0x00000080 */
-#define USB_EP7R_CTR_TX                         USB_EP7R_CTR_TX_Msk            /*!< Correct Transfer for transmission */
-#define USB_EP7R_EP_KIND_Pos                    (8U)                           
-#define USB_EP7R_EP_KIND_Msk                    (0x1U << USB_EP7R_EP_KIND_Pos) /*!< 0x00000100 */
-#define USB_EP7R_EP_KIND                        USB_EP7R_EP_KIND_Msk           /*!< Endpoint Kind */
-
-#define USB_EP7R_EP_TYPE_Pos                    (9U)                           
-#define USB_EP7R_EP_TYPE_Msk                    (0x3U << USB_EP7R_EP_TYPE_Pos) /*!< 0x00000600 */
-#define USB_EP7R_EP_TYPE                        USB_EP7R_EP_TYPE_Msk           /*!< EP_TYPE[1:0] bits (Endpoint type) */
-#define USB_EP7R_EP_TYPE_0                      (0x1U << USB_EP7R_EP_TYPE_Pos) /*!< 0x00000200 */
-#define USB_EP7R_EP_TYPE_1                      (0x2U << USB_EP7R_EP_TYPE_Pos) /*!< 0x00000400 */
-
-#define USB_EP7R_SETUP_Pos                      (11U)                          
-#define USB_EP7R_SETUP_Msk                      (0x1U << USB_EP7R_SETUP_Pos)   /*!< 0x00000800 */
-#define USB_EP7R_SETUP                          USB_EP7R_SETUP_Msk             /*!< Setup transaction completed */
-
-#define USB_EP7R_STAT_RX_Pos                    (12U)                          
-#define USB_EP7R_STAT_RX_Msk                    (0x3U << USB_EP7R_STAT_RX_Pos) /*!< 0x00003000 */
-#define USB_EP7R_STAT_RX                        USB_EP7R_STAT_RX_Msk           /*!< STAT_RX[1:0] bits (Status bits, for reception transfers) */
-#define USB_EP7R_STAT_RX_0                      (0x1U << USB_EP7R_STAT_RX_Pos) /*!< 0x00001000 */
-#define USB_EP7R_STAT_RX_1                      (0x2U << USB_EP7R_STAT_RX_Pos) /*!< 0x00002000 */
-
-#define USB_EP7R_DTOG_RX_Pos                    (14U)                          
-#define USB_EP7R_DTOG_RX_Msk                    (0x1U << USB_EP7R_DTOG_RX_Pos) /*!< 0x00004000 */
-#define USB_EP7R_DTOG_RX                        USB_EP7R_DTOG_RX_Msk           /*!< Data Toggle, for reception transfers */
-#define USB_EP7R_CTR_RX_Pos                     (15U)                          
-#define USB_EP7R_CTR_RX_Msk                     (0x1U << USB_EP7R_CTR_RX_Pos)  /*!< 0x00008000 */
-#define USB_EP7R_CTR_RX                         USB_EP7R_CTR_RX_Msk            /*!< Correct Transfer for reception */
-
-/*!< Common registers */
-/*******************  Bit definition for USB_CNTR register  *******************/
-#define USB_CNTR_FRES_Pos                       (0U)                           
-#define USB_CNTR_FRES_Msk                       (0x1U << USB_CNTR_FRES_Pos)    /*!< 0x00000001 */
-#define USB_CNTR_FRES                           USB_CNTR_FRES_Msk              /*!< Force USB Reset */
-#define USB_CNTR_PDWN_Pos                       (1U)                           
-#define USB_CNTR_PDWN_Msk                       (0x1U << USB_CNTR_PDWN_Pos)    /*!< 0x00000002 */
-#define USB_CNTR_PDWN                           USB_CNTR_PDWN_Msk              /*!< Power down */
-#define USB_CNTR_LP_MODE_Pos                    (2U)                           
-#define USB_CNTR_LP_MODE_Msk                    (0x1U << USB_CNTR_LP_MODE_Pos) /*!< 0x00000004 */
-#define USB_CNTR_LP_MODE                        USB_CNTR_LP_MODE_Msk           /*!< Low-power mode */
-#define USB_CNTR_FSUSP_Pos                      (3U)                           
-#define USB_CNTR_FSUSP_Msk                      (0x1U << USB_CNTR_FSUSP_Pos)   /*!< 0x00000008 */
-#define USB_CNTR_FSUSP                          USB_CNTR_FSUSP_Msk             /*!< Force suspend */
-#define USB_CNTR_RESUME_Pos                     (4U)                           
-#define USB_CNTR_RESUME_Msk                     (0x1U << USB_CNTR_RESUME_Pos)  /*!< 0x00000010 */
-#define USB_CNTR_RESUME                         USB_CNTR_RESUME_Msk            /*!< Resume request */
-#define USB_CNTR_ESOFM_Pos                      (8U)                           
-#define USB_CNTR_ESOFM_Msk                      (0x1U << USB_CNTR_ESOFM_Pos)   /*!< 0x00000100 */
-#define USB_CNTR_ESOFM                          USB_CNTR_ESOFM_Msk             /*!< Expected Start Of Frame Interrupt Mask */
-#define USB_CNTR_SOFM_Pos                       (9U)                           
-#define USB_CNTR_SOFM_Msk                       (0x1U << USB_CNTR_SOFM_Pos)    /*!< 0x00000200 */
-#define USB_CNTR_SOFM                           USB_CNTR_SOFM_Msk              /*!< Start Of Frame Interrupt Mask */
-#define USB_CNTR_RESETM_Pos                     (10U)                          
-#define USB_CNTR_RESETM_Msk                     (0x1U << USB_CNTR_RESETM_Pos)  /*!< 0x00000400 */
-#define USB_CNTR_RESETM                         USB_CNTR_RESETM_Msk            /*!< RESET Interrupt Mask */
-#define USB_CNTR_SUSPM_Pos                      (11U)                          
-#define USB_CNTR_SUSPM_Msk                      (0x1U << USB_CNTR_SUSPM_Pos)   /*!< 0x00000800 */
-#define USB_CNTR_SUSPM                          USB_CNTR_SUSPM_Msk             /*!< Suspend mode Interrupt Mask */
-#define USB_CNTR_WKUPM_Pos                      (12U)                          
-#define USB_CNTR_WKUPM_Msk                      (0x1U << USB_CNTR_WKUPM_Pos)   /*!< 0x00001000 */
-#define USB_CNTR_WKUPM                          USB_CNTR_WKUPM_Msk             /*!< Wakeup Interrupt Mask */
-#define USB_CNTR_ERRM_Pos                       (13U)                          
-#define USB_CNTR_ERRM_Msk                       (0x1U << USB_CNTR_ERRM_Pos)    /*!< 0x00002000 */
-#define USB_CNTR_ERRM                           USB_CNTR_ERRM_Msk              /*!< Error Interrupt Mask */
-#define USB_CNTR_PMAOVRM_Pos                    (14U)                          
-#define USB_CNTR_PMAOVRM_Msk                    (0x1U << USB_CNTR_PMAOVRM_Pos) /*!< 0x00004000 */
-#define USB_CNTR_PMAOVRM                        USB_CNTR_PMAOVRM_Msk           /*!< Packet Memory Area Over / Underrun Interrupt Mask */
-#define USB_CNTR_CTRM_Pos                       (15U)                          
-#define USB_CNTR_CTRM_Msk                       (0x1U << USB_CNTR_CTRM_Pos)    /*!< 0x00008000 */
-#define USB_CNTR_CTRM                           USB_CNTR_CTRM_Msk              /*!< Correct Transfer Interrupt Mask */
-
-/*******************  Bit definition for USB_ISTR register  *******************/
-#define USB_ISTR_EP_ID_Pos                      (0U)                           
-#define USB_ISTR_EP_ID_Msk                      (0xFU << USB_ISTR_EP_ID_Pos)   /*!< 0x0000000F */
-#define USB_ISTR_EP_ID                          USB_ISTR_EP_ID_Msk             /*!< Endpoint Identifier */
-#define USB_ISTR_DIR_Pos                        (4U)                           
-#define USB_ISTR_DIR_Msk                        (0x1U << USB_ISTR_DIR_Pos)     /*!< 0x00000010 */
-#define USB_ISTR_DIR                            USB_ISTR_DIR_Msk               /*!< Direction of transaction */
-#define USB_ISTR_ESOF_Pos                       (8U)                           
-#define USB_ISTR_ESOF_Msk                       (0x1U << USB_ISTR_ESOF_Pos)    /*!< 0x00000100 */
-#define USB_ISTR_ESOF                           USB_ISTR_ESOF_Msk              /*!< Expected Start Of Frame */
-#define USB_ISTR_SOF_Pos                        (9U)                           
-#define USB_ISTR_SOF_Msk                        (0x1U << USB_ISTR_SOF_Pos)     /*!< 0x00000200 */
-#define USB_ISTR_SOF                            USB_ISTR_SOF_Msk               /*!< Start Of Frame */
-#define USB_ISTR_RESET_Pos                      (10U)                          
-#define USB_ISTR_RESET_Msk                      (0x1U << USB_ISTR_RESET_Pos)   /*!< 0x00000400 */
-#define USB_ISTR_RESET                          USB_ISTR_RESET_Msk             /*!< USB RESET request */
-#define USB_ISTR_SUSP_Pos                       (11U)                          
-#define USB_ISTR_SUSP_Msk                       (0x1U << USB_ISTR_SUSP_Pos)    /*!< 0x00000800 */
-#define USB_ISTR_SUSP                           USB_ISTR_SUSP_Msk              /*!< Suspend mode request */
-#define USB_ISTR_WKUP_Pos                       (12U)                          
-#define USB_ISTR_WKUP_Msk                       (0x1U << USB_ISTR_WKUP_Pos)    /*!< 0x00001000 */
-#define USB_ISTR_WKUP                           USB_ISTR_WKUP_Msk              /*!< Wake up */
-#define USB_ISTR_ERR_Pos                        (13U)                          
-#define USB_ISTR_ERR_Msk                        (0x1U << USB_ISTR_ERR_Pos)     /*!< 0x00002000 */
-#define USB_ISTR_ERR                            USB_ISTR_ERR_Msk               /*!< Error */
-#define USB_ISTR_PMAOVR_Pos                     (14U)                          
-#define USB_ISTR_PMAOVR_Msk                     (0x1U << USB_ISTR_PMAOVR_Pos)  /*!< 0x00004000 */
-#define USB_ISTR_PMAOVR                         USB_ISTR_PMAOVR_Msk            /*!< Packet Memory Area Over / Underrun */
-#define USB_ISTR_CTR_Pos                        (15U)                          
-#define USB_ISTR_CTR_Msk                        (0x1U << USB_ISTR_CTR_Pos)     /*!< 0x00008000 */
-#define USB_ISTR_CTR                            USB_ISTR_CTR_Msk               /*!< Correct Transfer */
-
-/*******************  Bit definition for USB_FNR register  ********************/
-#define USB_FNR_FN_Pos                          (0U)                           
-#define USB_FNR_FN_Msk                          (0x7FFU << USB_FNR_FN_Pos)     /*!< 0x000007FF */
-#define USB_FNR_FN                              USB_FNR_FN_Msk                 /*!< Frame Number */
-#define USB_FNR_LSOF_Pos                        (11U)                          
-#define USB_FNR_LSOF_Msk                        (0x3U << USB_FNR_LSOF_Pos)     /*!< 0x00001800 */
-#define USB_FNR_LSOF                            USB_FNR_LSOF_Msk               /*!< Lost SOF */
-#define USB_FNR_LCK_Pos                         (13U)                          
-#define USB_FNR_LCK_Msk                         (0x1U << USB_FNR_LCK_Pos)      /*!< 0x00002000 */
-#define USB_FNR_LCK                             USB_FNR_LCK_Msk                /*!< Locked */
-#define USB_FNR_RXDM_Pos                        (14U)                          
-#define USB_FNR_RXDM_Msk                        (0x1U << USB_FNR_RXDM_Pos)     /*!< 0x00004000 */
-#define USB_FNR_RXDM                            USB_FNR_RXDM_Msk               /*!< Receive Data - Line Status */
-#define USB_FNR_RXDP_Pos                        (15U)                          
-#define USB_FNR_RXDP_Msk                        (0x1U << USB_FNR_RXDP_Pos)     /*!< 0x00008000 */
-#define USB_FNR_RXDP                            USB_FNR_RXDP_Msk               /*!< Receive Data + Line Status */
-
-/******************  Bit definition for USB_DADDR register  *******************/
-#define USB_DADDR_ADD_Pos                       (0U)                           
-#define USB_DADDR_ADD_Msk                       (0x7FU << USB_DADDR_ADD_Pos)   /*!< 0x0000007F */
-#define USB_DADDR_ADD                           USB_DADDR_ADD_Msk              /*!< ADD[6:0] bits (Device Address) */
-#define USB_DADDR_ADD0_Pos                      (0U)                           
-#define USB_DADDR_ADD0_Msk                      (0x1U << USB_DADDR_ADD0_Pos)   /*!< 0x00000001 */
-#define USB_DADDR_ADD0                          USB_DADDR_ADD0_Msk             /*!< Bit 0 */
-#define USB_DADDR_ADD1_Pos                      (1U)                           
-#define USB_DADDR_ADD1_Msk                      (0x1U << USB_DADDR_ADD1_Pos)   /*!< 0x00000002 */
-#define USB_DADDR_ADD1                          USB_DADDR_ADD1_Msk             /*!< Bit 1 */
-#define USB_DADDR_ADD2_Pos                      (2U)                           
-#define USB_DADDR_ADD2_Msk                      (0x1U << USB_DADDR_ADD2_Pos)   /*!< 0x00000004 */
-#define USB_DADDR_ADD2                          USB_DADDR_ADD2_Msk             /*!< Bit 2 */
-#define USB_DADDR_ADD3_Pos                      (3U)                           
-#define USB_DADDR_ADD3_Msk                      (0x1U << USB_DADDR_ADD3_Pos)   /*!< 0x00000008 */
-#define USB_DADDR_ADD3                          USB_DADDR_ADD3_Msk             /*!< Bit 3 */
-#define USB_DADDR_ADD4_Pos                      (4U)                           
-#define USB_DADDR_ADD4_Msk                      (0x1U << USB_DADDR_ADD4_Pos)   /*!< 0x00000010 */
-#define USB_DADDR_ADD4                          USB_DADDR_ADD4_Msk             /*!< Bit 4 */
-#define USB_DADDR_ADD5_Pos                      (5U)                           
-#define USB_DADDR_ADD5_Msk                      (0x1U << USB_DADDR_ADD5_Pos)   /*!< 0x00000020 */
-#define USB_DADDR_ADD5                          USB_DADDR_ADD5_Msk             /*!< Bit 5 */
-#define USB_DADDR_ADD6_Pos                      (6U)                           
-#define USB_DADDR_ADD6_Msk                      (0x1U << USB_DADDR_ADD6_Pos)   /*!< 0x00000040 */
-#define USB_DADDR_ADD6                          USB_DADDR_ADD6_Msk             /*!< Bit 6 */
-
-#define USB_DADDR_EF_Pos                        (7U)                           
-#define USB_DADDR_EF_Msk                        (0x1U << USB_DADDR_EF_Pos)     /*!< 0x00000080 */
-#define USB_DADDR_EF                            USB_DADDR_EF_Msk               /*!< Enable Function */
-
-/******************  Bit definition for USB_BTABLE register  ******************/    
-#define USB_BTABLE_BTABLE_Pos                   (3U)                           
-#define USB_BTABLE_BTABLE_Msk                   (0x1FFFU << USB_BTABLE_BTABLE_Pos) /*!< 0x0000FFF8 */
-#define USB_BTABLE_BTABLE                       USB_BTABLE_BTABLE_Msk          /*!< Buffer Table */
-
-/*!< Buffer descriptor table */
-/*****************  Bit definition for USB_ADDR0_TX register  *****************/
-#define USB_ADDR0_TX_ADDR0_TX_Pos               (1U)                           
-#define USB_ADDR0_TX_ADDR0_TX_Msk               (0x7FFFU << USB_ADDR0_TX_ADDR0_TX_Pos) /*!< 0x0000FFFE */
-#define USB_ADDR0_TX_ADDR0_TX                   USB_ADDR0_TX_ADDR0_TX_Msk      /*!< Transmission Buffer Address 0 */
-
-/*****************  Bit definition for USB_ADDR1_TX register  *****************/
-#define USB_ADDR1_TX_ADDR1_TX_Pos               (1U)                           
-#define USB_ADDR1_TX_ADDR1_TX_Msk               (0x7FFFU << USB_ADDR1_TX_ADDR1_TX_Pos) /*!< 0x0000FFFE */
-#define USB_ADDR1_TX_ADDR1_TX                   USB_ADDR1_TX_ADDR1_TX_Msk      /*!< Transmission Buffer Address 1 */
-
-/*****************  Bit definition for USB_ADDR2_TX register  *****************/
-#define USB_ADDR2_TX_ADDR2_TX_Pos               (1U)                           
-#define USB_ADDR2_TX_ADDR2_TX_Msk               (0x7FFFU << USB_ADDR2_TX_ADDR2_TX_Pos) /*!< 0x0000FFFE */
-#define USB_ADDR2_TX_ADDR2_TX                   USB_ADDR2_TX_ADDR2_TX_Msk      /*!< Transmission Buffer Address 2 */
-
-/*****************  Bit definition for USB_ADDR3_TX register  *****************/
-#define USB_ADDR3_TX_ADDR3_TX_Pos               (1U)                           
-#define USB_ADDR3_TX_ADDR3_TX_Msk               (0x7FFFU << USB_ADDR3_TX_ADDR3_TX_Pos) /*!< 0x0000FFFE */
-#define USB_ADDR3_TX_ADDR3_TX                   USB_ADDR3_TX_ADDR3_TX_Msk      /*!< Transmission Buffer Address 3 */
-
-/*****************  Bit definition for USB_ADDR4_TX register  *****************/
-#define USB_ADDR4_TX_ADDR4_TX_Pos               (1U)                           
-#define USB_ADDR4_TX_ADDR4_TX_Msk               (0x7FFFU << USB_ADDR4_TX_ADDR4_TX_Pos) /*!< 0x0000FFFE */
-#define USB_ADDR4_TX_ADDR4_TX                   USB_ADDR4_TX_ADDR4_TX_Msk      /*!< Transmission Buffer Address 4 */
-
-/*****************  Bit definition for USB_ADDR5_TX register  *****************/
-#define USB_ADDR5_TX_ADDR5_TX_Pos               (1U)                           
-#define USB_ADDR5_TX_ADDR5_TX_Msk               (0x7FFFU << USB_ADDR5_TX_ADDR5_TX_Pos) /*!< 0x0000FFFE */
-#define USB_ADDR5_TX_ADDR5_TX                   USB_ADDR5_TX_ADDR5_TX_Msk      /*!< Transmission Buffer Address 5 */
-
-/*****************  Bit definition for USB_ADDR6_TX register  *****************/
-#define USB_ADDR6_TX_ADDR6_TX_Pos               (1U)                           
-#define USB_ADDR6_TX_ADDR6_TX_Msk               (0x7FFFU << USB_ADDR6_TX_ADDR6_TX_Pos) /*!< 0x0000FFFE */
-#define USB_ADDR6_TX_ADDR6_TX                   USB_ADDR6_TX_ADDR6_TX_Msk      /*!< Transmission Buffer Address 6 */
-
-/*****************  Bit definition for USB_ADDR7_TX register  *****************/
-#define USB_ADDR7_TX_ADDR7_TX_Pos               (1U)                           
-#define USB_ADDR7_TX_ADDR7_TX_Msk               (0x7FFFU << USB_ADDR7_TX_ADDR7_TX_Pos) /*!< 0x0000FFFE */
-#define USB_ADDR7_TX_ADDR7_TX                   USB_ADDR7_TX_ADDR7_TX_Msk      /*!< Transmission Buffer Address 7 */
-
-/*----------------------------------------------------------------------------*/
-
-/*****************  Bit definition for USB_COUNT0_TX register  ****************/
-#define USB_COUNT0_TX_COUNT0_TX_Pos             (0U)                           
-#define USB_COUNT0_TX_COUNT0_TX_Msk             (0x3FFU << USB_COUNT0_TX_COUNT0_TX_Pos) /*!< 0x000003FF */
-#define USB_COUNT0_TX_COUNT0_TX                 USB_COUNT0_TX_COUNT0_TX_Msk    /*!< Transmission Byte Count 0 */
-
-/*****************  Bit definition for USB_COUNT1_TX register  ****************/
-#define USB_COUNT1_TX_COUNT1_TX_Pos             (0U)                           
-#define USB_COUNT1_TX_COUNT1_TX_Msk             (0x3FFU << USB_COUNT1_TX_COUNT1_TX_Pos) /*!< 0x000003FF */
-#define USB_COUNT1_TX_COUNT1_TX                 USB_COUNT1_TX_COUNT1_TX_Msk    /*!< Transmission Byte Count 1 */
-
-/*****************  Bit definition for USB_COUNT2_TX register  ****************/
-#define USB_COUNT2_TX_COUNT2_TX_Pos             (0U)                           
-#define USB_COUNT2_TX_COUNT2_TX_Msk             (0x3FFU << USB_COUNT2_TX_COUNT2_TX_Pos) /*!< 0x000003FF */
-#define USB_COUNT2_TX_COUNT2_TX                 USB_COUNT2_TX_COUNT2_TX_Msk    /*!< Transmission Byte Count 2 */
-
-/*****************  Bit definition for USB_COUNT3_TX register  ****************/
-#define USB_COUNT3_TX_COUNT3_TX_Pos             (0U)                           
-#define USB_COUNT3_TX_COUNT3_TX_Msk             (0x3FFU << USB_COUNT3_TX_COUNT3_TX_Pos) /*!< 0x000003FF */
-#define USB_COUNT3_TX_COUNT3_TX                 USB_COUNT3_TX_COUNT3_TX_Msk    /*!< Transmission Byte Count 3 */
-
-/*****************  Bit definition for USB_COUNT4_TX register  ****************/
-#define USB_COUNT4_TX_COUNT4_TX_Pos             (0U)                           
-#define USB_COUNT4_TX_COUNT4_TX_Msk             (0x3FFU << USB_COUNT4_TX_COUNT4_TX_Pos) /*!< 0x000003FF */
-#define USB_COUNT4_TX_COUNT4_TX                 USB_COUNT4_TX_COUNT4_TX_Msk    /*!< Transmission Byte Count 4 */
-
-/*****************  Bit definition for USB_COUNT5_TX register  ****************/
-#define USB_COUNT5_TX_COUNT5_TX_Pos             (0U)                           
-#define USB_COUNT5_TX_COUNT5_TX_Msk             (0x3FFU << USB_COUNT5_TX_COUNT5_TX_Pos) /*!< 0x000003FF */
-#define USB_COUNT5_TX_COUNT5_TX                 USB_COUNT5_TX_COUNT5_TX_Msk    /*!< Transmission Byte Count 5 */
-
-/*****************  Bit definition for USB_COUNT6_TX register  ****************/
-#define USB_COUNT6_TX_COUNT6_TX_Pos             (0U)                           
-#define USB_COUNT6_TX_COUNT6_TX_Msk             (0x3FFU << USB_COUNT6_TX_COUNT6_TX_Pos) /*!< 0x000003FF */
-#define USB_COUNT6_TX_COUNT6_TX                 USB_COUNT6_TX_COUNT6_TX_Msk    /*!< Transmission Byte Count 6 */
-
-/*****************  Bit definition for USB_COUNT7_TX register  ****************/
-#define USB_COUNT7_TX_COUNT7_TX_Pos             (0U)                           
-#define USB_COUNT7_TX_COUNT7_TX_Msk             (0x3FFU << USB_COUNT7_TX_COUNT7_TX_Pos) /*!< 0x000003FF */
-#define USB_COUNT7_TX_COUNT7_TX                 USB_COUNT7_TX_COUNT7_TX_Msk    /*!< Transmission Byte Count 7 */
-
-/*----------------------------------------------------------------------------*/
-
-/****************  Bit definition for USB_COUNT0_TX_0 register  ***************/
-#define USB_COUNT0_TX_0_COUNT0_TX_0             0x000003FFU         /*!< Transmission Byte Count 0 (low) */
-
-/****************  Bit definition for USB_COUNT0_TX_1 register  ***************/
-#define USB_COUNT0_TX_1_COUNT0_TX_1             0x03FF0000U         /*!< Transmission Byte Count 0 (high) */
-
-/****************  Bit definition for USB_COUNT1_TX_0 register  ***************/
-#define USB_COUNT1_TX_0_COUNT1_TX_0             0x000003FFU         /*!< Transmission Byte Count 1 (low) */
-
-/****************  Bit definition for USB_COUNT1_TX_1 register  ***************/
-#define USB_COUNT1_TX_1_COUNT1_TX_1             0x03FF0000U         /*!< Transmission Byte Count 1 (high) */
-
-/****************  Bit definition for USB_COUNT2_TX_0 register  ***************/
-#define USB_COUNT2_TX_0_COUNT2_TX_0             0x000003FFU         /*!< Transmission Byte Count 2 (low) */
-
-/****************  Bit definition for USB_COUNT2_TX_1 register  ***************/
-#define USB_COUNT2_TX_1_COUNT2_TX_1             0x03FF0000U         /*!< Transmission Byte Count 2 (high) */
-
-/****************  Bit definition for USB_COUNT3_TX_0 register  ***************/
-#define USB_COUNT3_TX_0_COUNT3_TX_0             0x000003FFU         /*!< Transmission Byte Count 3 (low) */
-
-/****************  Bit definition for USB_COUNT3_TX_1 register  ***************/
-#define USB_COUNT3_TX_1_COUNT3_TX_1             0x03FF0000U         /*!< Transmission Byte Count 3 (high) */
-
-/****************  Bit definition for USB_COUNT4_TX_0 register  ***************/
-#define USB_COUNT4_TX_0_COUNT4_TX_0             0x000003FFU         /*!< Transmission Byte Count 4 (low) */
-
-/****************  Bit definition for USB_COUNT4_TX_1 register  ***************/
-#define USB_COUNT4_TX_1_COUNT4_TX_1             0x03FF0000U         /*!< Transmission Byte Count 4 (high) */
-
-/****************  Bit definition for USB_COUNT5_TX_0 register  ***************/
-#define USB_COUNT5_TX_0_COUNT5_TX_0             0x000003FFU         /*!< Transmission Byte Count 5 (low) */
-
-/****************  Bit definition for USB_COUNT5_TX_1 register  ***************/
-#define USB_COUNT5_TX_1_COUNT5_TX_1             0x03FF0000U         /*!< Transmission Byte Count 5 (high) */
-
-/****************  Bit definition for USB_COUNT6_TX_0 register  ***************/
-#define USB_COUNT6_TX_0_COUNT6_TX_0             0x000003FFU         /*!< Transmission Byte Count 6 (low) */
-
-/****************  Bit definition for USB_COUNT6_TX_1 register  ***************/
-#define USB_COUNT6_TX_1_COUNT6_TX_1             0x03FF0000U         /*!< Transmission Byte Count 6 (high) */
-
-/****************  Bit definition for USB_COUNT7_TX_0 register  ***************/
-#define USB_COUNT7_TX_0_COUNT7_TX_0             0x000003FFU         /*!< Transmission Byte Count 7 (low) */
-
-/****************  Bit definition for USB_COUNT7_TX_1 register  ***************/
-#define USB_COUNT7_TX_1_COUNT7_TX_1             0x03FF0000U         /*!< Transmission Byte Count 7 (high) */
-
-/*----------------------------------------------------------------------------*/
-
-/*****************  Bit definition for USB_ADDR0_RX register  *****************/
-#define USB_ADDR0_RX_ADDR0_RX_Pos               (1U)                           
-#define USB_ADDR0_RX_ADDR0_RX_Msk               (0x7FFFU << USB_ADDR0_RX_ADDR0_RX_Pos) /*!< 0x0000FFFE */
-#define USB_ADDR0_RX_ADDR0_RX                   USB_ADDR0_RX_ADDR0_RX_Msk      /*!< Reception Buffer Address 0 */
-
-/*****************  Bit definition for USB_ADDR1_RX register  *****************/
-#define USB_ADDR1_RX_ADDR1_RX_Pos               (1U)                           
-#define USB_ADDR1_RX_ADDR1_RX_Msk               (0x7FFFU << USB_ADDR1_RX_ADDR1_RX_Pos) /*!< 0x0000FFFE */
-#define USB_ADDR1_RX_ADDR1_RX                   USB_ADDR1_RX_ADDR1_RX_Msk      /*!< Reception Buffer Address 1 */
-
-/*****************  Bit definition for USB_ADDR2_RX register  *****************/
-#define USB_ADDR2_RX_ADDR2_RX_Pos               (1U)                           
-#define USB_ADDR2_RX_ADDR2_RX_Msk               (0x7FFFU << USB_ADDR2_RX_ADDR2_RX_Pos) /*!< 0x0000FFFE */
-#define USB_ADDR2_RX_ADDR2_RX                   USB_ADDR2_RX_ADDR2_RX_Msk      /*!< Reception Buffer Address 2 */
-
-/*****************  Bit definition for USB_ADDR3_RX register  *****************/
-#define USB_ADDR3_RX_ADDR3_RX_Pos               (1U)                           
-#define USB_ADDR3_RX_ADDR3_RX_Msk               (0x7FFFU << USB_ADDR3_RX_ADDR3_RX_Pos) /*!< 0x0000FFFE */
-#define USB_ADDR3_RX_ADDR3_RX                   USB_ADDR3_RX_ADDR3_RX_Msk      /*!< Reception Buffer Address 3 */
-
-/*****************  Bit definition for USB_ADDR4_RX register  *****************/
-#define USB_ADDR4_RX_ADDR4_RX_Pos               (1U)                           
-#define USB_ADDR4_RX_ADDR4_RX_Msk               (0x7FFFU << USB_ADDR4_RX_ADDR4_RX_Pos) /*!< 0x0000FFFE */
-#define USB_ADDR4_RX_ADDR4_RX                   USB_ADDR4_RX_ADDR4_RX_Msk      /*!< Reception Buffer Address 4 */
-
-/*****************  Bit definition for USB_ADDR5_RX register  *****************/
-#define USB_ADDR5_RX_ADDR5_RX_Pos               (1U)                           
-#define USB_ADDR5_RX_ADDR5_RX_Msk               (0x7FFFU << USB_ADDR5_RX_ADDR5_RX_Pos) /*!< 0x0000FFFE */
-#define USB_ADDR5_RX_ADDR5_RX                   USB_ADDR5_RX_ADDR5_RX_Msk      /*!< Reception Buffer Address 5 */
-
-/*****************  Bit definition for USB_ADDR6_RX register  *****************/
-#define USB_ADDR6_RX_ADDR6_RX_Pos               (1U)                           
-#define USB_ADDR6_RX_ADDR6_RX_Msk               (0x7FFFU << USB_ADDR6_RX_ADDR6_RX_Pos) /*!< 0x0000FFFE */
-#define USB_ADDR6_RX_ADDR6_RX                   USB_ADDR6_RX_ADDR6_RX_Msk      /*!< Reception Buffer Address 6 */
-
-/*****************  Bit definition for USB_ADDR7_RX register  *****************/
-#define USB_ADDR7_RX_ADDR7_RX_Pos               (1U)                           
-#define USB_ADDR7_RX_ADDR7_RX_Msk               (0x7FFFU << USB_ADDR7_RX_ADDR7_RX_Pos) /*!< 0x0000FFFE */
-#define USB_ADDR7_RX_ADDR7_RX                   USB_ADDR7_RX_ADDR7_RX_Msk      /*!< Reception Buffer Address 7 */
-
-/*----------------------------------------------------------------------------*/
-
-/*****************  Bit definition for USB_COUNT0_RX register  ****************/
-#define USB_COUNT0_RX_COUNT0_RX_Pos             (0U)                           
-#define USB_COUNT0_RX_COUNT0_RX_Msk             (0x3FFU << USB_COUNT0_RX_COUNT0_RX_Pos) /*!< 0x000003FF */
-#define USB_COUNT0_RX_COUNT0_RX                 USB_COUNT0_RX_COUNT0_RX_Msk    /*!< Reception Byte Count */
-
-#define USB_COUNT0_RX_NUM_BLOCK_Pos             (10U)                          
-#define USB_COUNT0_RX_NUM_BLOCK_Msk             (0x1FU << USB_COUNT0_RX_NUM_BLOCK_Pos) /*!< 0x00007C00 */
-#define USB_COUNT0_RX_NUM_BLOCK                 USB_COUNT0_RX_NUM_BLOCK_Msk    /*!< NUM_BLOCK[4:0] bits (Number of blocks) */
-#define USB_COUNT0_RX_NUM_BLOCK_0               (0x01U << USB_COUNT0_RX_NUM_BLOCK_Pos) /*!< 0x00000400 */
-#define USB_COUNT0_RX_NUM_BLOCK_1               (0x02U << USB_COUNT0_RX_NUM_BLOCK_Pos) /*!< 0x00000800 */
-#define USB_COUNT0_RX_NUM_BLOCK_2               (0x04U << USB_COUNT0_RX_NUM_BLOCK_Pos) /*!< 0x00001000 */
-#define USB_COUNT0_RX_NUM_BLOCK_3               (0x08U << USB_COUNT0_RX_NUM_BLOCK_Pos) /*!< 0x00002000 */
-#define USB_COUNT0_RX_NUM_BLOCK_4               (0x10U << USB_COUNT0_RX_NUM_BLOCK_Pos) /*!< 0x00004000 */
-
-#define USB_COUNT0_RX_BLSIZE_Pos                (15U)                          
-#define USB_COUNT0_RX_BLSIZE_Msk                (0x1U << USB_COUNT0_RX_BLSIZE_Pos) /*!< 0x00008000 */
-#define USB_COUNT0_RX_BLSIZE                    USB_COUNT0_RX_BLSIZE_Msk       /*!< BLock SIZE */
-
-/*****************  Bit definition for USB_COUNT1_RX register  ****************/
-#define USB_COUNT1_RX_COUNT1_RX_Pos             (0U)                           
-#define USB_COUNT1_RX_COUNT1_RX_Msk             (0x3FFU << USB_COUNT1_RX_COUNT1_RX_Pos) /*!< 0x000003FF */
-#define USB_COUNT1_RX_COUNT1_RX                 USB_COUNT1_RX_COUNT1_RX_Msk    /*!< Reception Byte Count */
-
-#define USB_COUNT1_RX_NUM_BLOCK_Pos             (10U)                          
-#define USB_COUNT1_RX_NUM_BLOCK_Msk             (0x1FU << USB_COUNT1_RX_NUM_BLOCK_Pos) /*!< 0x00007C00 */
-#define USB_COUNT1_RX_NUM_BLOCK                 USB_COUNT1_RX_NUM_BLOCK_Msk    /*!< NUM_BLOCK[4:0] bits (Number of blocks) */
-#define USB_COUNT1_RX_NUM_BLOCK_0               (0x01U << USB_COUNT1_RX_NUM_BLOCK_Pos) /*!< 0x00000400 */
-#define USB_COUNT1_RX_NUM_BLOCK_1               (0x02U << USB_COUNT1_RX_NUM_BLOCK_Pos) /*!< 0x00000800 */
-#define USB_COUNT1_RX_NUM_BLOCK_2               (0x04U << USB_COUNT1_RX_NUM_BLOCK_Pos) /*!< 0x00001000 */
-#define USB_COUNT1_RX_NUM_BLOCK_3               (0x08U << USB_COUNT1_RX_NUM_BLOCK_Pos) /*!< 0x00002000 */
-#define USB_COUNT1_RX_NUM_BLOCK_4               (0x10U << USB_COUNT1_RX_NUM_BLOCK_Pos) /*!< 0x00004000 */
-
-#define USB_COUNT1_RX_BLSIZE_Pos                (15U)                          
-#define USB_COUNT1_RX_BLSIZE_Msk                (0x1U << USB_COUNT1_RX_BLSIZE_Pos) /*!< 0x00008000 */
-#define USB_COUNT1_RX_BLSIZE                    USB_COUNT1_RX_BLSIZE_Msk       /*!< BLock SIZE */
-
-/*****************  Bit definition for USB_COUNT2_RX register  ****************/
-#define USB_COUNT2_RX_COUNT2_RX_Pos             (0U)                           
-#define USB_COUNT2_RX_COUNT2_RX_Msk             (0x3FFU << USB_COUNT2_RX_COUNT2_RX_Pos) /*!< 0x000003FF */
-#define USB_COUNT2_RX_COUNT2_RX                 USB_COUNT2_RX_COUNT2_RX_Msk    /*!< Reception Byte Count */
-
-#define USB_COUNT2_RX_NUM_BLOCK_Pos             (10U)                          
-#define USB_COUNT2_RX_NUM_BLOCK_Msk             (0x1FU << USB_COUNT2_RX_NUM_BLOCK_Pos) /*!< 0x00007C00 */
-#define USB_COUNT2_RX_NUM_BLOCK                 USB_COUNT2_RX_NUM_BLOCK_Msk    /*!< NUM_BLOCK[4:0] bits (Number of blocks) */
-#define USB_COUNT2_RX_NUM_BLOCK_0               (0x01U << USB_COUNT2_RX_NUM_BLOCK_Pos) /*!< 0x00000400 */
-#define USB_COUNT2_RX_NUM_BLOCK_1               (0x02U << USB_COUNT2_RX_NUM_BLOCK_Pos) /*!< 0x00000800 */
-#define USB_COUNT2_RX_NUM_BLOCK_2               (0x04U << USB_COUNT2_RX_NUM_BLOCK_Pos) /*!< 0x00001000 */
-#define USB_COUNT2_RX_NUM_BLOCK_3               (0x08U << USB_COUNT2_RX_NUM_BLOCK_Pos) /*!< 0x00002000 */
-#define USB_COUNT2_RX_NUM_BLOCK_4               (0x10U << USB_COUNT2_RX_NUM_BLOCK_Pos) /*!< 0x00004000 */
-
-#define USB_COUNT2_RX_BLSIZE_Pos                (15U)                          
-#define USB_COUNT2_RX_BLSIZE_Msk                (0x1U << USB_COUNT2_RX_BLSIZE_Pos) /*!< 0x00008000 */
-#define USB_COUNT2_RX_BLSIZE                    USB_COUNT2_RX_BLSIZE_Msk       /*!< BLock SIZE */
-
-/*****************  Bit definition for USB_COUNT3_RX register  ****************/
-#define USB_COUNT3_RX_COUNT3_RX_Pos             (0U)                           
-#define USB_COUNT3_RX_COUNT3_RX_Msk             (0x3FFU << USB_COUNT3_RX_COUNT3_RX_Pos) /*!< 0x000003FF */
-#define USB_COUNT3_RX_COUNT3_RX                 USB_COUNT3_RX_COUNT3_RX_Msk    /*!< Reception Byte Count */
-
-#define USB_COUNT3_RX_NUM_BLOCK_Pos             (10U)                          
-#define USB_COUNT3_RX_NUM_BLOCK_Msk             (0x1FU << USB_COUNT3_RX_NUM_BLOCK_Pos) /*!< 0x00007C00 */
-#define USB_COUNT3_RX_NUM_BLOCK                 USB_COUNT3_RX_NUM_BLOCK_Msk    /*!< NUM_BLOCK[4:0] bits (Number of blocks) */
-#define USB_COUNT3_RX_NUM_BLOCK_0               (0x01U << USB_COUNT3_RX_NUM_BLOCK_Pos) /*!< 0x00000400 */
-#define USB_COUNT3_RX_NUM_BLOCK_1               (0x02U << USB_COUNT3_RX_NUM_BLOCK_Pos) /*!< 0x00000800 */
-#define USB_COUNT3_RX_NUM_BLOCK_2               (0x04U << USB_COUNT3_RX_NUM_BLOCK_Pos) /*!< 0x00001000 */
-#define USB_COUNT3_RX_NUM_BLOCK_3               (0x08U << USB_COUNT3_RX_NUM_BLOCK_Pos) /*!< 0x00002000 */
-#define USB_COUNT3_RX_NUM_BLOCK_4               (0x10U << USB_COUNT3_RX_NUM_BLOCK_Pos) /*!< 0x00004000 */
-
-#define USB_COUNT3_RX_BLSIZE_Pos                (15U)                          
-#define USB_COUNT3_RX_BLSIZE_Msk                (0x1U << USB_COUNT3_RX_BLSIZE_Pos) /*!< 0x00008000 */
-#define USB_COUNT3_RX_BLSIZE                    USB_COUNT3_RX_BLSIZE_Msk       /*!< BLock SIZE */
-
-/*****************  Bit definition for USB_COUNT4_RX register  ****************/
-#define USB_COUNT4_RX_COUNT4_RX_Pos             (0U)                           
-#define USB_COUNT4_RX_COUNT4_RX_Msk             (0x3FFU << USB_COUNT4_RX_COUNT4_RX_Pos) /*!< 0x000003FF */
-#define USB_COUNT4_RX_COUNT4_RX                 USB_COUNT4_RX_COUNT4_RX_Msk    /*!< Reception Byte Count */
-
-#define USB_COUNT4_RX_NUM_BLOCK_Pos             (10U)                          
-#define USB_COUNT4_RX_NUM_BLOCK_Msk             (0x1FU << USB_COUNT4_RX_NUM_BLOCK_Pos) /*!< 0x00007C00 */
-#define USB_COUNT4_RX_NUM_BLOCK                 USB_COUNT4_RX_NUM_BLOCK_Msk    /*!< NUM_BLOCK[4:0] bits (Number of blocks) */
-#define USB_COUNT4_RX_NUM_BLOCK_0               (0x01U << USB_COUNT4_RX_NUM_BLOCK_Pos) /*!< 0x00000400 */
-#define USB_COUNT4_RX_NUM_BLOCK_1               (0x02U << USB_COUNT4_RX_NUM_BLOCK_Pos) /*!< 0x00000800 */
-#define USB_COUNT4_RX_NUM_BLOCK_2               (0x04U << USB_COUNT4_RX_NUM_BLOCK_Pos) /*!< 0x00001000 */
-#define USB_COUNT4_RX_NUM_BLOCK_3               (0x08U << USB_COUNT4_RX_NUM_BLOCK_Pos) /*!< 0x00002000 */
-#define USB_COUNT4_RX_NUM_BLOCK_4               (0x10U << USB_COUNT4_RX_NUM_BLOCK_Pos) /*!< 0x00004000 */
-
-#define USB_COUNT4_RX_BLSIZE_Pos                (15U)                          
-#define USB_COUNT4_RX_BLSIZE_Msk                (0x1U << USB_COUNT4_RX_BLSIZE_Pos) /*!< 0x00008000 */
-#define USB_COUNT4_RX_BLSIZE                    USB_COUNT4_RX_BLSIZE_Msk       /*!< BLock SIZE */
-
-/*****************  Bit definition for USB_COUNT5_RX register  ****************/
-#define USB_COUNT5_RX_COUNT5_RX_Pos             (0U)                           
-#define USB_COUNT5_RX_COUNT5_RX_Msk             (0x3FFU << USB_COUNT5_RX_COUNT5_RX_Pos) /*!< 0x000003FF */
-#define USB_COUNT5_RX_COUNT5_RX                 USB_COUNT5_RX_COUNT5_RX_Msk    /*!< Reception Byte Count */
-
-#define USB_COUNT5_RX_NUM_BLOCK_Pos             (10U)                          
-#define USB_COUNT5_RX_NUM_BLOCK_Msk             (0x1FU << USB_COUNT5_RX_NUM_BLOCK_Pos) /*!< 0x00007C00 */
-#define USB_COUNT5_RX_NUM_BLOCK                 USB_COUNT5_RX_NUM_BLOCK_Msk    /*!< NUM_BLOCK[4:0] bits (Number of blocks) */
-#define USB_COUNT5_RX_NUM_BLOCK_0               (0x01U << USB_COUNT5_RX_NUM_BLOCK_Pos) /*!< 0x00000400 */
-#define USB_COUNT5_RX_NUM_BLOCK_1               (0x02U << USB_COUNT5_RX_NUM_BLOCK_Pos) /*!< 0x00000800 */
-#define USB_COUNT5_RX_NUM_BLOCK_2               (0x04U << USB_COUNT5_RX_NUM_BLOCK_Pos) /*!< 0x00001000 */
-#define USB_COUNT5_RX_NUM_BLOCK_3               (0x08U << USB_COUNT5_RX_NUM_BLOCK_Pos) /*!< 0x00002000 */
-#define USB_COUNT5_RX_NUM_BLOCK_4               (0x10U << USB_COUNT5_RX_NUM_BLOCK_Pos) /*!< 0x00004000 */
-
-#define USB_COUNT5_RX_BLSIZE_Pos                (15U)                          
-#define USB_COUNT5_RX_BLSIZE_Msk                (0x1U << USB_COUNT5_RX_BLSIZE_Pos) /*!< 0x00008000 */
-#define USB_COUNT5_RX_BLSIZE                    USB_COUNT5_RX_BLSIZE_Msk       /*!< BLock SIZE */
-
-/*****************  Bit definition for USB_COUNT6_RX register  ****************/
-#define USB_COUNT6_RX_COUNT6_RX_Pos             (0U)                           
-#define USB_COUNT6_RX_COUNT6_RX_Msk             (0x3FFU << USB_COUNT6_RX_COUNT6_RX_Pos) /*!< 0x000003FF */
-#define USB_COUNT6_RX_COUNT6_RX                 USB_COUNT6_RX_COUNT6_RX_Msk    /*!< Reception Byte Count */
-
-#define USB_COUNT6_RX_NUM_BLOCK_Pos             (10U)                          
-#define USB_COUNT6_RX_NUM_BLOCK_Msk             (0x1FU << USB_COUNT6_RX_NUM_BLOCK_Pos) /*!< 0x00007C00 */
-#define USB_COUNT6_RX_NUM_BLOCK                 USB_COUNT6_RX_NUM_BLOCK_Msk    /*!< NUM_BLOCK[4:0] bits (Number of blocks) */
-#define USB_COUNT6_RX_NUM_BLOCK_0               (0x01U << USB_COUNT6_RX_NUM_BLOCK_Pos) /*!< 0x00000400 */
-#define USB_COUNT6_RX_NUM_BLOCK_1               (0x02U << USB_COUNT6_RX_NUM_BLOCK_Pos) /*!< 0x00000800 */
-#define USB_COUNT6_RX_NUM_BLOCK_2               (0x04U << USB_COUNT6_RX_NUM_BLOCK_Pos) /*!< 0x00001000 */
-#define USB_COUNT6_RX_NUM_BLOCK_3               (0x08U << USB_COUNT6_RX_NUM_BLOCK_Pos) /*!< 0x00002000 */
-#define USB_COUNT6_RX_NUM_BLOCK_4               (0x10U << USB_COUNT6_RX_NUM_BLOCK_Pos) /*!< 0x00004000 */
-
-#define USB_COUNT6_RX_BLSIZE_Pos                (15U)                          
-#define USB_COUNT6_RX_BLSIZE_Msk                (0x1U << USB_COUNT6_RX_BLSIZE_Pos) /*!< 0x00008000 */
-#define USB_COUNT6_RX_BLSIZE                    USB_COUNT6_RX_BLSIZE_Msk       /*!< BLock SIZE */
-
-/*****************  Bit definition for USB_COUNT7_RX register  ****************/
-#define USB_COUNT7_RX_COUNT7_RX_Pos             (0U)                           
-#define USB_COUNT7_RX_COUNT7_RX_Msk             (0x3FFU << USB_COUNT7_RX_COUNT7_RX_Pos) /*!< 0x000003FF */
-#define USB_COUNT7_RX_COUNT7_RX                 USB_COUNT7_RX_COUNT7_RX_Msk    /*!< Reception Byte Count */
-
-#define USB_COUNT7_RX_NUM_BLOCK_Pos             (10U)                          
-#define USB_COUNT7_RX_NUM_BLOCK_Msk             (0x1FU << USB_COUNT7_RX_NUM_BLOCK_Pos) /*!< 0x00007C00 */
-#define USB_COUNT7_RX_NUM_BLOCK                 USB_COUNT7_RX_NUM_BLOCK_Msk    /*!< NUM_BLOCK[4:0] bits (Number of blocks) */
-#define USB_COUNT7_RX_NUM_BLOCK_0               (0x01U << USB_COUNT7_RX_NUM_BLOCK_Pos) /*!< 0x00000400 */
-#define USB_COUNT7_RX_NUM_BLOCK_1               (0x02U << USB_COUNT7_RX_NUM_BLOCK_Pos) /*!< 0x00000800 */
-#define USB_COUNT7_RX_NUM_BLOCK_2               (0x04U << USB_COUNT7_RX_NUM_BLOCK_Pos) /*!< 0x00001000 */
-#define USB_COUNT7_RX_NUM_BLOCK_3               (0x08U << USB_COUNT7_RX_NUM_BLOCK_Pos) /*!< 0x00002000 */
-#define USB_COUNT7_RX_NUM_BLOCK_4               (0x10U << USB_COUNT7_RX_NUM_BLOCK_Pos) /*!< 0x00004000 */
-
-#define USB_COUNT7_RX_BLSIZE_Pos                (15U)                          
-#define USB_COUNT7_RX_BLSIZE_Msk                (0x1U << USB_COUNT7_RX_BLSIZE_Pos) /*!< 0x00008000 */
-#define USB_COUNT7_RX_BLSIZE                    USB_COUNT7_RX_BLSIZE_Msk       /*!< BLock SIZE */
-
-/*----------------------------------------------------------------------------*/
-
-/****************  Bit definition for USB_COUNT0_RX_0 register  ***************/
-#define USB_COUNT0_RX_0_COUNT0_RX_0             0x000003FFU                    /*!< Reception Byte Count (low) */
-
-#define USB_COUNT0_RX_0_NUM_BLOCK_0             0x00007C00U                    /*!< NUM_BLOCK_0[4:0] bits (Number of blocks) (low) */
-#define USB_COUNT0_RX_0_NUM_BLOCK_0_0           0x00000400U                    /*!< Bit 0 */
-#define USB_COUNT0_RX_0_NUM_BLOCK_0_1           0x00000800U                    /*!< Bit 1 */
-#define USB_COUNT0_RX_0_NUM_BLOCK_0_2           0x00001000U                    /*!< Bit 2 */
-#define USB_COUNT0_RX_0_NUM_BLOCK_0_3           0x00002000U                    /*!< Bit 3 */
-#define USB_COUNT0_RX_0_NUM_BLOCK_0_4           0x00004000U                    /*!< Bit 4 */
-
-#define USB_COUNT0_RX_0_BLSIZE_0                0x00008000U                    /*!< BLock SIZE (low) */
-
-/****************  Bit definition for USB_COUNT0_RX_1 register  ***************/
-#define USB_COUNT0_RX_1_COUNT0_RX_1             0x03FF0000U                    /*!< Reception Byte Count (high) */
-
-#define USB_COUNT0_RX_1_NUM_BLOCK_1             0x7C000000U                    /*!< NUM_BLOCK_1[4:0] bits (Number of blocks) (high) */
-#define USB_COUNT0_RX_1_NUM_BLOCK_1_0           0x04000000U                    /*!< Bit 1 */
-#define USB_COUNT0_RX_1_NUM_BLOCK_1_1           0x08000000U                    /*!< Bit 1 */
-#define USB_COUNT0_RX_1_NUM_BLOCK_1_2           0x10000000U                    /*!< Bit 2 */
-#define USB_COUNT0_RX_1_NUM_BLOCK_1_3           0x20000000U                    /*!< Bit 3 */
-#define USB_COUNT0_RX_1_NUM_BLOCK_1_4           0x40000000U                    /*!< Bit 4 */
-
-#define USB_COUNT0_RX_1_BLSIZE_1                0x80000000U                    /*!< BLock SIZE (high) */
-
-/****************  Bit definition for USB_COUNT1_RX_0 register  ***************/
-#define USB_COUNT1_RX_0_COUNT1_RX_0             0x000003FFU                    /*!< Reception Byte Count (low) */
-
-#define USB_COUNT1_RX_0_NUM_BLOCK_0             0x00007C00U                    /*!< NUM_BLOCK_0[4:0] bits (Number of blocks) (low) */
-#define USB_COUNT1_RX_0_NUM_BLOCK_0_0           0x00000400U                    /*!< Bit 0 */
-#define USB_COUNT1_RX_0_NUM_BLOCK_0_1           0x00000800U                    /*!< Bit 1 */
-#define USB_COUNT1_RX_0_NUM_BLOCK_0_2           0x00001000U                    /*!< Bit 2 */
-#define USB_COUNT1_RX_0_NUM_BLOCK_0_3           0x00002000U                    /*!< Bit 3 */
-#define USB_COUNT1_RX_0_NUM_BLOCK_0_4           0x00004000U                    /*!< Bit 4 */
-
-#define USB_COUNT1_RX_0_BLSIZE_0                0x00008000U                    /*!< BLock SIZE (low) */
-
-/****************  Bit definition for USB_COUNT1_RX_1 register  ***************/
-#define USB_COUNT1_RX_1_COUNT1_RX_1             0x03FF0000U                    /*!< Reception Byte Count (high) */
-
-#define USB_COUNT1_RX_1_NUM_BLOCK_1             0x7C000000U                    /*!< NUM_BLOCK_1[4:0] bits (Number of blocks) (high) */
-#define USB_COUNT1_RX_1_NUM_BLOCK_1_0           0x04000000U                    /*!< Bit 0 */
-#define USB_COUNT1_RX_1_NUM_BLOCK_1_1           0x08000000U                    /*!< Bit 1 */
-#define USB_COUNT1_RX_1_NUM_BLOCK_1_2           0x10000000U                    /*!< Bit 2 */
-#define USB_COUNT1_RX_1_NUM_BLOCK_1_3           0x20000000U                    /*!< Bit 3 */
-#define USB_COUNT1_RX_1_NUM_BLOCK_1_4           0x40000000U                    /*!< Bit 4 */
-
-#define USB_COUNT1_RX_1_BLSIZE_1                0x80000000U                    /*!< BLock SIZE (high) */
-
-/****************  Bit definition for USB_COUNT2_RX_0 register  ***************/
-#define USB_COUNT2_RX_0_COUNT2_RX_0             0x000003FFU                    /*!< Reception Byte Count (low) */
-
-#define USB_COUNT2_RX_0_NUM_BLOCK_0             0x00007C00U                    /*!< NUM_BLOCK_0[4:0] bits (Number of blocks) (low) */
-#define USB_COUNT2_RX_0_NUM_BLOCK_0_0           0x00000400U                    /*!< Bit 0 */
-#define USB_COUNT2_RX_0_NUM_BLOCK_0_1           0x00000800U                    /*!< Bit 1 */
-#define USB_COUNT2_RX_0_NUM_BLOCK_0_2           0x00001000U                    /*!< Bit 2 */
-#define USB_COUNT2_RX_0_NUM_BLOCK_0_3           0x00002000U                    /*!< Bit 3 */
-#define USB_COUNT2_RX_0_NUM_BLOCK_0_4           0x00004000U                    /*!< Bit 4 */
-
-#define USB_COUNT2_RX_0_BLSIZE_0                0x00008000U                    /*!< BLock SIZE (low) */
-
-/****************  Bit definition for USB_COUNT2_RX_1 register  ***************/
-#define USB_COUNT2_RX_1_COUNT2_RX_1             0x03FF0000U                    /*!< Reception Byte Count (high) */
-
-#define USB_COUNT2_RX_1_NUM_BLOCK_1             0x7C000000U                    /*!< NUM_BLOCK_1[4:0] bits (Number of blocks) (high) */
-#define USB_COUNT2_RX_1_NUM_BLOCK_1_0           0x04000000U                    /*!< Bit 0 */
-#define USB_COUNT2_RX_1_NUM_BLOCK_1_1           0x08000000U                    /*!< Bit 1 */
-#define USB_COUNT2_RX_1_NUM_BLOCK_1_2           0x10000000U                    /*!< Bit 2 */
-#define USB_COUNT2_RX_1_NUM_BLOCK_1_3           0x20000000U                    /*!< Bit 3 */
-#define USB_COUNT2_RX_1_NUM_BLOCK_1_4           0x40000000U                    /*!< Bit 4 */
-
-#define USB_COUNT2_RX_1_BLSIZE_1                0x80000000U                    /*!< BLock SIZE (high) */
-
-/****************  Bit definition for USB_COUNT3_RX_0 register  ***************/
-#define USB_COUNT3_RX_0_COUNT3_RX_0             0x000003FFU                    /*!< Reception Byte Count (low) */
-
-#define USB_COUNT3_RX_0_NUM_BLOCK_0             0x00007C00U                    /*!< NUM_BLOCK_0[4:0] bits (Number of blocks) (low) */
-#define USB_COUNT3_RX_0_NUM_BLOCK_0_0           0x00000400U                    /*!< Bit 0 */
-#define USB_COUNT3_RX_0_NUM_BLOCK_0_1           0x00000800U                    /*!< Bit 1 */
-#define USB_COUNT3_RX_0_NUM_BLOCK_0_2           0x00001000U                    /*!< Bit 2 */
-#define USB_COUNT3_RX_0_NUM_BLOCK_0_3           0x00002000U                    /*!< Bit 3 */
-#define USB_COUNT3_RX_0_NUM_BLOCK_0_4           0x00004000U                    /*!< Bit 4 */
-
-#define USB_COUNT3_RX_0_BLSIZE_0                0x00008000U                    /*!< BLock SIZE (low) */
-
-/****************  Bit definition for USB_COUNT3_RX_1 register  ***************/
-#define USB_COUNT3_RX_1_COUNT3_RX_1             0x03FF0000U                    /*!< Reception Byte Count (high) */
-
-#define USB_COUNT3_RX_1_NUM_BLOCK_1             0x7C000000U                    /*!< NUM_BLOCK_1[4:0] bits (Number of blocks) (high) */
-#define USB_COUNT3_RX_1_NUM_BLOCK_1_0           0x04000000U                    /*!< Bit 0 */
-#define USB_COUNT3_RX_1_NUM_BLOCK_1_1           0x08000000U                    /*!< Bit 1 */
-#define USB_COUNT3_RX_1_NUM_BLOCK_1_2           0x10000000U                    /*!< Bit 2 */
-#define USB_COUNT3_RX_1_NUM_BLOCK_1_3           0x20000000U                    /*!< Bit 3 */
-#define USB_COUNT3_RX_1_NUM_BLOCK_1_4           0x40000000U                    /*!< Bit 4 */
-
-#define USB_COUNT3_RX_1_BLSIZE_1                0x80000000U                    /*!< BLock SIZE (high) */
-
-/****************  Bit definition for USB_COUNT4_RX_0 register  ***************/
-#define USB_COUNT4_RX_0_COUNT4_RX_0             0x000003FFU                    /*!< Reception Byte Count (low) */
-
-#define USB_COUNT4_RX_0_NUM_BLOCK_0             0x00007C00U                    /*!< NUM_BLOCK_0[4:0] bits (Number of blocks) (low) */
-#define USB_COUNT4_RX_0_NUM_BLOCK_0_0           0x00000400U                    /*!< Bit 0 */
-#define USB_COUNT4_RX_0_NUM_BLOCK_0_1           0x00000800U                    /*!< Bit 1 */
-#define USB_COUNT4_RX_0_NUM_BLOCK_0_2           0x00001000U                    /*!< Bit 2 */
-#define USB_COUNT4_RX_0_NUM_BLOCK_0_3           0x00002000U                    /*!< Bit 3 */
-#define USB_COUNT4_RX_0_NUM_BLOCK_0_4           0x00004000U                    /*!< Bit 4 */
-
-#define USB_COUNT4_RX_0_BLSIZE_0                0x00008000U                    /*!< BLock SIZE (low) */
-
-/****************  Bit definition for USB_COUNT4_RX_1 register  ***************/
-#define USB_COUNT4_RX_1_COUNT4_RX_1             0x03FF0000U                    /*!< Reception Byte Count (high) */
-
-#define USB_COUNT4_RX_1_NUM_BLOCK_1             0x7C000000U                    /*!< NUM_BLOCK_1[4:0] bits (Number of blocks) (high) */
-#define USB_COUNT4_RX_1_NUM_BLOCK_1_0           0x04000000U                    /*!< Bit 0 */
-#define USB_COUNT4_RX_1_NUM_BLOCK_1_1           0x08000000U                    /*!< Bit 1 */
-#define USB_COUNT4_RX_1_NUM_BLOCK_1_2           0x10000000U                    /*!< Bit 2 */
-#define USB_COUNT4_RX_1_NUM_BLOCK_1_3           0x20000000U                    /*!< Bit 3 */
-#define USB_COUNT4_RX_1_NUM_BLOCK_1_4           0x40000000U                    /*!< Bit 4 */
-
-#define USB_COUNT4_RX_1_BLSIZE_1                0x80000000U                    /*!< BLock SIZE (high) */
-
-/****************  Bit definition for USB_COUNT5_RX_0 register  ***************/
-#define USB_COUNT5_RX_0_COUNT5_RX_0             0x000003FFU                    /*!< Reception Byte Count (low) */
-
-#define USB_COUNT5_RX_0_NUM_BLOCK_0             0x00007C00U                    /*!< NUM_BLOCK_0[4:0] bits (Number of blocks) (low) */
-#define USB_COUNT5_RX_0_NUM_BLOCK_0_0           0x00000400U                    /*!< Bit 0 */
-#define USB_COUNT5_RX_0_NUM_BLOCK_0_1           0x00000800U                    /*!< Bit 1 */
-#define USB_COUNT5_RX_0_NUM_BLOCK_0_2           0x00001000U                    /*!< Bit 2 */
-#define USB_COUNT5_RX_0_NUM_BLOCK_0_3           0x00002000U                    /*!< Bit 3 */
-#define USB_COUNT5_RX_0_NUM_BLOCK_0_4           0x00004000U                    /*!< Bit 4 */
-
-#define USB_COUNT5_RX_0_BLSIZE_0                0x00008000U                    /*!< BLock SIZE (low) */
-
-/****************  Bit definition for USB_COUNT5_RX_1 register  ***************/
-#define USB_COUNT5_RX_1_COUNT5_RX_1             0x03FF0000U                    /*!< Reception Byte Count (high) */
-
-#define USB_COUNT5_RX_1_NUM_BLOCK_1             0x7C000000U                    /*!< NUM_BLOCK_1[4:0] bits (Number of blocks) (high) */
-#define USB_COUNT5_RX_1_NUM_BLOCK_1_0           0x04000000U                    /*!< Bit 0 */
-#define USB_COUNT5_RX_1_NUM_BLOCK_1_1           0x08000000U                    /*!< Bit 1 */
-#define USB_COUNT5_RX_1_NUM_BLOCK_1_2           0x10000000U                    /*!< Bit 2 */
-#define USB_COUNT5_RX_1_NUM_BLOCK_1_3           0x20000000U                    /*!< Bit 3 */
-#define USB_COUNT5_RX_1_NUM_BLOCK_1_4           0x40000000U                    /*!< Bit 4 */
-
-#define USB_COUNT5_RX_1_BLSIZE_1                0x80000000U                    /*!< BLock SIZE (high) */
-
-/***************  Bit definition for USB_COUNT6_RX_0  register  ***************/
-#define USB_COUNT6_RX_0_COUNT6_RX_0             0x000003FFU                    /*!< Reception Byte Count (low) */
-
-#define USB_COUNT6_RX_0_NUM_BLOCK_0             0x00007C00U                    /*!< NUM_BLOCK_0[4:0] bits (Number of blocks) (low) */
-#define USB_COUNT6_RX_0_NUM_BLOCK_0_0           0x00000400U                    /*!< Bit 0 */
-#define USB_COUNT6_RX_0_NUM_BLOCK_0_1           0x00000800U                    /*!< Bit 1 */
-#define USB_COUNT6_RX_0_NUM_BLOCK_0_2           0x00001000U                    /*!< Bit 2 */
-#define USB_COUNT6_RX_0_NUM_BLOCK_0_3           0x00002000U                    /*!< Bit 3 */
-#define USB_COUNT6_RX_0_NUM_BLOCK_0_4           0x00004000U                    /*!< Bit 4 */
-
-#define USB_COUNT6_RX_0_BLSIZE_0                0x00008000U                    /*!< BLock SIZE (low) */
-
-/****************  Bit definition for USB_COUNT6_RX_1 register  ***************/
-#define USB_COUNT6_RX_1_COUNT6_RX_1             0x03FF0000U                   /*!< Reception Byte Count (high) */
-
-#define USB_COUNT6_RX_1_NUM_BLOCK_1             0x7C000000U                   /*!< NUM_BLOCK_1[4:0] bits (Number of blocks) (high) */
-#define USB_COUNT6_RX_1_NUM_BLOCK_1_0           0x04000000U                   /*!< Bit 0 */
-#define USB_COUNT6_RX_1_NUM_BLOCK_1_1           0x08000000U                   /*!< Bit 1 */
-#define USB_COUNT6_RX_1_NUM_BLOCK_1_2           0x10000000U                   /*!< Bit 2 */
-#define USB_COUNT6_RX_1_NUM_BLOCK_1_3           0x20000000U                   /*!< Bit 3 */
-#define USB_COUNT6_RX_1_NUM_BLOCK_1_4           0x40000000U                   /*!< Bit 4 */
-
-#define USB_COUNT6_RX_1_BLSIZE_1                0x80000000U                   /*!< BLock SIZE (high) */
-
-/***************  Bit definition for USB_COUNT7_RX_0 register  ****************/
-#define USB_COUNT7_RX_0_COUNT7_RX_0             0x000003FFU                    /*!< Reception Byte Count (low) */
-
-#define USB_COUNT7_RX_0_NUM_BLOCK_0             0x00007C00U                    /*!< NUM_BLOCK_0[4:0] bits (Number of blocks) (low) */
-#define USB_COUNT7_RX_0_NUM_BLOCK_0_0           0x00000400U                    /*!< Bit 0 */
-#define USB_COUNT7_RX_0_NUM_BLOCK_0_1           0x00000800U                    /*!< Bit 1 */
-#define USB_COUNT7_RX_0_NUM_BLOCK_0_2           0x00001000U                    /*!< Bit 2 */
-#define USB_COUNT7_RX_0_NUM_BLOCK_0_3           0x00002000U                    /*!< Bit 3 */
-#define USB_COUNT7_RX_0_NUM_BLOCK_0_4           0x00004000U                    /*!< Bit 4 */
-
-#define USB_COUNT7_RX_0_BLSIZE_0                0x00008000U                    /*!< BLock SIZE (low) */
-
-/***************  Bit definition for USB_COUNT7_RX_1 register  ****************/
-#define USB_COUNT7_RX_1_COUNT7_RX_1             0x03FF0000U                    /*!< Reception Byte Count (high) */
-
-#define USB_COUNT7_RX_1_NUM_BLOCK_1             0x7C000000U                    /*!< NUM_BLOCK_1[4:0] bits (Number of blocks) (high) */
-#define USB_COUNT7_RX_1_NUM_BLOCK_1_0           0x04000000U                    /*!< Bit 0 */
-#define USB_COUNT7_RX_1_NUM_BLOCK_1_1           0x08000000U                    /*!< Bit 1 */
-#define USB_COUNT7_RX_1_NUM_BLOCK_1_2           0x10000000U                    /*!< Bit 2 */
-#define USB_COUNT7_RX_1_NUM_BLOCK_1_3           0x20000000U                    /*!< Bit 3 */
-#define USB_COUNT7_RX_1_NUM_BLOCK_1_4           0x40000000U                    /*!< Bit 4 */
-
-#define USB_COUNT7_RX_1_BLSIZE_1                0x80000000U                    /*!< BLock SIZE (high) */
 
 /******************************************************************************/
 /*                                                                            */
@@ -6589,6 +6359,48 @@ typedef struct
 #define CAN_FM1R_FBM13_Pos                   (13U)                             
 #define CAN_FM1R_FBM13_Msk                   (0x1U << CAN_FM1R_FBM13_Pos)      /*!< 0x00002000 */
 #define CAN_FM1R_FBM13                       CAN_FM1R_FBM13_Msk                /*!< Filter Init Mode for filter 13 */
+#define CAN_FM1R_FBM14_Pos                   (14U)                             
+#define CAN_FM1R_FBM14_Msk                   (0x1U << CAN_FM1R_FBM14_Pos)      /*!< 0x00004000 */
+#define CAN_FM1R_FBM14                       CAN_FM1R_FBM14_Msk                /*!< Filter Init Mode for filter 14 */
+#define CAN_FM1R_FBM15_Pos                   (15U)                             
+#define CAN_FM1R_FBM15_Msk                   (0x1U << CAN_FM1R_FBM15_Pos)      /*!< 0x00008000 */
+#define CAN_FM1R_FBM15                       CAN_FM1R_FBM15_Msk                /*!< Filter Init Mode for filter 15 */
+#define CAN_FM1R_FBM16_Pos                   (16U)                             
+#define CAN_FM1R_FBM16_Msk                   (0x1U << CAN_FM1R_FBM16_Pos)      /*!< 0x00010000 */
+#define CAN_FM1R_FBM16                       CAN_FM1R_FBM16_Msk                /*!< Filter Init Mode for filter 16 */
+#define CAN_FM1R_FBM17_Pos                   (17U)                             
+#define CAN_FM1R_FBM17_Msk                   (0x1U << CAN_FM1R_FBM17_Pos)      /*!< 0x00020000 */
+#define CAN_FM1R_FBM17                       CAN_FM1R_FBM17_Msk                /*!< Filter Init Mode for filter 17 */
+#define CAN_FM1R_FBM18_Pos                   (18U)                             
+#define CAN_FM1R_FBM18_Msk                   (0x1U << CAN_FM1R_FBM18_Pos)      /*!< 0x00040000 */
+#define CAN_FM1R_FBM18                       CAN_FM1R_FBM18_Msk                /*!< Filter Init Mode for filter 18 */
+#define CAN_FM1R_FBM19_Pos                   (19U)                             
+#define CAN_FM1R_FBM19_Msk                   (0x1U << CAN_FM1R_FBM19_Pos)      /*!< 0x00080000 */
+#define CAN_FM1R_FBM19                       CAN_FM1R_FBM19_Msk                /*!< Filter Init Mode for filter 19 */
+#define CAN_FM1R_FBM20_Pos                   (20U)                             
+#define CAN_FM1R_FBM20_Msk                   (0x1U << CAN_FM1R_FBM20_Pos)      /*!< 0x00100000 */
+#define CAN_FM1R_FBM20                       CAN_FM1R_FBM20_Msk                /*!< Filter Init Mode for filter 20 */
+#define CAN_FM1R_FBM21_Pos                   (21U)                             
+#define CAN_FM1R_FBM21_Msk                   (0x1U << CAN_FM1R_FBM21_Pos)      /*!< 0x00200000 */
+#define CAN_FM1R_FBM21                       CAN_FM1R_FBM21_Msk                /*!< Filter Init Mode for filter 21 */
+#define CAN_FM1R_FBM22_Pos                   (22U)                             
+#define CAN_FM1R_FBM22_Msk                   (0x1U << CAN_FM1R_FBM22_Pos)      /*!< 0x00400000 */
+#define CAN_FM1R_FBM22                       CAN_FM1R_FBM22_Msk                /*!< Filter Init Mode for filter 22 */
+#define CAN_FM1R_FBM23_Pos                   (23U)                             
+#define CAN_FM1R_FBM23_Msk                   (0x1U << CAN_FM1R_FBM23_Pos)      /*!< 0x00800000 */
+#define CAN_FM1R_FBM23                       CAN_FM1R_FBM23_Msk                /*!< Filter Init Mode for filter 23 */
+#define CAN_FM1R_FBM24_Pos                   (24U)                             
+#define CAN_FM1R_FBM24_Msk                   (0x1U << CAN_FM1R_FBM24_Pos)      /*!< 0x01000000 */
+#define CAN_FM1R_FBM24                       CAN_FM1R_FBM24_Msk                /*!< Filter Init Mode for filter 24 */
+#define CAN_FM1R_FBM25_Pos                   (25U)                             
+#define CAN_FM1R_FBM25_Msk                   (0x1U << CAN_FM1R_FBM25_Pos)      /*!< 0x02000000 */
+#define CAN_FM1R_FBM25                       CAN_FM1R_FBM25_Msk                /*!< Filter Init Mode for filter 25 */
+#define CAN_FM1R_FBM26_Pos                   (26U)                             
+#define CAN_FM1R_FBM26_Msk                   (0x1U << CAN_FM1R_FBM26_Pos)      /*!< 0x04000000 */
+#define CAN_FM1R_FBM26                       CAN_FM1R_FBM26_Msk                /*!< Filter Init Mode for filter 26 */
+#define CAN_FM1R_FBM27_Pos                   (27U)                             
+#define CAN_FM1R_FBM27_Msk                   (0x1U << CAN_FM1R_FBM27_Pos)      /*!< 0x08000000 */
+#define CAN_FM1R_FBM27                       CAN_FM1R_FBM27_Msk                /*!< Filter Init Mode for filter 27 */
 
 /*******************  Bit definition for CAN_FS1R register  *******************/
 #define CAN_FS1R_FSC_Pos                     (0U)                              
@@ -6636,6 +6448,48 @@ typedef struct
 #define CAN_FS1R_FSC13_Pos                   (13U)                             
 #define CAN_FS1R_FSC13_Msk                   (0x1U << CAN_FS1R_FSC13_Pos)      /*!< 0x00002000 */
 #define CAN_FS1R_FSC13                       CAN_FS1R_FSC13_Msk                /*!< Filter Scale Configuration for filter 13 */
+#define CAN_FS1R_FSC14_Pos                   (14U)                             
+#define CAN_FS1R_FSC14_Msk                   (0x1U << CAN_FS1R_FSC14_Pos)      /*!< 0x00004000 */
+#define CAN_FS1R_FSC14                       CAN_FS1R_FSC14_Msk                /*!< Filter Scale Configuration for filter 14 */
+#define CAN_FS1R_FSC15_Pos                   (15U)                             
+#define CAN_FS1R_FSC15_Msk                   (0x1U << CAN_FS1R_FSC15_Pos)      /*!< 0x00008000 */
+#define CAN_FS1R_FSC15                       CAN_FS1R_FSC15_Msk                /*!< Filter Scale Configuration for filter 15 */
+#define CAN_FS1R_FSC16_Pos                   (16U)                             
+#define CAN_FS1R_FSC16_Msk                   (0x1U << CAN_FS1R_FSC16_Pos)      /*!< 0x00010000 */
+#define CAN_FS1R_FSC16                       CAN_FS1R_FSC16_Msk                /*!< Filter Scale Configuration for filter 16 */
+#define CAN_FS1R_FSC17_Pos                   (17U)                             
+#define CAN_FS1R_FSC17_Msk                   (0x1U << CAN_FS1R_FSC17_Pos)      /*!< 0x00020000 */
+#define CAN_FS1R_FSC17                       CAN_FS1R_FSC17_Msk                /*!< Filter Scale Configuration for filter 17 */
+#define CAN_FS1R_FSC18_Pos                   (18U)                             
+#define CAN_FS1R_FSC18_Msk                   (0x1U << CAN_FS1R_FSC18_Pos)      /*!< 0x00040000 */
+#define CAN_FS1R_FSC18                       CAN_FS1R_FSC18_Msk                /*!< Filter Scale Configuration for filter 18 */
+#define CAN_FS1R_FSC19_Pos                   (19U)                             
+#define CAN_FS1R_FSC19_Msk                   (0x1U << CAN_FS1R_FSC19_Pos)      /*!< 0x00080000 */
+#define CAN_FS1R_FSC19                       CAN_FS1R_FSC19_Msk                /*!< Filter Scale Configuration for filter 19 */
+#define CAN_FS1R_FSC20_Pos                   (20U)                             
+#define CAN_FS1R_FSC20_Msk                   (0x1U << CAN_FS1R_FSC20_Pos)      /*!< 0x00100000 */
+#define CAN_FS1R_FSC20                       CAN_FS1R_FSC20_Msk                /*!< Filter Scale Configuration for filter 20 */
+#define CAN_FS1R_FSC21_Pos                   (21U)                             
+#define CAN_FS1R_FSC21_Msk                   (0x1U << CAN_FS1R_FSC21_Pos)      /*!< 0x00200000 */
+#define CAN_FS1R_FSC21                       CAN_FS1R_FSC21_Msk                /*!< Filter Scale Configuration for filter 21 */
+#define CAN_FS1R_FSC22_Pos                   (22U)                             
+#define CAN_FS1R_FSC22_Msk                   (0x1U << CAN_FS1R_FSC22_Pos)      /*!< 0x00400000 */
+#define CAN_FS1R_FSC22                       CAN_FS1R_FSC22_Msk                /*!< Filter Scale Configuration for filter 22 */
+#define CAN_FS1R_FSC23_Pos                   (23U)                             
+#define CAN_FS1R_FSC23_Msk                   (0x1U << CAN_FS1R_FSC23_Pos)      /*!< 0x00800000 */
+#define CAN_FS1R_FSC23                       CAN_FS1R_FSC23_Msk                /*!< Filter Scale Configuration for filter 23 */
+#define CAN_FS1R_FSC24_Pos                   (24U)                             
+#define CAN_FS1R_FSC24_Msk                   (0x1U << CAN_FS1R_FSC24_Pos)      /*!< 0x01000000 */
+#define CAN_FS1R_FSC24                       CAN_FS1R_FSC24_Msk                /*!< Filter Scale Configuration for filter 24 */
+#define CAN_FS1R_FSC25_Pos                   (25U)                             
+#define CAN_FS1R_FSC25_Msk                   (0x1U << CAN_FS1R_FSC25_Pos)      /*!< 0x02000000 */
+#define CAN_FS1R_FSC25                       CAN_FS1R_FSC25_Msk                /*!< Filter Scale Configuration for filter 25 */
+#define CAN_FS1R_FSC26_Pos                   (26U)                             
+#define CAN_FS1R_FSC26_Msk                   (0x1U << CAN_FS1R_FSC26_Pos)      /*!< 0x04000000 */
+#define CAN_FS1R_FSC26                       CAN_FS1R_FSC26_Msk                /*!< Filter Scale Configuration for filter 26 */
+#define CAN_FS1R_FSC27_Pos                   (27U)                             
+#define CAN_FS1R_FSC27_Msk                   (0x1U << CAN_FS1R_FSC27_Pos)      /*!< 0x08000000 */
+#define CAN_FS1R_FSC27                       CAN_FS1R_FSC27_Msk                /*!< Filter Scale Configuration for filter 27 */
 
 /******************  Bit definition for CAN_FFA1R register  *******************/
 #define CAN_FFA1R_FFA_Pos                    (0U)                              
@@ -6683,6 +6537,48 @@ typedef struct
 #define CAN_FFA1R_FFA13_Pos                  (13U)                             
 #define CAN_FFA1R_FFA13_Msk                  (0x1U << CAN_FFA1R_FFA13_Pos)     /*!< 0x00002000 */
 #define CAN_FFA1R_FFA13                      CAN_FFA1R_FFA13_Msk               /*!< Filter FIFO Assignment for filter 13 */
+#define CAN_FFA1_FFA14_Pos                   (14U)                             
+#define CAN_FFA1_FFA14_Msk                   (0x1U << CAN_FFA1_FFA14_Pos)      /*!< 0x00004000 */
+#define CAN_FFA1_FFA14                       CAN_FFA1_FFA14_Msk                /*!< Filter FIFO Assignment for filter 14 */
+#define CAN_FFA1_FFA15_Pos                   (15U)                             
+#define CAN_FFA1_FFA15_Msk                   (0x1U << CAN_FFA1_FFA15_Pos)      /*!< 0x00008000 */
+#define CAN_FFA1_FFA15                       CAN_FFA1_FFA15_Msk                /*!< Filter FIFO Assignment for filter 15 */
+#define CAN_FFA1_FFA16_Pos                   (16U)                             
+#define CAN_FFA1_FFA16_Msk                   (0x1U << CAN_FFA1_FFA16_Pos)      /*!< 0x00010000 */
+#define CAN_FFA1_FFA16                       CAN_FFA1_FFA16_Msk                /*!< Filter FIFO Assignment for filter 16 */
+#define CAN_FFA1_FFA17_Pos                   (17U)                             
+#define CAN_FFA1_FFA17_Msk                   (0x1U << CAN_FFA1_FFA17_Pos)      /*!< 0x00020000 */
+#define CAN_FFA1_FFA17                       CAN_FFA1_FFA17_Msk                /*!< Filter FIFO Assignment for filter 17 */
+#define CAN_FFA1_FFA18_Pos                   (18U)                             
+#define CAN_FFA1_FFA18_Msk                   (0x1U << CAN_FFA1_FFA18_Pos)      /*!< 0x00040000 */
+#define CAN_FFA1_FFA18                       CAN_FFA1_FFA18_Msk                /*!< Filter FIFO Assignment for filter 18 */
+#define CAN_FFA1_FFA19_Pos                   (19U)                             
+#define CAN_FFA1_FFA19_Msk                   (0x1U << CAN_FFA1_FFA19_Pos)      /*!< 0x00080000 */
+#define CAN_FFA1_FFA19                       CAN_FFA1_FFA19_Msk                /*!< Filter FIFO Assignment for filter 19 */
+#define CAN_FFA1_FFA20_Pos                   (20U)                             
+#define CAN_FFA1_FFA20_Msk                   (0x1U << CAN_FFA1_FFA20_Pos)      /*!< 0x00100000 */
+#define CAN_FFA1_FFA20                       CAN_FFA1_FFA20_Msk                /*!< Filter FIFO Assignment for filter 20 */
+#define CAN_FFA1_FFA21_Pos                   (21U)                             
+#define CAN_FFA1_FFA21_Msk                   (0x1U << CAN_FFA1_FFA21_Pos)      /*!< 0x00200000 */
+#define CAN_FFA1_FFA21                       CAN_FFA1_FFA21_Msk                /*!< Filter FIFO Assignment for filter 21 */
+#define CAN_FFA1_FFA22_Pos                   (22U)                             
+#define CAN_FFA1_FFA22_Msk                   (0x1U << CAN_FFA1_FFA22_Pos)      /*!< 0x00400000 */
+#define CAN_FFA1_FFA22                       CAN_FFA1_FFA22_Msk                /*!< Filter FIFO Assignment for filter 22 */
+#define CAN_FFA1_FFA23_Pos                   (23U)                             
+#define CAN_FFA1_FFA23_Msk                   (0x1U << CAN_FFA1_FFA23_Pos)      /*!< 0x00800000 */
+#define CAN_FFA1_FFA23                       CAN_FFA1_FFA23_Msk                /*!< Filter FIFO Assignment for filter 23 */
+#define CAN_FFA1_FFA24_Pos                   (24U)                             
+#define CAN_FFA1_FFA24_Msk                   (0x1U << CAN_FFA1_FFA24_Pos)      /*!< 0x01000000 */
+#define CAN_FFA1_FFA24                       CAN_FFA1_FFA24_Msk                /*!< Filter FIFO Assignment for filter 24 */
+#define CAN_FFA1_FFA25_Pos                   (25U)                             
+#define CAN_FFA1_FFA25_Msk                   (0x1U << CAN_FFA1_FFA25_Pos)      /*!< 0x02000000 */
+#define CAN_FFA1_FFA25                       CAN_FFA1_FFA25_Msk                /*!< Filter FIFO Assignment for filter 25 */
+#define CAN_FFA1_FFA26_Pos                   (26U)                             
+#define CAN_FFA1_FFA26_Msk                   (0x1U << CAN_FFA1_FFA26_Pos)      /*!< 0x04000000 */
+#define CAN_FFA1_FFA26                       CAN_FFA1_FFA26_Msk                /*!< Filter FIFO Assignment for filter 26 */
+#define CAN_FFA1_FFA27_Pos                   (27U)                             
+#define CAN_FFA1_FFA27_Msk                   (0x1U << CAN_FFA1_FFA27_Pos)      /*!< 0x08000000 */
+#define CAN_FFA1_FFA27                       CAN_FFA1_FFA27_Msk                /*!< Filter FIFO Assignment for filter 27 */
 
 /*******************  Bit definition for CAN_FA1R register  *******************/
 #define CAN_FA1R_FACT_Pos                    (0U)                              
@@ -6730,6 +6626,48 @@ typedef struct
 #define CAN_FA1R_FACT13_Pos                  (13U)                             
 #define CAN_FA1R_FACT13_Msk                  (0x1U << CAN_FA1R_FACT13_Pos)     /*!< 0x00002000 */
 #define CAN_FA1R_FACT13                      CAN_FA1R_FACT13_Msk               /*!< Filter 13 Active */
+#define CAN_FA1R_FACT14_Pos                  (14U)                             
+#define CAN_FA1R_FACT14_Msk                  (0x1U << CAN_FA1R_FACT14_Pos)     /*!< 0x00004000 */
+#define CAN_FA1R_FACT14                      CAN_FA1R_FACT14_Msk               /*!< Filter 14 Active */
+#define CAN_FA1R_FACT15_Pos                  (15U)                             
+#define CAN_FA1R_FACT15_Msk                  (0x1U << CAN_FA1R_FACT15_Pos)     /*!< 0x00008000 */
+#define CAN_FA1R_FACT15                      CAN_FA1R_FACT15_Msk               /*!< Filter 15 Active */
+#define CAN_FA1R_FACT16_Pos                  (16U)                             
+#define CAN_FA1R_FACT16_Msk                  (0x1U << CAN_FA1R_FACT16_Pos)     /*!< 0x00010000 */
+#define CAN_FA1R_FACT16                      CAN_FA1R_FACT16_Msk               /*!< Filter 16 Active */
+#define CAN_FA1R_FACT17_Pos                  (17U)                             
+#define CAN_FA1R_FACT17_Msk                  (0x1U << CAN_FA1R_FACT17_Pos)     /*!< 0x00020000 */
+#define CAN_FA1R_FACT17                      CAN_FA1R_FACT17_Msk               /*!< Filter 17 Active */
+#define CAN_FA1R_FACT18_Pos                  (18U)                             
+#define CAN_FA1R_FACT18_Msk                  (0x1U << CAN_FA1R_FACT18_Pos)     /*!< 0x00040000 */
+#define CAN_FA1R_FACT18                      CAN_FA1R_FACT18_Msk               /*!< Filter 18 Active */
+#define CAN_FA1R_FACT19_Pos                  (19U)                             
+#define CAN_FA1R_FACT19_Msk                  (0x1U << CAN_FA1R_FACT19_Pos)     /*!< 0x00080000 */
+#define CAN_FA1R_FACT19                      CAN_FA1R_FACT19_Msk               /*!< Filter 19 Active */
+#define CAN_FA1R_FACT20_Pos                  (20U)                             
+#define CAN_FA1R_FACT20_Msk                  (0x1U << CAN_FA1R_FACT20_Pos)     /*!< 0x00100000 */
+#define CAN_FA1R_FACT20                      CAN_FA1R_FACT20_Msk               /*!< Filter 20 Active */
+#define CAN_FA1R_FACT21_Pos                  (21U)                             
+#define CAN_FA1R_FACT21_Msk                  (0x1U << CAN_FA1R_FACT21_Pos)     /*!< 0x00200000 */
+#define CAN_FA1R_FACT21                      CAN_FA1R_FACT21_Msk               /*!< Filter 21 Active */
+#define CAN_FA1R_FACT22_Pos                  (22U)                             
+#define CAN_FA1R_FACT22_Msk                  (0x1U << CAN_FA1R_FACT22_Pos)     /*!< 0x00400000 */
+#define CAN_FA1R_FACT22                      CAN_FA1R_FACT22_Msk               /*!< Filter 22 Active */
+#define CAN_FA1R_FACT23_Pos                  (23U)                             
+#define CAN_FA1R_FACT23_Msk                  (0x1U << CAN_FA1R_FACT23_Pos)     /*!< 0x00800000 */
+#define CAN_FA1R_FACT23                      CAN_FA1R_FACT23_Msk               /*!< Filter 23 Active */
+#define CAN_FA1R_FACT24_Pos                  (24U)                             
+#define CAN_FA1R_FACT24_Msk                  (0x1U << CAN_FA1R_FACT24_Pos)     /*!< 0x01000000 */
+#define CAN_FA1R_FACT24                      CAN_FA1R_FACT24_Msk               /*!< Filter 24 Active */
+#define CAN_FA1R_FACT25_Pos                  (25U)                             
+#define CAN_FA1R_FACT25_Msk                  (0x1U << CAN_FA1R_FACT25_Pos)     /*!< 0x02000000 */
+#define CAN_FA1R_FACT25                      CAN_FA1R_FACT25_Msk               /*!< Filter 25 Active */
+#define CAN_FA1R_FACT26_Pos                  (26U)                             
+#define CAN_FA1R_FACT26_Msk                  (0x1U << CAN_FA1R_FACT26_Pos)     /*!< 0x04000000 */
+#define CAN_FA1R_FACT26                      CAN_FA1R_FACT26_Msk               /*!< Filter 26 Active */
+#define CAN_FA1R_FACT27_Pos                  (27U)                             
+#define CAN_FA1R_FACT27_Msk                  (0x1U << CAN_FA1R_FACT27_Pos)     /*!< 0x08000000 */
+#define CAN_FA1R_FACT27                      CAN_FA1R_FACT27_Msk               /*!< Filter 27 Active */
 
 /*******************  Bit definition for CAN_F0R1 register  *******************/
 #define CAN_F0R1_FB0_Pos                     (0U)                              
@@ -8103,6 +8041,1378 @@ typedef struct
 #define CAN_F13R1_FB31_Msk                   (0x1U << CAN_F13R1_FB31_Pos)      /*!< 0x80000000 */
 #define CAN_F13R1_FB31                       CAN_F13R1_FB31_Msk                /*!< Filter bit 31 */
 
+/*******************  Bit definition for CAN_F14R1 register  ******************/
+#define CAN_F14R1_FB0_Pos                    (0U)                              
+#define CAN_F14R1_FB0_Msk                    (0x1U << CAN_F14R1_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F14R1_FB0                        CAN_F14R1_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F14R1_FB1_Pos                    (1U)                              
+#define CAN_F14R1_FB1_Msk                    (0x1U << CAN_F14R1_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F14R1_FB1                        CAN_F14R1_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F14R1_FB2_Pos                    (2U)                              
+#define CAN_F14R1_FB2_Msk                    (0x1U << CAN_F14R1_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F14R1_FB2                        CAN_F14R1_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F14R1_FB3_Pos                    (3U)                              
+#define CAN_F14R1_FB3_Msk                    (0x1U << CAN_F14R1_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F14R1_FB3                        CAN_F14R1_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F14R1_FB4_Pos                    (4U)                              
+#define CAN_F14R1_FB4_Msk                    (0x1U << CAN_F14R1_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F14R1_FB4                        CAN_F14R1_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F14R1_FB5_Pos                    (5U)                              
+#define CAN_F14R1_FB5_Msk                    (0x1U << CAN_F14R1_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F14R1_FB5                        CAN_F14R1_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F14R1_FB6_Pos                    (6U)                              
+#define CAN_F14R1_FB6_Msk                    (0x1U << CAN_F14R1_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F14R1_FB6                        CAN_F14R1_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F14R1_FB7_Pos                    (7U)                              
+#define CAN_F14R1_FB7_Msk                    (0x1U << CAN_F14R1_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F14R1_FB7                        CAN_F14R1_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F14R1_FB8_Pos                    (8U)                              
+#define CAN_F14R1_FB8_Msk                    (0x1U << CAN_F14R1_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F14R1_FB8                        CAN_F14R1_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F14R1_FB9_Pos                    (9U)                              
+#define CAN_F14R1_FB9_Msk                    (0x1U << CAN_F14R1_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F14R1_FB9                        CAN_F14R1_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F14R1_FB10_Pos                   (10U)                             
+#define CAN_F14R1_FB10_Msk                   (0x1U << CAN_F14R1_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F14R1_FB10                       CAN_F14R1_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F14R1_FB11_Pos                   (11U)                             
+#define CAN_F14R1_FB11_Msk                   (0x1U << CAN_F14R1_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F14R1_FB11                       CAN_F14R1_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F14R1_FB12_Pos                   (12U)                             
+#define CAN_F14R1_FB12_Msk                   (0x1U << CAN_F14R1_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F14R1_FB12                       CAN_F14R1_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F14R1_FB13_Pos                   (13U)                             
+#define CAN_F14R1_FB13_Msk                   (0x1U << CAN_F14R1_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F14R1_FB13                       CAN_F14R1_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F14R1_FB14_Pos                   (14U)                             
+#define CAN_F14R1_FB14_Msk                   (0x1U << CAN_F14R1_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F14R1_FB14                       CAN_F14R1_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F14R1_FB15_Pos                   (15U)                             
+#define CAN_F14R1_FB15_Msk                   (0x1U << CAN_F14R1_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F14R1_FB15                       CAN_F14R1_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F14R1_FB16_Pos                   (16U)                             
+#define CAN_F14R1_FB16_Msk                   (0x1U << CAN_F14R1_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F14R1_FB16                       CAN_F14R1_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F14R1_FB17_Pos                   (17U)                             
+#define CAN_F14R1_FB17_Msk                   (0x1U << CAN_F14R1_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F14R1_FB17                       CAN_F14R1_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F14R1_FB18_Pos                   (18U)                             
+#define CAN_F14R1_FB18_Msk                   (0x1U << CAN_F14R1_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F14R1_FB18                       CAN_F14R1_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F14R1_FB19_Pos                   (19U)                             
+#define CAN_F14R1_FB19_Msk                   (0x1U << CAN_F14R1_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F14R1_FB19                       CAN_F14R1_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F14R1_FB20_Pos                   (20U)                             
+#define CAN_F14R1_FB20_Msk                   (0x1U << CAN_F14R1_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F14R1_FB20                       CAN_F14R1_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F14R1_FB21_Pos                   (21U)                             
+#define CAN_F14R1_FB21_Msk                   (0x1U << CAN_F14R1_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F14R1_FB21                       CAN_F14R1_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F14R1_FB22_Pos                   (22U)                             
+#define CAN_F14R1_FB22_Msk                   (0x1U << CAN_F14R1_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F14R1_FB22                       CAN_F14R1_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F14R1_FB23_Pos                   (23U)                             
+#define CAN_F14R1_FB23_Msk                   (0x1U << CAN_F14R1_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F14R1_FB23                       CAN_F14R1_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F14R1_FB24_Pos                   (24U)                             
+#define CAN_F14R1_FB24_Msk                   (0x1U << CAN_F14R1_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F14R1_FB24                       CAN_F14R1_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F14R1_FB25_Pos                   (25U)                             
+#define CAN_F14R1_FB25_Msk                   (0x1U << CAN_F14R1_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F14R1_FB25                       CAN_F14R1_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F14R1_FB26_Pos                   (26U)                             
+#define CAN_F14R1_FB26_Msk                   (0x1U << CAN_F14R1_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F14R1_FB26                       CAN_F14R1_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F14R1_FB27_Pos                   (27U)                             
+#define CAN_F14R1_FB27_Msk                   (0x1U << CAN_F14R1_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F14R1_FB27                       CAN_F14R1_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F14R1_FB28_Pos                   (28U)                             
+#define CAN_F14R1_FB28_Msk                   (0x1U << CAN_F14R1_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F14R1_FB28                       CAN_F14R1_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F14R1_FB29_Pos                   (29U)                             
+#define CAN_F14R1_FB29_Msk                   (0x1U << CAN_F14R1_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F14R1_FB29                       CAN_F14R1_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F14R1_FB30_Pos                   (30U)                             
+#define CAN_F14R1_FB30_Msk                   (0x1U << CAN_F14R1_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F14R1_FB30                       CAN_F14R1_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F14R1_FB31_Pos                   (31U)                             
+#define CAN_F14R1_FB31_Msk                   (0x1U << CAN_F14R1_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F14R1_FB31                       CAN_F14R1_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F15R1 register  ******************/
+#define CAN_F15R1_FB0_Pos                    (0U)                              
+#define CAN_F15R1_FB0_Msk                    (0x1U << CAN_F15R1_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F15R1_FB0                        CAN_F15R1_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F15R1_FB1_Pos                    (1U)                              
+#define CAN_F15R1_FB1_Msk                    (0x1U << CAN_F15R1_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F15R1_FB1                        CAN_F15R1_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F15R1_FB2_Pos                    (2U)                              
+#define CAN_F15R1_FB2_Msk                    (0x1U << CAN_F15R1_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F15R1_FB2                        CAN_F15R1_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F15R1_FB3_Pos                    (3U)                              
+#define CAN_F15R1_FB3_Msk                    (0x1U << CAN_F15R1_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F15R1_FB3                        CAN_F15R1_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F15R1_FB4_Pos                    (4U)                              
+#define CAN_F15R1_FB4_Msk                    (0x1U << CAN_F15R1_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F15R1_FB4                        CAN_F15R1_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F15R1_FB5_Pos                    (5U)                              
+#define CAN_F15R1_FB5_Msk                    (0x1U << CAN_F15R1_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F15R1_FB5                        CAN_F15R1_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F15R1_FB6_Pos                    (6U)                              
+#define CAN_F15R1_FB6_Msk                    (0x1U << CAN_F15R1_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F15R1_FB6                        CAN_F15R1_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F15R1_FB7_Pos                    (7U)                              
+#define CAN_F15R1_FB7_Msk                    (0x1U << CAN_F15R1_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F15R1_FB7                        CAN_F15R1_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F15R1_FB8_Pos                    (8U)                              
+#define CAN_F15R1_FB8_Msk                    (0x1U << CAN_F15R1_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F15R1_FB8                        CAN_F15R1_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F15R1_FB9_Pos                    (9U)                              
+#define CAN_F15R1_FB9_Msk                    (0x1U << CAN_F15R1_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F15R1_FB9                        CAN_F15R1_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F15R1_FB10_Pos                   (10U)                             
+#define CAN_F15R1_FB10_Msk                   (0x1U << CAN_F15R1_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F15R1_FB10                       CAN_F15R1_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F15R1_FB11_Pos                   (11U)                             
+#define CAN_F15R1_FB11_Msk                   (0x1U << CAN_F15R1_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F15R1_FB11                       CAN_F15R1_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F15R1_FB12_Pos                   (12U)                             
+#define CAN_F15R1_FB12_Msk                   (0x1U << CAN_F15R1_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F15R1_FB12                       CAN_F15R1_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F15R1_FB13_Pos                   (13U)                             
+#define CAN_F15R1_FB13_Msk                   (0x1U << CAN_F15R1_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F15R1_FB13                       CAN_F15R1_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F15R1_FB14_Pos                   (14U)                             
+#define CAN_F15R1_FB14_Msk                   (0x1U << CAN_F15R1_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F15R1_FB14                       CAN_F15R1_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F15R1_FB15_Pos                   (15U)                             
+#define CAN_F15R1_FB15_Msk                   (0x1U << CAN_F15R1_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F15R1_FB15                       CAN_F15R1_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F15R1_FB16_Pos                   (16U)                             
+#define CAN_F15R1_FB16_Msk                   (0x1U << CAN_F15R1_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F15R1_FB16                       CAN_F15R1_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F15R1_FB17_Pos                   (17U)                             
+#define CAN_F15R1_FB17_Msk                   (0x1U << CAN_F15R1_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F15R1_FB17                       CAN_F15R1_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F15R1_FB18_Pos                   (18U)                             
+#define CAN_F15R1_FB18_Msk                   (0x1U << CAN_F15R1_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F15R1_FB18                       CAN_F15R1_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F15R1_FB19_Pos                   (19U)                             
+#define CAN_F15R1_FB19_Msk                   (0x1U << CAN_F15R1_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F15R1_FB19                       CAN_F15R1_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F15R1_FB20_Pos                   (20U)                             
+#define CAN_F15R1_FB20_Msk                   (0x1U << CAN_F15R1_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F15R1_FB20                       CAN_F15R1_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F15R1_FB21_Pos                   (21U)                             
+#define CAN_F15R1_FB21_Msk                   (0x1U << CAN_F15R1_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F15R1_FB21                       CAN_F15R1_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F15R1_FB22_Pos                   (22U)                             
+#define CAN_F15R1_FB22_Msk                   (0x1U << CAN_F15R1_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F15R1_FB22                       CAN_F15R1_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F15R1_FB23_Pos                   (23U)                             
+#define CAN_F15R1_FB23_Msk                   (0x1U << CAN_F15R1_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F15R1_FB23                       CAN_F15R1_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F15R1_FB24_Pos                   (24U)                             
+#define CAN_F15R1_FB24_Msk                   (0x1U << CAN_F15R1_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F15R1_FB24                       CAN_F15R1_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F15R1_FB25_Pos                   (25U)                             
+#define CAN_F15R1_FB25_Msk                   (0x1U << CAN_F15R1_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F15R1_FB25                       CAN_F15R1_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F15R1_FB26_Pos                   (26U)                             
+#define CAN_F15R1_FB26_Msk                   (0x1U << CAN_F15R1_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F15R1_FB26                       CAN_F15R1_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F15R1_FB27_Pos                   (27U)                             
+#define CAN_F15R1_FB27_Msk                   (0x1U << CAN_F15R1_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F15R1_FB27                       CAN_F15R1_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F15R1_FB28_Pos                   (28U)                             
+#define CAN_F15R1_FB28_Msk                   (0x1U << CAN_F15R1_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F15R1_FB28                       CAN_F15R1_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F15R1_FB29_Pos                   (29U)                             
+#define CAN_F15R1_FB29_Msk                   (0x1U << CAN_F15R1_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F15R1_FB29                       CAN_F15R1_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F15R1_FB30_Pos                   (30U)                             
+#define CAN_F15R1_FB30_Msk                   (0x1U << CAN_F15R1_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F15R1_FB30                       CAN_F15R1_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F15R1_FB31_Pos                   (31U)                             
+#define CAN_F15R1_FB31_Msk                   (0x1U << CAN_F15R1_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F15R1_FB31                       CAN_F15R1_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F16R1 register  ******************/
+#define CAN_F16R1_FB0_Pos                    (0U)                              
+#define CAN_F16R1_FB0_Msk                    (0x1U << CAN_F16R1_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F16R1_FB0                        CAN_F16R1_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F16R1_FB1_Pos                    (1U)                              
+#define CAN_F16R1_FB1_Msk                    (0x1U << CAN_F16R1_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F16R1_FB1                        CAN_F16R1_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F16R1_FB2_Pos                    (2U)                              
+#define CAN_F16R1_FB2_Msk                    (0x1U << CAN_F16R1_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F16R1_FB2                        CAN_F16R1_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F16R1_FB3_Pos                    (3U)                              
+#define CAN_F16R1_FB3_Msk                    (0x1U << CAN_F16R1_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F16R1_FB3                        CAN_F16R1_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F16R1_FB4_Pos                    (4U)                              
+#define CAN_F16R1_FB4_Msk                    (0x1U << CAN_F16R1_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F16R1_FB4                        CAN_F16R1_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F16R1_FB5_Pos                    (5U)                              
+#define CAN_F16R1_FB5_Msk                    (0x1U << CAN_F16R1_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F16R1_FB5                        CAN_F16R1_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F16R1_FB6_Pos                    (6U)                              
+#define CAN_F16R1_FB6_Msk                    (0x1U << CAN_F16R1_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F16R1_FB6                        CAN_F16R1_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F16R1_FB7_Pos                    (7U)                              
+#define CAN_F16R1_FB7_Msk                    (0x1U << CAN_F16R1_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F16R1_FB7                        CAN_F16R1_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F16R1_FB8_Pos                    (8U)                              
+#define CAN_F16R1_FB8_Msk                    (0x1U << CAN_F16R1_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F16R1_FB8                        CAN_F16R1_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F16R1_FB9_Pos                    (9U)                              
+#define CAN_F16R1_FB9_Msk                    (0x1U << CAN_F16R1_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F16R1_FB9                        CAN_F16R1_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F16R1_FB10_Pos                   (10U)                             
+#define CAN_F16R1_FB10_Msk                   (0x1U << CAN_F16R1_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F16R1_FB10                       CAN_F16R1_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F16R1_FB11_Pos                   (11U)                             
+#define CAN_F16R1_FB11_Msk                   (0x1U << CAN_F16R1_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F16R1_FB11                       CAN_F16R1_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F16R1_FB12_Pos                   (12U)                             
+#define CAN_F16R1_FB12_Msk                   (0x1U << CAN_F16R1_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F16R1_FB12                       CAN_F16R1_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F16R1_FB13_Pos                   (13U)                             
+#define CAN_F16R1_FB13_Msk                   (0x1U << CAN_F16R1_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F16R1_FB13                       CAN_F16R1_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F16R1_FB14_Pos                   (14U)                             
+#define CAN_F16R1_FB14_Msk                   (0x1U << CAN_F16R1_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F16R1_FB14                       CAN_F16R1_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F16R1_FB15_Pos                   (15U)                             
+#define CAN_F16R1_FB15_Msk                   (0x1U << CAN_F16R1_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F16R1_FB15                       CAN_F16R1_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F16R1_FB16_Pos                   (16U)                             
+#define CAN_F16R1_FB16_Msk                   (0x1U << CAN_F16R1_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F16R1_FB16                       CAN_F16R1_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F16R1_FB17_Pos                   (17U)                             
+#define CAN_F16R1_FB17_Msk                   (0x1U << CAN_F16R1_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F16R1_FB17                       CAN_F16R1_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F16R1_FB18_Pos                   (18U)                             
+#define CAN_F16R1_FB18_Msk                   (0x1U << CAN_F16R1_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F16R1_FB18                       CAN_F16R1_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F16R1_FB19_Pos                   (19U)                             
+#define CAN_F16R1_FB19_Msk                   (0x1U << CAN_F16R1_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F16R1_FB19                       CAN_F16R1_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F16R1_FB20_Pos                   (20U)                             
+#define CAN_F16R1_FB20_Msk                   (0x1U << CAN_F16R1_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F16R1_FB20                       CAN_F16R1_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F16R1_FB21_Pos                   (21U)                             
+#define CAN_F16R1_FB21_Msk                   (0x1U << CAN_F16R1_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F16R1_FB21                       CAN_F16R1_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F16R1_FB22_Pos                   (22U)                             
+#define CAN_F16R1_FB22_Msk                   (0x1U << CAN_F16R1_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F16R1_FB22                       CAN_F16R1_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F16R1_FB23_Pos                   (23U)                             
+#define CAN_F16R1_FB23_Msk                   (0x1U << CAN_F16R1_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F16R1_FB23                       CAN_F16R1_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F16R1_FB24_Pos                   (24U)                             
+#define CAN_F16R1_FB24_Msk                   (0x1U << CAN_F16R1_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F16R1_FB24                       CAN_F16R1_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F16R1_FB25_Pos                   (25U)                             
+#define CAN_F16R1_FB25_Msk                   (0x1U << CAN_F16R1_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F16R1_FB25                       CAN_F16R1_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F16R1_FB26_Pos                   (26U)                             
+#define CAN_F16R1_FB26_Msk                   (0x1U << CAN_F16R1_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F16R1_FB26                       CAN_F16R1_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F16R1_FB27_Pos                   (27U)                             
+#define CAN_F16R1_FB27_Msk                   (0x1U << CAN_F16R1_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F16R1_FB27                       CAN_F16R1_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F16R1_FB28_Pos                   (28U)                             
+#define CAN_F16R1_FB28_Msk                   (0x1U << CAN_F16R1_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F16R1_FB28                       CAN_F16R1_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F16R1_FB29_Pos                   (29U)                             
+#define CAN_F16R1_FB29_Msk                   (0x1U << CAN_F16R1_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F16R1_FB29                       CAN_F16R1_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F16R1_FB30_Pos                   (30U)                             
+#define CAN_F16R1_FB30_Msk                   (0x1U << CAN_F16R1_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F16R1_FB30                       CAN_F16R1_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F16R1_FB31_Pos                   (31U)                             
+#define CAN_F16R1_FB31_Msk                   (0x1U << CAN_F16R1_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F16R1_FB31                       CAN_F16R1_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F17R1 register  ******************/
+#define CAN_F17R1_FB0_Pos                    (0U)                              
+#define CAN_F17R1_FB0_Msk                    (0x1U << CAN_F17R1_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F17R1_FB0                        CAN_F17R1_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F17R1_FB1_Pos                    (1U)                              
+#define CAN_F17R1_FB1_Msk                    (0x1U << CAN_F17R1_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F17R1_FB1                        CAN_F17R1_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F17R1_FB2_Pos                    (2U)                              
+#define CAN_F17R1_FB2_Msk                    (0x1U << CAN_F17R1_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F17R1_FB2                        CAN_F17R1_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F17R1_FB3_Pos                    (3U)                              
+#define CAN_F17R1_FB3_Msk                    (0x1U << CAN_F17R1_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F17R1_FB3                        CAN_F17R1_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F17R1_FB4_Pos                    (4U)                              
+#define CAN_F17R1_FB4_Msk                    (0x1U << CAN_F17R1_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F17R1_FB4                        CAN_F17R1_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F17R1_FB5_Pos                    (5U)                              
+#define CAN_F17R1_FB5_Msk                    (0x1U << CAN_F17R1_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F17R1_FB5                        CAN_F17R1_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F17R1_FB6_Pos                    (6U)                              
+#define CAN_F17R1_FB6_Msk                    (0x1U << CAN_F17R1_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F17R1_FB6                        CAN_F17R1_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F17R1_FB7_Pos                    (7U)                              
+#define CAN_F17R1_FB7_Msk                    (0x1U << CAN_F17R1_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F17R1_FB7                        CAN_F17R1_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F17R1_FB8_Pos                    (8U)                              
+#define CAN_F17R1_FB8_Msk                    (0x1U << CAN_F17R1_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F17R1_FB8                        CAN_F17R1_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F17R1_FB9_Pos                    (9U)                              
+#define CAN_F17R1_FB9_Msk                    (0x1U << CAN_F17R1_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F17R1_FB9                        CAN_F17R1_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F17R1_FB10_Pos                   (10U)                             
+#define CAN_F17R1_FB10_Msk                   (0x1U << CAN_F17R1_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F17R1_FB10                       CAN_F17R1_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F17R1_FB11_Pos                   (11U)                             
+#define CAN_F17R1_FB11_Msk                   (0x1U << CAN_F17R1_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F17R1_FB11                       CAN_F17R1_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F17R1_FB12_Pos                   (12U)                             
+#define CAN_F17R1_FB12_Msk                   (0x1U << CAN_F17R1_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F17R1_FB12                       CAN_F17R1_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F17R1_FB13_Pos                   (13U)                             
+#define CAN_F17R1_FB13_Msk                   (0x1U << CAN_F17R1_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F17R1_FB13                       CAN_F17R1_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F17R1_FB14_Pos                   (14U)                             
+#define CAN_F17R1_FB14_Msk                   (0x1U << CAN_F17R1_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F17R1_FB14                       CAN_F17R1_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F17R1_FB15_Pos                   (15U)                             
+#define CAN_F17R1_FB15_Msk                   (0x1U << CAN_F17R1_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F17R1_FB15                       CAN_F17R1_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F17R1_FB16_Pos                   (16U)                             
+#define CAN_F17R1_FB16_Msk                   (0x1U << CAN_F17R1_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F17R1_FB16                       CAN_F17R1_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F17R1_FB17_Pos                   (17U)                             
+#define CAN_F17R1_FB17_Msk                   (0x1U << CAN_F17R1_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F17R1_FB17                       CAN_F17R1_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F17R1_FB18_Pos                   (18U)                             
+#define CAN_F17R1_FB18_Msk                   (0x1U << CAN_F17R1_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F17R1_FB18                       CAN_F17R1_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F17R1_FB19_Pos                   (19U)                             
+#define CAN_F17R1_FB19_Msk                   (0x1U << CAN_F17R1_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F17R1_FB19                       CAN_F17R1_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F17R1_FB20_Pos                   (20U)                             
+#define CAN_F17R1_FB20_Msk                   (0x1U << CAN_F17R1_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F17R1_FB20                       CAN_F17R1_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F17R1_FB21_Pos                   (21U)                             
+#define CAN_F17R1_FB21_Msk                   (0x1U << CAN_F17R1_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F17R1_FB21                       CAN_F17R1_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F17R1_FB22_Pos                   (22U)                             
+#define CAN_F17R1_FB22_Msk                   (0x1U << CAN_F17R1_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F17R1_FB22                       CAN_F17R1_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F17R1_FB23_Pos                   (23U)                             
+#define CAN_F17R1_FB23_Msk                   (0x1U << CAN_F17R1_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F17R1_FB23                       CAN_F17R1_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F17R1_FB24_Pos                   (24U)                             
+#define CAN_F17R1_FB24_Msk                   (0x1U << CAN_F17R1_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F17R1_FB24                       CAN_F17R1_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F17R1_FB25_Pos                   (25U)                             
+#define CAN_F17R1_FB25_Msk                   (0x1U << CAN_F17R1_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F17R1_FB25                       CAN_F17R1_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F17R1_FB26_Pos                   (26U)                             
+#define CAN_F17R1_FB26_Msk                   (0x1U << CAN_F17R1_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F17R1_FB26                       CAN_F17R1_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F17R1_FB27_Pos                   (27U)                             
+#define CAN_F17R1_FB27_Msk                   (0x1U << CAN_F17R1_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F17R1_FB27                       CAN_F17R1_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F17R1_FB28_Pos                   (28U)                             
+#define CAN_F17R1_FB28_Msk                   (0x1U << CAN_F17R1_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F17R1_FB28                       CAN_F17R1_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F17R1_FB29_Pos                   (29U)                             
+#define CAN_F17R1_FB29_Msk                   (0x1U << CAN_F17R1_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F17R1_FB29                       CAN_F17R1_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F17R1_FB30_Pos                   (30U)                             
+#define CAN_F17R1_FB30_Msk                   (0x1U << CAN_F17R1_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F17R1_FB30                       CAN_F17R1_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F17R1_FB31_Pos                   (31U)                             
+#define CAN_F17R1_FB31_Msk                   (0x1U << CAN_F17R1_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F17R1_FB31                       CAN_F17R1_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F18R1 register  ******************/
+#define CAN_F18R1_FB0_Pos                    (0U)                              
+#define CAN_F18R1_FB0_Msk                    (0x1U << CAN_F18R1_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F18R1_FB0                        CAN_F18R1_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F18R1_FB1_Pos                    (1U)                              
+#define CAN_F18R1_FB1_Msk                    (0x1U << CAN_F18R1_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F18R1_FB1                        CAN_F18R1_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F18R1_FB2_Pos                    (2U)                              
+#define CAN_F18R1_FB2_Msk                    (0x1U << CAN_F18R1_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F18R1_FB2                        CAN_F18R1_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F18R1_FB3_Pos                    (3U)                              
+#define CAN_F18R1_FB3_Msk                    (0x1U << CAN_F18R1_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F18R1_FB3                        CAN_F18R1_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F18R1_FB4_Pos                    (4U)                              
+#define CAN_F18R1_FB4_Msk                    (0x1U << CAN_F18R1_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F18R1_FB4                        CAN_F18R1_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F18R1_FB5_Pos                    (5U)                              
+#define CAN_F18R1_FB5_Msk                    (0x1U << CAN_F18R1_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F18R1_FB5                        CAN_F18R1_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F18R1_FB6_Pos                    (6U)                              
+#define CAN_F18R1_FB6_Msk                    (0x1U << CAN_F18R1_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F18R1_FB6                        CAN_F18R1_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F18R1_FB7_Pos                    (7U)                              
+#define CAN_F18R1_FB7_Msk                    (0x1U << CAN_F18R1_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F18R1_FB7                        CAN_F18R1_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F18R1_FB8_Pos                    (8U)                              
+#define CAN_F18R1_FB8_Msk                    (0x1U << CAN_F18R1_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F18R1_FB8                        CAN_F18R1_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F18R1_FB9_Pos                    (9U)                              
+#define CAN_F18R1_FB9_Msk                    (0x1U << CAN_F18R1_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F18R1_FB9                        CAN_F18R1_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F18R1_FB10_Pos                   (10U)                             
+#define CAN_F18R1_FB10_Msk                   (0x1U << CAN_F18R1_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F18R1_FB10                       CAN_F18R1_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F18R1_FB11_Pos                   (11U)                             
+#define CAN_F18R1_FB11_Msk                   (0x1U << CAN_F18R1_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F18R1_FB11                       CAN_F18R1_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F18R1_FB12_Pos                   (12U)                             
+#define CAN_F18R1_FB12_Msk                   (0x1U << CAN_F18R1_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F18R1_FB12                       CAN_F18R1_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F18R1_FB13_Pos                   (13U)                             
+#define CAN_F18R1_FB13_Msk                   (0x1U << CAN_F18R1_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F18R1_FB13                       CAN_F18R1_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F18R1_FB14_Pos                   (14U)                             
+#define CAN_F18R1_FB14_Msk                   (0x1U << CAN_F18R1_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F18R1_FB14                       CAN_F18R1_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F18R1_FB15_Pos                   (15U)                             
+#define CAN_F18R1_FB15_Msk                   (0x1U << CAN_F18R1_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F18R1_FB15                       CAN_F18R1_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F18R1_FB16_Pos                   (16U)                             
+#define CAN_F18R1_FB16_Msk                   (0x1U << CAN_F18R1_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F18R1_FB16                       CAN_F18R1_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F18R1_FB17_Pos                   (17U)                             
+#define CAN_F18R1_FB17_Msk                   (0x1U << CAN_F18R1_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F18R1_FB17                       CAN_F18R1_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F18R1_FB18_Pos                   (18U)                             
+#define CAN_F18R1_FB18_Msk                   (0x1U << CAN_F18R1_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F18R1_FB18                       CAN_F18R1_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F18R1_FB19_Pos                   (19U)                             
+#define CAN_F18R1_FB19_Msk                   (0x1U << CAN_F18R1_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F18R1_FB19                       CAN_F18R1_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F18R1_FB20_Pos                   (20U)                             
+#define CAN_F18R1_FB20_Msk                   (0x1U << CAN_F18R1_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F18R1_FB20                       CAN_F18R1_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F18R1_FB21_Pos                   (21U)                             
+#define CAN_F18R1_FB21_Msk                   (0x1U << CAN_F18R1_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F18R1_FB21                       CAN_F18R1_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F18R1_FB22_Pos                   (22U)                             
+#define CAN_F18R1_FB22_Msk                   (0x1U << CAN_F18R1_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F18R1_FB22                       CAN_F18R1_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F18R1_FB23_Pos                   (23U)                             
+#define CAN_F18R1_FB23_Msk                   (0x1U << CAN_F18R1_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F18R1_FB23                       CAN_F18R1_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F18R1_FB24_Pos                   (24U)                             
+#define CAN_F18R1_FB24_Msk                   (0x1U << CAN_F18R1_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F18R1_FB24                       CAN_F18R1_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F18R1_FB25_Pos                   (25U)                             
+#define CAN_F18R1_FB25_Msk                   (0x1U << CAN_F18R1_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F18R1_FB25                       CAN_F18R1_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F18R1_FB26_Pos                   (26U)                             
+#define CAN_F18R1_FB26_Msk                   (0x1U << CAN_F18R1_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F18R1_FB26                       CAN_F18R1_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F18R1_FB27_Pos                   (27U)                             
+#define CAN_F18R1_FB27_Msk                   (0x1U << CAN_F18R1_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F18R1_FB27                       CAN_F18R1_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F18R1_FB28_Pos                   (28U)                             
+#define CAN_F18R1_FB28_Msk                   (0x1U << CAN_F18R1_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F18R1_FB28                       CAN_F18R1_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F18R1_FB29_Pos                   (29U)                             
+#define CAN_F18R1_FB29_Msk                   (0x1U << CAN_F18R1_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F18R1_FB29                       CAN_F18R1_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F18R1_FB30_Pos                   (30U)                             
+#define CAN_F18R1_FB30_Msk                   (0x1U << CAN_F18R1_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F18R1_FB30                       CAN_F18R1_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F18R1_FB31_Pos                   (31U)                             
+#define CAN_F18R1_FB31_Msk                   (0x1U << CAN_F18R1_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F18R1_FB31                       CAN_F18R1_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F19R1 register  ******************/
+#define CAN_F19R1_FB0_Pos                    (0U)                              
+#define CAN_F19R1_FB0_Msk                    (0x1U << CAN_F19R1_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F19R1_FB0                        CAN_F19R1_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F19R1_FB1_Pos                    (1U)                              
+#define CAN_F19R1_FB1_Msk                    (0x1U << CAN_F19R1_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F19R1_FB1                        CAN_F19R1_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F19R1_FB2_Pos                    (2U)                              
+#define CAN_F19R1_FB2_Msk                    (0x1U << CAN_F19R1_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F19R1_FB2                        CAN_F19R1_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F19R1_FB3_Pos                    (3U)                              
+#define CAN_F19R1_FB3_Msk                    (0x1U << CAN_F19R1_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F19R1_FB3                        CAN_F19R1_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F19R1_FB4_Pos                    (4U)                              
+#define CAN_F19R1_FB4_Msk                    (0x1U << CAN_F19R1_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F19R1_FB4                        CAN_F19R1_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F19R1_FB5_Pos                    (5U)                              
+#define CAN_F19R1_FB5_Msk                    (0x1U << CAN_F19R1_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F19R1_FB5                        CAN_F19R1_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F19R1_FB6_Pos                    (6U)                              
+#define CAN_F19R1_FB6_Msk                    (0x1U << CAN_F19R1_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F19R1_FB6                        CAN_F19R1_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F19R1_FB7_Pos                    (7U)                              
+#define CAN_F19R1_FB7_Msk                    (0x1U << CAN_F19R1_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F19R1_FB7                        CAN_F19R1_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F19R1_FB8_Pos                    (8U)                              
+#define CAN_F19R1_FB8_Msk                    (0x1U << CAN_F19R1_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F19R1_FB8                        CAN_F19R1_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F19R1_FB9_Pos                    (9U)                              
+#define CAN_F19R1_FB9_Msk                    (0x1U << CAN_F19R1_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F19R1_FB9                        CAN_F19R1_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F19R1_FB10_Pos                   (10U)                             
+#define CAN_F19R1_FB10_Msk                   (0x1U << CAN_F19R1_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F19R1_FB10                       CAN_F19R1_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F19R1_FB11_Pos                   (11U)                             
+#define CAN_F19R1_FB11_Msk                   (0x1U << CAN_F19R1_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F19R1_FB11                       CAN_F19R1_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F19R1_FB12_Pos                   (12U)                             
+#define CAN_F19R1_FB12_Msk                   (0x1U << CAN_F19R1_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F19R1_FB12                       CAN_F19R1_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F19R1_FB13_Pos                   (13U)                             
+#define CAN_F19R1_FB13_Msk                   (0x1U << CAN_F19R1_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F19R1_FB13                       CAN_F19R1_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F19R1_FB14_Pos                   (14U)                             
+#define CAN_F19R1_FB14_Msk                   (0x1U << CAN_F19R1_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F19R1_FB14                       CAN_F19R1_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F19R1_FB15_Pos                   (15U)                             
+#define CAN_F19R1_FB15_Msk                   (0x1U << CAN_F19R1_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F19R1_FB15                       CAN_F19R1_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F19R1_FB16_Pos                   (16U)                             
+#define CAN_F19R1_FB16_Msk                   (0x1U << CAN_F19R1_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F19R1_FB16                       CAN_F19R1_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F19R1_FB17_Pos                   (17U)                             
+#define CAN_F19R1_FB17_Msk                   (0x1U << CAN_F19R1_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F19R1_FB17                       CAN_F19R1_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F19R1_FB18_Pos                   (18U)                             
+#define CAN_F19R1_FB18_Msk                   (0x1U << CAN_F19R1_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F19R1_FB18                       CAN_F19R1_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F19R1_FB19_Pos                   (19U)                             
+#define CAN_F19R1_FB19_Msk                   (0x1U << CAN_F19R1_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F19R1_FB19                       CAN_F19R1_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F19R1_FB20_Pos                   (20U)                             
+#define CAN_F19R1_FB20_Msk                   (0x1U << CAN_F19R1_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F19R1_FB20                       CAN_F19R1_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F19R1_FB21_Pos                   (21U)                             
+#define CAN_F19R1_FB21_Msk                   (0x1U << CAN_F19R1_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F19R1_FB21                       CAN_F19R1_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F19R1_FB22_Pos                   (22U)                             
+#define CAN_F19R1_FB22_Msk                   (0x1U << CAN_F19R1_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F19R1_FB22                       CAN_F19R1_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F19R1_FB23_Pos                   (23U)                             
+#define CAN_F19R1_FB23_Msk                   (0x1U << CAN_F19R1_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F19R1_FB23                       CAN_F19R1_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F19R1_FB24_Pos                   (24U)                             
+#define CAN_F19R1_FB24_Msk                   (0x1U << CAN_F19R1_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F19R1_FB24                       CAN_F19R1_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F19R1_FB25_Pos                   (25U)                             
+#define CAN_F19R1_FB25_Msk                   (0x1U << CAN_F19R1_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F19R1_FB25                       CAN_F19R1_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F19R1_FB26_Pos                   (26U)                             
+#define CAN_F19R1_FB26_Msk                   (0x1U << CAN_F19R1_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F19R1_FB26                       CAN_F19R1_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F19R1_FB27_Pos                   (27U)                             
+#define CAN_F19R1_FB27_Msk                   (0x1U << CAN_F19R1_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F19R1_FB27                       CAN_F19R1_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F19R1_FB28_Pos                   (28U)                             
+#define CAN_F19R1_FB28_Msk                   (0x1U << CAN_F19R1_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F19R1_FB28                       CAN_F19R1_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F19R1_FB29_Pos                   (29U)                             
+#define CAN_F19R1_FB29_Msk                   (0x1U << CAN_F19R1_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F19R1_FB29                       CAN_F19R1_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F19R1_FB30_Pos                   (30U)                             
+#define CAN_F19R1_FB30_Msk                   (0x1U << CAN_F19R1_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F19R1_FB30                       CAN_F19R1_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F19R1_FB31_Pos                   (31U)                             
+#define CAN_F19R1_FB31_Msk                   (0x1U << CAN_F19R1_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F19R1_FB31                       CAN_F19R1_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F20R1 register  ******************/
+#define CAN_F20R1_FB0_Pos                    (0U)                              
+#define CAN_F20R1_FB0_Msk                    (0x1U << CAN_F20R1_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F20R1_FB0                        CAN_F20R1_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F20R1_FB1_Pos                    (1U)                              
+#define CAN_F20R1_FB1_Msk                    (0x1U << CAN_F20R1_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F20R1_FB1                        CAN_F20R1_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F20R1_FB2_Pos                    (2U)                              
+#define CAN_F20R1_FB2_Msk                    (0x1U << CAN_F20R1_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F20R1_FB2                        CAN_F20R1_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F20R1_FB3_Pos                    (3U)                              
+#define CAN_F20R1_FB3_Msk                    (0x1U << CAN_F20R1_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F20R1_FB3                        CAN_F20R1_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F20R1_FB4_Pos                    (4U)                              
+#define CAN_F20R1_FB4_Msk                    (0x1U << CAN_F20R1_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F20R1_FB4                        CAN_F20R1_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F20R1_FB5_Pos                    (5U)                              
+#define CAN_F20R1_FB5_Msk                    (0x1U << CAN_F20R1_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F20R1_FB5                        CAN_F20R1_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F20R1_FB6_Pos                    (6U)                              
+#define CAN_F20R1_FB6_Msk                    (0x1U << CAN_F20R1_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F20R1_FB6                        CAN_F20R1_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F20R1_FB7_Pos                    (7U)                              
+#define CAN_F20R1_FB7_Msk                    (0x1U << CAN_F20R1_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F20R1_FB7                        CAN_F20R1_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F20R1_FB8_Pos                    (8U)                              
+#define CAN_F20R1_FB8_Msk                    (0x1U << CAN_F20R1_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F20R1_FB8                        CAN_F20R1_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F20R1_FB9_Pos                    (9U)                              
+#define CAN_F20R1_FB9_Msk                    (0x1U << CAN_F20R1_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F20R1_FB9                        CAN_F20R1_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F20R1_FB10_Pos                   (10U)                             
+#define CAN_F20R1_FB10_Msk                   (0x1U << CAN_F20R1_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F20R1_FB10                       CAN_F20R1_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F20R1_FB11_Pos                   (11U)                             
+#define CAN_F20R1_FB11_Msk                   (0x1U << CAN_F20R1_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F20R1_FB11                       CAN_F20R1_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F20R1_FB12_Pos                   (12U)                             
+#define CAN_F20R1_FB12_Msk                   (0x1U << CAN_F20R1_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F20R1_FB12                       CAN_F20R1_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F20R1_FB13_Pos                   (13U)                             
+#define CAN_F20R1_FB13_Msk                   (0x1U << CAN_F20R1_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F20R1_FB13                       CAN_F20R1_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F20R1_FB14_Pos                   (14U)                             
+#define CAN_F20R1_FB14_Msk                   (0x1U << CAN_F20R1_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F20R1_FB14                       CAN_F20R1_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F20R1_FB15_Pos                   (15U)                             
+#define CAN_F20R1_FB15_Msk                   (0x1U << CAN_F20R1_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F20R1_FB15                       CAN_F20R1_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F20R1_FB16_Pos                   (16U)                             
+#define CAN_F20R1_FB16_Msk                   (0x1U << CAN_F20R1_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F20R1_FB16                       CAN_F20R1_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F20R1_FB17_Pos                   (17U)                             
+#define CAN_F20R1_FB17_Msk                   (0x1U << CAN_F20R1_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F20R1_FB17                       CAN_F20R1_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F20R1_FB18_Pos                   (18U)                             
+#define CAN_F20R1_FB18_Msk                   (0x1U << CAN_F20R1_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F20R1_FB18                       CAN_F20R1_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F20R1_FB19_Pos                   (19U)                             
+#define CAN_F20R1_FB19_Msk                   (0x1U << CAN_F20R1_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F20R1_FB19                       CAN_F20R1_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F20R1_FB20_Pos                   (20U)                             
+#define CAN_F20R1_FB20_Msk                   (0x1U << CAN_F20R1_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F20R1_FB20                       CAN_F20R1_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F20R1_FB21_Pos                   (21U)                             
+#define CAN_F20R1_FB21_Msk                   (0x1U << CAN_F20R1_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F20R1_FB21                       CAN_F20R1_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F20R1_FB22_Pos                   (22U)                             
+#define CAN_F20R1_FB22_Msk                   (0x1U << CAN_F20R1_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F20R1_FB22                       CAN_F20R1_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F20R1_FB23_Pos                   (23U)                             
+#define CAN_F20R1_FB23_Msk                   (0x1U << CAN_F20R1_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F20R1_FB23                       CAN_F20R1_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F20R1_FB24_Pos                   (24U)                             
+#define CAN_F20R1_FB24_Msk                   (0x1U << CAN_F20R1_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F20R1_FB24                       CAN_F20R1_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F20R1_FB25_Pos                   (25U)                             
+#define CAN_F20R1_FB25_Msk                   (0x1U << CAN_F20R1_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F20R1_FB25                       CAN_F20R1_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F20R1_FB26_Pos                   (26U)                             
+#define CAN_F20R1_FB26_Msk                   (0x1U << CAN_F20R1_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F20R1_FB26                       CAN_F20R1_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F20R1_FB27_Pos                   (27U)                             
+#define CAN_F20R1_FB27_Msk                   (0x1U << CAN_F20R1_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F20R1_FB27                       CAN_F20R1_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F20R1_FB28_Pos                   (28U)                             
+#define CAN_F20R1_FB28_Msk                   (0x1U << CAN_F20R1_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F20R1_FB28                       CAN_F20R1_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F20R1_FB29_Pos                   (29U)                             
+#define CAN_F20R1_FB29_Msk                   (0x1U << CAN_F20R1_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F20R1_FB29                       CAN_F20R1_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F20R1_FB30_Pos                   (30U)                             
+#define CAN_F20R1_FB30_Msk                   (0x1U << CAN_F20R1_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F20R1_FB30                       CAN_F20R1_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F20R1_FB31_Pos                   (31U)                             
+#define CAN_F20R1_FB31_Msk                   (0x1U << CAN_F20R1_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F20R1_FB31                       CAN_F20R1_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F21R1 register  ******************/
+#define CAN_F21R1_FB0_Pos                    (0U)                              
+#define CAN_F21R1_FB0_Msk                    (0x1U << CAN_F21R1_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F21R1_FB0                        CAN_F21R1_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F21R1_FB1_Pos                    (1U)                              
+#define CAN_F21R1_FB1_Msk                    (0x1U << CAN_F21R1_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F21R1_FB1                        CAN_F21R1_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F21R1_FB2_Pos                    (2U)                              
+#define CAN_F21R1_FB2_Msk                    (0x1U << CAN_F21R1_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F21R1_FB2                        CAN_F21R1_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F21R1_FB3_Pos                    (3U)                              
+#define CAN_F21R1_FB3_Msk                    (0x1U << CAN_F21R1_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F21R1_FB3                        CAN_F21R1_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F21R1_FB4_Pos                    (4U)                              
+#define CAN_F21R1_FB4_Msk                    (0x1U << CAN_F21R1_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F21R1_FB4                        CAN_F21R1_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F21R1_FB5_Pos                    (5U)                              
+#define CAN_F21R1_FB5_Msk                    (0x1U << CAN_F21R1_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F21R1_FB5                        CAN_F21R1_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F21R1_FB6_Pos                    (6U)                              
+#define CAN_F21R1_FB6_Msk                    (0x1U << CAN_F21R1_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F21R1_FB6                        CAN_F21R1_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F21R1_FB7_Pos                    (7U)                              
+#define CAN_F21R1_FB7_Msk                    (0x1U << CAN_F21R1_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F21R1_FB7                        CAN_F21R1_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F21R1_FB8_Pos                    (8U)                              
+#define CAN_F21R1_FB8_Msk                    (0x1U << CAN_F21R1_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F21R1_FB8                        CAN_F21R1_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F21R1_FB9_Pos                    (9U)                              
+#define CAN_F21R1_FB9_Msk                    (0x1U << CAN_F21R1_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F21R1_FB9                        CAN_F21R1_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F21R1_FB10_Pos                   (10U)                             
+#define CAN_F21R1_FB10_Msk                   (0x1U << CAN_F21R1_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F21R1_FB10                       CAN_F21R1_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F21R1_FB11_Pos                   (11U)                             
+#define CAN_F21R1_FB11_Msk                   (0x1U << CAN_F21R1_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F21R1_FB11                       CAN_F21R1_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F21R1_FB12_Pos                   (12U)                             
+#define CAN_F21R1_FB12_Msk                   (0x1U << CAN_F21R1_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F21R1_FB12                       CAN_F21R1_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F21R1_FB13_Pos                   (13U)                             
+#define CAN_F21R1_FB13_Msk                   (0x1U << CAN_F21R1_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F21R1_FB13                       CAN_F21R1_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F21R1_FB14_Pos                   (14U)                             
+#define CAN_F21R1_FB14_Msk                   (0x1U << CAN_F21R1_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F21R1_FB14                       CAN_F21R1_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F21R1_FB15_Pos                   (15U)                             
+#define CAN_F21R1_FB15_Msk                   (0x1U << CAN_F21R1_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F21R1_FB15                       CAN_F21R1_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F21R1_FB16_Pos                   (16U)                             
+#define CAN_F21R1_FB16_Msk                   (0x1U << CAN_F21R1_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F21R1_FB16                       CAN_F21R1_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F21R1_FB17_Pos                   (17U)                             
+#define CAN_F21R1_FB17_Msk                   (0x1U << CAN_F21R1_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F21R1_FB17                       CAN_F21R1_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F21R1_FB18_Pos                   (18U)                             
+#define CAN_F21R1_FB18_Msk                   (0x1U << CAN_F21R1_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F21R1_FB18                       CAN_F21R1_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F21R1_FB19_Pos                   (19U)                             
+#define CAN_F21R1_FB19_Msk                   (0x1U << CAN_F21R1_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F21R1_FB19                       CAN_F21R1_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F21R1_FB20_Pos                   (20U)                             
+#define CAN_F21R1_FB20_Msk                   (0x1U << CAN_F21R1_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F21R1_FB20                       CAN_F21R1_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F21R1_FB21_Pos                   (21U)                             
+#define CAN_F21R1_FB21_Msk                   (0x1U << CAN_F21R1_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F21R1_FB21                       CAN_F21R1_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F21R1_FB22_Pos                   (22U)                             
+#define CAN_F21R1_FB22_Msk                   (0x1U << CAN_F21R1_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F21R1_FB22                       CAN_F21R1_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F21R1_FB23_Pos                   (23U)                             
+#define CAN_F21R1_FB23_Msk                   (0x1U << CAN_F21R1_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F21R1_FB23                       CAN_F21R1_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F21R1_FB24_Pos                   (24U)                             
+#define CAN_F21R1_FB24_Msk                   (0x1U << CAN_F21R1_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F21R1_FB24                       CAN_F21R1_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F21R1_FB25_Pos                   (25U)                             
+#define CAN_F21R1_FB25_Msk                   (0x1U << CAN_F21R1_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F21R1_FB25                       CAN_F21R1_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F21R1_FB26_Pos                   (26U)                             
+#define CAN_F21R1_FB26_Msk                   (0x1U << CAN_F21R1_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F21R1_FB26                       CAN_F21R1_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F21R1_FB27_Pos                   (27U)                             
+#define CAN_F21R1_FB27_Msk                   (0x1U << CAN_F21R1_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F21R1_FB27                       CAN_F21R1_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F21R1_FB28_Pos                   (28U)                             
+#define CAN_F21R1_FB28_Msk                   (0x1U << CAN_F21R1_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F21R1_FB28                       CAN_F21R1_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F21R1_FB29_Pos                   (29U)                             
+#define CAN_F21R1_FB29_Msk                   (0x1U << CAN_F21R1_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F21R1_FB29                       CAN_F21R1_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F21R1_FB30_Pos                   (30U)                             
+#define CAN_F21R1_FB30_Msk                   (0x1U << CAN_F21R1_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F21R1_FB30                       CAN_F21R1_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F21R1_FB31_Pos                   (31U)                             
+#define CAN_F21R1_FB31_Msk                   (0x1U << CAN_F21R1_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F21R1_FB31                       CAN_F21R1_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F22R1 register  ******************/
+#define CAN_F22R1_FB0_Pos                    (0U)                              
+#define CAN_F22R1_FB0_Msk                    (0x1U << CAN_F22R1_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F22R1_FB0                        CAN_F22R1_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F22R1_FB1_Pos                    (1U)                              
+#define CAN_F22R1_FB1_Msk                    (0x1U << CAN_F22R1_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F22R1_FB1                        CAN_F22R1_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F22R1_FB2_Pos                    (2U)                              
+#define CAN_F22R1_FB2_Msk                    (0x1U << CAN_F22R1_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F22R1_FB2                        CAN_F22R1_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F22R1_FB3_Pos                    (3U)                              
+#define CAN_F22R1_FB3_Msk                    (0x1U << CAN_F22R1_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F22R1_FB3                        CAN_F22R1_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F22R1_FB4_Pos                    (4U)                              
+#define CAN_F22R1_FB4_Msk                    (0x1U << CAN_F22R1_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F22R1_FB4                        CAN_F22R1_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F22R1_FB5_Pos                    (5U)                              
+#define CAN_F22R1_FB5_Msk                    (0x1U << CAN_F22R1_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F22R1_FB5                        CAN_F22R1_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F22R1_FB6_Pos                    (6U)                              
+#define CAN_F22R1_FB6_Msk                    (0x1U << CAN_F22R1_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F22R1_FB6                        CAN_F22R1_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F22R1_FB7_Pos                    (7U)                              
+#define CAN_F22R1_FB7_Msk                    (0x1U << CAN_F22R1_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F22R1_FB7                        CAN_F22R1_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F22R1_FB8_Pos                    (8U)                              
+#define CAN_F22R1_FB8_Msk                    (0x1U << CAN_F22R1_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F22R1_FB8                        CAN_F22R1_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F22R1_FB9_Pos                    (9U)                              
+#define CAN_F22R1_FB9_Msk                    (0x1U << CAN_F22R1_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F22R1_FB9                        CAN_F22R1_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F22R1_FB10_Pos                   (10U)                             
+#define CAN_F22R1_FB10_Msk                   (0x1U << CAN_F22R1_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F22R1_FB10                       CAN_F22R1_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F22R1_FB11_Pos                   (11U)                             
+#define CAN_F22R1_FB11_Msk                   (0x1U << CAN_F22R1_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F22R1_FB11                       CAN_F22R1_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F22R1_FB12_Pos                   (12U)                             
+#define CAN_F22R1_FB12_Msk                   (0x1U << CAN_F22R1_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F22R1_FB12                       CAN_F22R1_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F22R1_FB13_Pos                   (13U)                             
+#define CAN_F22R1_FB13_Msk                   (0x1U << CAN_F22R1_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F22R1_FB13                       CAN_F22R1_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F22R1_FB14_Pos                   (14U)                             
+#define CAN_F22R1_FB14_Msk                   (0x1U << CAN_F22R1_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F22R1_FB14                       CAN_F22R1_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F22R1_FB15_Pos                   (15U)                             
+#define CAN_F22R1_FB15_Msk                   (0x1U << CAN_F22R1_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F22R1_FB15                       CAN_F22R1_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F22R1_FB16_Pos                   (16U)                             
+#define CAN_F22R1_FB16_Msk                   (0x1U << CAN_F22R1_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F22R1_FB16                       CAN_F22R1_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F22R1_FB17_Pos                   (17U)                             
+#define CAN_F22R1_FB17_Msk                   (0x1U << CAN_F22R1_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F22R1_FB17                       CAN_F22R1_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F22R1_FB18_Pos                   (18U)                             
+#define CAN_F22R1_FB18_Msk                   (0x1U << CAN_F22R1_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F22R1_FB18                       CAN_F22R1_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F22R1_FB19_Pos                   (19U)                             
+#define CAN_F22R1_FB19_Msk                   (0x1U << CAN_F22R1_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F22R1_FB19                       CAN_F22R1_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F22R1_FB20_Pos                   (20U)                             
+#define CAN_F22R1_FB20_Msk                   (0x1U << CAN_F22R1_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F22R1_FB20                       CAN_F22R1_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F22R1_FB21_Pos                   (21U)                             
+#define CAN_F22R1_FB21_Msk                   (0x1U << CAN_F22R1_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F22R1_FB21                       CAN_F22R1_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F22R1_FB22_Pos                   (22U)                             
+#define CAN_F22R1_FB22_Msk                   (0x1U << CAN_F22R1_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F22R1_FB22                       CAN_F22R1_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F22R1_FB23_Pos                   (23U)                             
+#define CAN_F22R1_FB23_Msk                   (0x1U << CAN_F22R1_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F22R1_FB23                       CAN_F22R1_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F22R1_FB24_Pos                   (24U)                             
+#define CAN_F22R1_FB24_Msk                   (0x1U << CAN_F22R1_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F22R1_FB24                       CAN_F22R1_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F22R1_FB25_Pos                   (25U)                             
+#define CAN_F22R1_FB25_Msk                   (0x1U << CAN_F22R1_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F22R1_FB25                       CAN_F22R1_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F22R1_FB26_Pos                   (26U)                             
+#define CAN_F22R1_FB26_Msk                   (0x1U << CAN_F22R1_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F22R1_FB26                       CAN_F22R1_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F22R1_FB27_Pos                   (27U)                             
+#define CAN_F22R1_FB27_Msk                   (0x1U << CAN_F22R1_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F22R1_FB27                       CAN_F22R1_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F22R1_FB28_Pos                   (28U)                             
+#define CAN_F22R1_FB28_Msk                   (0x1U << CAN_F22R1_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F22R1_FB28                       CAN_F22R1_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F22R1_FB29_Pos                   (29U)                             
+#define CAN_F22R1_FB29_Msk                   (0x1U << CAN_F22R1_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F22R1_FB29                       CAN_F22R1_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F22R1_FB30_Pos                   (30U)                             
+#define CAN_F22R1_FB30_Msk                   (0x1U << CAN_F22R1_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F22R1_FB30                       CAN_F22R1_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F22R1_FB31_Pos                   (31U)                             
+#define CAN_F22R1_FB31_Msk                   (0x1U << CAN_F22R1_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F22R1_FB31                       CAN_F22R1_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F23R1 register  ******************/
+#define CAN_F23R1_FB0_Pos                    (0U)                              
+#define CAN_F23R1_FB0_Msk                    (0x1U << CAN_F23R1_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F23R1_FB0                        CAN_F23R1_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F23R1_FB1_Pos                    (1U)                              
+#define CAN_F23R1_FB1_Msk                    (0x1U << CAN_F23R1_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F23R1_FB1                        CAN_F23R1_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F23R1_FB2_Pos                    (2U)                              
+#define CAN_F23R1_FB2_Msk                    (0x1U << CAN_F23R1_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F23R1_FB2                        CAN_F23R1_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F23R1_FB3_Pos                    (3U)                              
+#define CAN_F23R1_FB3_Msk                    (0x1U << CAN_F23R1_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F23R1_FB3                        CAN_F23R1_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F23R1_FB4_Pos                    (4U)                              
+#define CAN_F23R1_FB4_Msk                    (0x1U << CAN_F23R1_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F23R1_FB4                        CAN_F23R1_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F23R1_FB5_Pos                    (5U)                              
+#define CAN_F23R1_FB5_Msk                    (0x1U << CAN_F23R1_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F23R1_FB5                        CAN_F23R1_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F23R1_FB6_Pos                    (6U)                              
+#define CAN_F23R1_FB6_Msk                    (0x1U << CAN_F23R1_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F23R1_FB6                        CAN_F23R1_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F23R1_FB7_Pos                    (7U)                              
+#define CAN_F23R1_FB7_Msk                    (0x1U << CAN_F23R1_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F23R1_FB7                        CAN_F23R1_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F23R1_FB8_Pos                    (8U)                              
+#define CAN_F23R1_FB8_Msk                    (0x1U << CAN_F23R1_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F23R1_FB8                        CAN_F23R1_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F23R1_FB9_Pos                    (9U)                              
+#define CAN_F23R1_FB9_Msk                    (0x1U << CAN_F23R1_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F23R1_FB9                        CAN_F23R1_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F23R1_FB10_Pos                   (10U)                             
+#define CAN_F23R1_FB10_Msk                   (0x1U << CAN_F23R1_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F23R1_FB10                       CAN_F23R1_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F23R1_FB11_Pos                   (11U)                             
+#define CAN_F23R1_FB11_Msk                   (0x1U << CAN_F23R1_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F23R1_FB11                       CAN_F23R1_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F23R1_FB12_Pos                   (12U)                             
+#define CAN_F23R1_FB12_Msk                   (0x1U << CAN_F23R1_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F23R1_FB12                       CAN_F23R1_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F23R1_FB13_Pos                   (13U)                             
+#define CAN_F23R1_FB13_Msk                   (0x1U << CAN_F23R1_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F23R1_FB13                       CAN_F23R1_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F23R1_FB14_Pos                   (14U)                             
+#define CAN_F23R1_FB14_Msk                   (0x1U << CAN_F23R1_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F23R1_FB14                       CAN_F23R1_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F23R1_FB15_Pos                   (15U)                             
+#define CAN_F23R1_FB15_Msk                   (0x1U << CAN_F23R1_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F23R1_FB15                       CAN_F23R1_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F23R1_FB16_Pos                   (16U)                             
+#define CAN_F23R1_FB16_Msk                   (0x1U << CAN_F23R1_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F23R1_FB16                       CAN_F23R1_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F23R1_FB17_Pos                   (17U)                             
+#define CAN_F23R1_FB17_Msk                   (0x1U << CAN_F23R1_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F23R1_FB17                       CAN_F23R1_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F23R1_FB18_Pos                   (18U)                             
+#define CAN_F23R1_FB18_Msk                   (0x1U << CAN_F23R1_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F23R1_FB18                       CAN_F23R1_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F23R1_FB19_Pos                   (19U)                             
+#define CAN_F23R1_FB19_Msk                   (0x1U << CAN_F23R1_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F23R1_FB19                       CAN_F23R1_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F23R1_FB20_Pos                   (20U)                             
+#define CAN_F23R1_FB20_Msk                   (0x1U << CAN_F23R1_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F23R1_FB20                       CAN_F23R1_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F23R1_FB21_Pos                   (21U)                             
+#define CAN_F23R1_FB21_Msk                   (0x1U << CAN_F23R1_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F23R1_FB21                       CAN_F23R1_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F23R1_FB22_Pos                   (22U)                             
+#define CAN_F23R1_FB22_Msk                   (0x1U << CAN_F23R1_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F23R1_FB22                       CAN_F23R1_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F23R1_FB23_Pos                   (23U)                             
+#define CAN_F23R1_FB23_Msk                   (0x1U << CAN_F23R1_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F23R1_FB23                       CAN_F23R1_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F23R1_FB24_Pos                   (24U)                             
+#define CAN_F23R1_FB24_Msk                   (0x1U << CAN_F23R1_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F23R1_FB24                       CAN_F23R1_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F23R1_FB25_Pos                   (25U)                             
+#define CAN_F23R1_FB25_Msk                   (0x1U << CAN_F23R1_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F23R1_FB25                       CAN_F23R1_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F23R1_FB26_Pos                   (26U)                             
+#define CAN_F23R1_FB26_Msk                   (0x1U << CAN_F23R1_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F23R1_FB26                       CAN_F23R1_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F23R1_FB27_Pos                   (27U)                             
+#define CAN_F23R1_FB27_Msk                   (0x1U << CAN_F23R1_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F23R1_FB27                       CAN_F23R1_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F23R1_FB28_Pos                   (28U)                             
+#define CAN_F23R1_FB28_Msk                   (0x1U << CAN_F23R1_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F23R1_FB28                       CAN_F23R1_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F23R1_FB29_Pos                   (29U)                             
+#define CAN_F23R1_FB29_Msk                   (0x1U << CAN_F23R1_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F23R1_FB29                       CAN_F23R1_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F23R1_FB30_Pos                   (30U)                             
+#define CAN_F23R1_FB30_Msk                   (0x1U << CAN_F23R1_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F23R1_FB30                       CAN_F23R1_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F23R1_FB31_Pos                   (31U)                             
+#define CAN_F23R1_FB31_Msk                   (0x1U << CAN_F23R1_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F23R1_FB31                       CAN_F23R1_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F24R1 register  ******************/
+#define CAN_F24R1_FB0_Pos                    (0U)                              
+#define CAN_F24R1_FB0_Msk                    (0x1U << CAN_F24R1_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F24R1_FB0                        CAN_F24R1_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F24R1_FB1_Pos                    (1U)                              
+#define CAN_F24R1_FB1_Msk                    (0x1U << CAN_F24R1_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F24R1_FB1                        CAN_F24R1_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F24R1_FB2_Pos                    (2U)                              
+#define CAN_F24R1_FB2_Msk                    (0x1U << CAN_F24R1_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F24R1_FB2                        CAN_F24R1_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F24R1_FB3_Pos                    (3U)                              
+#define CAN_F24R1_FB3_Msk                    (0x1U << CAN_F24R1_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F24R1_FB3                        CAN_F24R1_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F24R1_FB4_Pos                    (4U)                              
+#define CAN_F24R1_FB4_Msk                    (0x1U << CAN_F24R1_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F24R1_FB4                        CAN_F24R1_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F24R1_FB5_Pos                    (5U)                              
+#define CAN_F24R1_FB5_Msk                    (0x1U << CAN_F24R1_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F24R1_FB5                        CAN_F24R1_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F24R1_FB6_Pos                    (6U)                              
+#define CAN_F24R1_FB6_Msk                    (0x1U << CAN_F24R1_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F24R1_FB6                        CAN_F24R1_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F24R1_FB7_Pos                    (7U)                              
+#define CAN_F24R1_FB7_Msk                    (0x1U << CAN_F24R1_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F24R1_FB7                        CAN_F24R1_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F24R1_FB8_Pos                    (8U)                              
+#define CAN_F24R1_FB8_Msk                    (0x1U << CAN_F24R1_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F24R1_FB8                        CAN_F24R1_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F24R1_FB9_Pos                    (9U)                              
+#define CAN_F24R1_FB9_Msk                    (0x1U << CAN_F24R1_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F24R1_FB9                        CAN_F24R1_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F24R1_FB10_Pos                   (10U)                             
+#define CAN_F24R1_FB10_Msk                   (0x1U << CAN_F24R1_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F24R1_FB10                       CAN_F24R1_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F24R1_FB11_Pos                   (11U)                             
+#define CAN_F24R1_FB11_Msk                   (0x1U << CAN_F24R1_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F24R1_FB11                       CAN_F24R1_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F24R1_FB12_Pos                   (12U)                             
+#define CAN_F24R1_FB12_Msk                   (0x1U << CAN_F24R1_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F24R1_FB12                       CAN_F24R1_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F24R1_FB13_Pos                   (13U)                             
+#define CAN_F24R1_FB13_Msk                   (0x1U << CAN_F24R1_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F24R1_FB13                       CAN_F24R1_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F24R1_FB14_Pos                   (14U)                             
+#define CAN_F24R1_FB14_Msk                   (0x1U << CAN_F24R1_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F24R1_FB14                       CAN_F24R1_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F24R1_FB15_Pos                   (15U)                             
+#define CAN_F24R1_FB15_Msk                   (0x1U << CAN_F24R1_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F24R1_FB15                       CAN_F24R1_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F24R1_FB16_Pos                   (16U)                             
+#define CAN_F24R1_FB16_Msk                   (0x1U << CAN_F24R1_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F24R1_FB16                       CAN_F24R1_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F24R1_FB17_Pos                   (17U)                             
+#define CAN_F24R1_FB17_Msk                   (0x1U << CAN_F24R1_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F24R1_FB17                       CAN_F24R1_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F24R1_FB18_Pos                   (18U)                             
+#define CAN_F24R1_FB18_Msk                   (0x1U << CAN_F24R1_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F24R1_FB18                       CAN_F24R1_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F24R1_FB19_Pos                   (19U)                             
+#define CAN_F24R1_FB19_Msk                   (0x1U << CAN_F24R1_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F24R1_FB19                       CAN_F24R1_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F24R1_FB20_Pos                   (20U)                             
+#define CAN_F24R1_FB20_Msk                   (0x1U << CAN_F24R1_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F24R1_FB20                       CAN_F24R1_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F24R1_FB21_Pos                   (21U)                             
+#define CAN_F24R1_FB21_Msk                   (0x1U << CAN_F24R1_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F24R1_FB21                       CAN_F24R1_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F24R1_FB22_Pos                   (22U)                             
+#define CAN_F24R1_FB22_Msk                   (0x1U << CAN_F24R1_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F24R1_FB22                       CAN_F24R1_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F24R1_FB23_Pos                   (23U)                             
+#define CAN_F24R1_FB23_Msk                   (0x1U << CAN_F24R1_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F24R1_FB23                       CAN_F24R1_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F24R1_FB24_Pos                   (24U)                             
+#define CAN_F24R1_FB24_Msk                   (0x1U << CAN_F24R1_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F24R1_FB24                       CAN_F24R1_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F24R1_FB25_Pos                   (25U)                             
+#define CAN_F24R1_FB25_Msk                   (0x1U << CAN_F24R1_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F24R1_FB25                       CAN_F24R1_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F24R1_FB26_Pos                   (26U)                             
+#define CAN_F24R1_FB26_Msk                   (0x1U << CAN_F24R1_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F24R1_FB26                       CAN_F24R1_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F24R1_FB27_Pos                   (27U)                             
+#define CAN_F24R1_FB27_Msk                   (0x1U << CAN_F24R1_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F24R1_FB27                       CAN_F24R1_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F24R1_FB28_Pos                   (28U)                             
+#define CAN_F24R1_FB28_Msk                   (0x1U << CAN_F24R1_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F24R1_FB28                       CAN_F24R1_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F24R1_FB29_Pos                   (29U)                             
+#define CAN_F24R1_FB29_Msk                   (0x1U << CAN_F24R1_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F24R1_FB29                       CAN_F24R1_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F24R1_FB30_Pos                   (30U)                             
+#define CAN_F24R1_FB30_Msk                   (0x1U << CAN_F24R1_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F24R1_FB30                       CAN_F24R1_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F24R1_FB31_Pos                   (31U)                             
+#define CAN_F24R1_FB31_Msk                   (0x1U << CAN_F24R1_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F24R1_FB31                       CAN_F24R1_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F25R1 register  ******************/
+#define CAN_F25R1_FB0_Pos                    (0U)                              
+#define CAN_F25R1_FB0_Msk                    (0x1U << CAN_F25R1_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F25R1_FB0                        CAN_F25R1_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F25R1_FB1_Pos                    (1U)                              
+#define CAN_F25R1_FB1_Msk                    (0x1U << CAN_F25R1_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F25R1_FB1                        CAN_F25R1_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F25R1_FB2_Pos                    (2U)                              
+#define CAN_F25R1_FB2_Msk                    (0x1U << CAN_F25R1_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F25R1_FB2                        CAN_F25R1_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F25R1_FB3_Pos                    (3U)                              
+#define CAN_F25R1_FB3_Msk                    (0x1U << CAN_F25R1_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F25R1_FB3                        CAN_F25R1_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F25R1_FB4_Pos                    (4U)                              
+#define CAN_F25R1_FB4_Msk                    (0x1U << CAN_F25R1_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F25R1_FB4                        CAN_F25R1_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F25R1_FB5_Pos                    (5U)                              
+#define CAN_F25R1_FB5_Msk                    (0x1U << CAN_F25R1_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F25R1_FB5                        CAN_F25R1_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F25R1_FB6_Pos                    (6U)                              
+#define CAN_F25R1_FB6_Msk                    (0x1U << CAN_F25R1_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F25R1_FB6                        CAN_F25R1_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F25R1_FB7_Pos                    (7U)                              
+#define CAN_F25R1_FB7_Msk                    (0x1U << CAN_F25R1_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F25R1_FB7                        CAN_F25R1_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F25R1_FB8_Pos                    (8U)                              
+#define CAN_F25R1_FB8_Msk                    (0x1U << CAN_F25R1_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F25R1_FB8                        CAN_F25R1_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F25R1_FB9_Pos                    (9U)                              
+#define CAN_F25R1_FB9_Msk                    (0x1U << CAN_F25R1_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F25R1_FB9                        CAN_F25R1_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F25R1_FB10_Pos                   (10U)                             
+#define CAN_F25R1_FB10_Msk                   (0x1U << CAN_F25R1_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F25R1_FB10                       CAN_F25R1_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F25R1_FB11_Pos                   (11U)                             
+#define CAN_F25R1_FB11_Msk                   (0x1U << CAN_F25R1_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F25R1_FB11                       CAN_F25R1_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F25R1_FB12_Pos                   (12U)                             
+#define CAN_F25R1_FB12_Msk                   (0x1U << CAN_F25R1_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F25R1_FB12                       CAN_F25R1_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F25R1_FB13_Pos                   (13U)                             
+#define CAN_F25R1_FB13_Msk                   (0x1U << CAN_F25R1_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F25R1_FB13                       CAN_F25R1_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F25R1_FB14_Pos                   (14U)                             
+#define CAN_F25R1_FB14_Msk                   (0x1U << CAN_F25R1_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F25R1_FB14                       CAN_F25R1_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F25R1_FB15_Pos                   (15U)                             
+#define CAN_F25R1_FB15_Msk                   (0x1U << CAN_F25R1_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F25R1_FB15                       CAN_F25R1_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F25R1_FB16_Pos                   (16U)                             
+#define CAN_F25R1_FB16_Msk                   (0x1U << CAN_F25R1_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F25R1_FB16                       CAN_F25R1_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F25R1_FB17_Pos                   (17U)                             
+#define CAN_F25R1_FB17_Msk                   (0x1U << CAN_F25R1_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F25R1_FB17                       CAN_F25R1_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F25R1_FB18_Pos                   (18U)                             
+#define CAN_F25R1_FB18_Msk                   (0x1U << CAN_F25R1_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F25R1_FB18                       CAN_F25R1_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F25R1_FB19_Pos                   (19U)                             
+#define CAN_F25R1_FB19_Msk                   (0x1U << CAN_F25R1_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F25R1_FB19                       CAN_F25R1_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F25R1_FB20_Pos                   (20U)                             
+#define CAN_F25R1_FB20_Msk                   (0x1U << CAN_F25R1_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F25R1_FB20                       CAN_F25R1_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F25R1_FB21_Pos                   (21U)                             
+#define CAN_F25R1_FB21_Msk                   (0x1U << CAN_F25R1_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F25R1_FB21                       CAN_F25R1_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F25R1_FB22_Pos                   (22U)                             
+#define CAN_F25R1_FB22_Msk                   (0x1U << CAN_F25R1_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F25R1_FB22                       CAN_F25R1_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F25R1_FB23_Pos                   (23U)                             
+#define CAN_F25R1_FB23_Msk                   (0x1U << CAN_F25R1_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F25R1_FB23                       CAN_F25R1_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F25R1_FB24_Pos                   (24U)                             
+#define CAN_F25R1_FB24_Msk                   (0x1U << CAN_F25R1_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F25R1_FB24                       CAN_F25R1_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F25R1_FB25_Pos                   (25U)                             
+#define CAN_F25R1_FB25_Msk                   (0x1U << CAN_F25R1_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F25R1_FB25                       CAN_F25R1_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F25R1_FB26_Pos                   (26U)                             
+#define CAN_F25R1_FB26_Msk                   (0x1U << CAN_F25R1_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F25R1_FB26                       CAN_F25R1_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F25R1_FB27_Pos                   (27U)                             
+#define CAN_F25R1_FB27_Msk                   (0x1U << CAN_F25R1_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F25R1_FB27                       CAN_F25R1_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F25R1_FB28_Pos                   (28U)                             
+#define CAN_F25R1_FB28_Msk                   (0x1U << CAN_F25R1_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F25R1_FB28                       CAN_F25R1_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F25R1_FB29_Pos                   (29U)                             
+#define CAN_F25R1_FB29_Msk                   (0x1U << CAN_F25R1_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F25R1_FB29                       CAN_F25R1_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F25R1_FB30_Pos                   (30U)                             
+#define CAN_F25R1_FB30_Msk                   (0x1U << CAN_F25R1_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F25R1_FB30                       CAN_F25R1_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F25R1_FB31_Pos                   (31U)                             
+#define CAN_F25R1_FB31_Msk                   (0x1U << CAN_F25R1_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F25R1_FB31                       CAN_F25R1_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F26R1 register  ******************/
+#define CAN_F26R1_FB0_Pos                    (0U)                              
+#define CAN_F26R1_FB0_Msk                    (0x1U << CAN_F26R1_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F26R1_FB0                        CAN_F26R1_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F26R1_FB1_Pos                    (1U)                              
+#define CAN_F26R1_FB1_Msk                    (0x1U << CAN_F26R1_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F26R1_FB1                        CAN_F26R1_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F26R1_FB2_Pos                    (2U)                              
+#define CAN_F26R1_FB2_Msk                    (0x1U << CAN_F26R1_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F26R1_FB2                        CAN_F26R1_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F26R1_FB3_Pos                    (3U)                              
+#define CAN_F26R1_FB3_Msk                    (0x1U << CAN_F26R1_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F26R1_FB3                        CAN_F26R1_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F26R1_FB4_Pos                    (4U)                              
+#define CAN_F26R1_FB4_Msk                    (0x1U << CAN_F26R1_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F26R1_FB4                        CAN_F26R1_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F26R1_FB5_Pos                    (5U)                              
+#define CAN_F26R1_FB5_Msk                    (0x1U << CAN_F26R1_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F26R1_FB5                        CAN_F26R1_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F26R1_FB6_Pos                    (6U)                              
+#define CAN_F26R1_FB6_Msk                    (0x1U << CAN_F26R1_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F26R1_FB6                        CAN_F26R1_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F26R1_FB7_Pos                    (7U)                              
+#define CAN_F26R1_FB7_Msk                    (0x1U << CAN_F26R1_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F26R1_FB7                        CAN_F26R1_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F26R1_FB8_Pos                    (8U)                              
+#define CAN_F26R1_FB8_Msk                    (0x1U << CAN_F26R1_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F26R1_FB8                        CAN_F26R1_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F26R1_FB9_Pos                    (9U)                              
+#define CAN_F26R1_FB9_Msk                    (0x1U << CAN_F26R1_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F26R1_FB9                        CAN_F26R1_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F26R1_FB10_Pos                   (10U)                             
+#define CAN_F26R1_FB10_Msk                   (0x1U << CAN_F26R1_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F26R1_FB10                       CAN_F26R1_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F26R1_FB11_Pos                   (11U)                             
+#define CAN_F26R1_FB11_Msk                   (0x1U << CAN_F26R1_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F26R1_FB11                       CAN_F26R1_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F26R1_FB12_Pos                   (12U)                             
+#define CAN_F26R1_FB12_Msk                   (0x1U << CAN_F26R1_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F26R1_FB12                       CAN_F26R1_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F26R1_FB13_Pos                   (13U)                             
+#define CAN_F26R1_FB13_Msk                   (0x1U << CAN_F26R1_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F26R1_FB13                       CAN_F26R1_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F26R1_FB14_Pos                   (14U)                             
+#define CAN_F26R1_FB14_Msk                   (0x1U << CAN_F26R1_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F26R1_FB14                       CAN_F26R1_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F26R1_FB15_Pos                   (15U)                             
+#define CAN_F26R1_FB15_Msk                   (0x1U << CAN_F26R1_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F26R1_FB15                       CAN_F26R1_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F26R1_FB16_Pos                   (16U)                             
+#define CAN_F26R1_FB16_Msk                   (0x1U << CAN_F26R1_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F26R1_FB16                       CAN_F26R1_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F26R1_FB17_Pos                   (17U)                             
+#define CAN_F26R1_FB17_Msk                   (0x1U << CAN_F26R1_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F26R1_FB17                       CAN_F26R1_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F26R1_FB18_Pos                   (18U)                             
+#define CAN_F26R1_FB18_Msk                   (0x1U << CAN_F26R1_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F26R1_FB18                       CAN_F26R1_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F26R1_FB19_Pos                   (19U)                             
+#define CAN_F26R1_FB19_Msk                   (0x1U << CAN_F26R1_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F26R1_FB19                       CAN_F26R1_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F26R1_FB20_Pos                   (20U)                             
+#define CAN_F26R1_FB20_Msk                   (0x1U << CAN_F26R1_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F26R1_FB20                       CAN_F26R1_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F26R1_FB21_Pos                   (21U)                             
+#define CAN_F26R1_FB21_Msk                   (0x1U << CAN_F26R1_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F26R1_FB21                       CAN_F26R1_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F26R1_FB22_Pos                   (22U)                             
+#define CAN_F26R1_FB22_Msk                   (0x1U << CAN_F26R1_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F26R1_FB22                       CAN_F26R1_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F26R1_FB23_Pos                   (23U)                             
+#define CAN_F26R1_FB23_Msk                   (0x1U << CAN_F26R1_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F26R1_FB23                       CAN_F26R1_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F26R1_FB24_Pos                   (24U)                             
+#define CAN_F26R1_FB24_Msk                   (0x1U << CAN_F26R1_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F26R1_FB24                       CAN_F26R1_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F26R1_FB25_Pos                   (25U)                             
+#define CAN_F26R1_FB25_Msk                   (0x1U << CAN_F26R1_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F26R1_FB25                       CAN_F26R1_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F26R1_FB26_Pos                   (26U)                             
+#define CAN_F26R1_FB26_Msk                   (0x1U << CAN_F26R1_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F26R1_FB26                       CAN_F26R1_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F26R1_FB27_Pos                   (27U)                             
+#define CAN_F26R1_FB27_Msk                   (0x1U << CAN_F26R1_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F26R1_FB27                       CAN_F26R1_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F26R1_FB28_Pos                   (28U)                             
+#define CAN_F26R1_FB28_Msk                   (0x1U << CAN_F26R1_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F26R1_FB28                       CAN_F26R1_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F26R1_FB29_Pos                   (29U)                             
+#define CAN_F26R1_FB29_Msk                   (0x1U << CAN_F26R1_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F26R1_FB29                       CAN_F26R1_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F26R1_FB30_Pos                   (30U)                             
+#define CAN_F26R1_FB30_Msk                   (0x1U << CAN_F26R1_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F26R1_FB30                       CAN_F26R1_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F26R1_FB31_Pos                   (31U)                             
+#define CAN_F26R1_FB31_Msk                   (0x1U << CAN_F26R1_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F26R1_FB31                       CAN_F26R1_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F27R1 register  ******************/
+#define CAN_F27R1_FB0_Pos                    (0U)                              
+#define CAN_F27R1_FB0_Msk                    (0x1U << CAN_F27R1_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F27R1_FB0                        CAN_F27R1_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F27R1_FB1_Pos                    (1U)                              
+#define CAN_F27R1_FB1_Msk                    (0x1U << CAN_F27R1_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F27R1_FB1                        CAN_F27R1_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F27R1_FB2_Pos                    (2U)                              
+#define CAN_F27R1_FB2_Msk                    (0x1U << CAN_F27R1_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F27R1_FB2                        CAN_F27R1_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F27R1_FB3_Pos                    (3U)                              
+#define CAN_F27R1_FB3_Msk                    (0x1U << CAN_F27R1_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F27R1_FB3                        CAN_F27R1_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F27R1_FB4_Pos                    (4U)                              
+#define CAN_F27R1_FB4_Msk                    (0x1U << CAN_F27R1_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F27R1_FB4                        CAN_F27R1_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F27R1_FB5_Pos                    (5U)                              
+#define CAN_F27R1_FB5_Msk                    (0x1U << CAN_F27R1_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F27R1_FB5                        CAN_F27R1_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F27R1_FB6_Pos                    (6U)                              
+#define CAN_F27R1_FB6_Msk                    (0x1U << CAN_F27R1_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F27R1_FB6                        CAN_F27R1_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F27R1_FB7_Pos                    (7U)                              
+#define CAN_F27R1_FB7_Msk                    (0x1U << CAN_F27R1_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F27R1_FB7                        CAN_F27R1_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F27R1_FB8_Pos                    (8U)                              
+#define CAN_F27R1_FB8_Msk                    (0x1U << CAN_F27R1_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F27R1_FB8                        CAN_F27R1_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F27R1_FB9_Pos                    (9U)                              
+#define CAN_F27R1_FB9_Msk                    (0x1U << CAN_F27R1_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F27R1_FB9                        CAN_F27R1_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F27R1_FB10_Pos                   (10U)                             
+#define CAN_F27R1_FB10_Msk                   (0x1U << CAN_F27R1_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F27R1_FB10                       CAN_F27R1_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F27R1_FB11_Pos                   (11U)                             
+#define CAN_F27R1_FB11_Msk                   (0x1U << CAN_F27R1_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F27R1_FB11                       CAN_F27R1_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F27R1_FB12_Pos                   (12U)                             
+#define CAN_F27R1_FB12_Msk                   (0x1U << CAN_F27R1_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F27R1_FB12                       CAN_F27R1_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F27R1_FB13_Pos                   (13U)                             
+#define CAN_F27R1_FB13_Msk                   (0x1U << CAN_F27R1_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F27R1_FB13                       CAN_F27R1_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F27R1_FB14_Pos                   (14U)                             
+#define CAN_F27R1_FB14_Msk                   (0x1U << CAN_F27R1_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F27R1_FB14                       CAN_F27R1_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F27R1_FB15_Pos                   (15U)                             
+#define CAN_F27R1_FB15_Msk                   (0x1U << CAN_F27R1_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F27R1_FB15                       CAN_F27R1_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F27R1_FB16_Pos                   (16U)                             
+#define CAN_F27R1_FB16_Msk                   (0x1U << CAN_F27R1_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F27R1_FB16                       CAN_F27R1_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F27R1_FB17_Pos                   (17U)                             
+#define CAN_F27R1_FB17_Msk                   (0x1U << CAN_F27R1_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F27R1_FB17                       CAN_F27R1_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F27R1_FB18_Pos                   (18U)                             
+#define CAN_F27R1_FB18_Msk                   (0x1U << CAN_F27R1_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F27R1_FB18                       CAN_F27R1_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F27R1_FB19_Pos                   (19U)                             
+#define CAN_F27R1_FB19_Msk                   (0x1U << CAN_F27R1_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F27R1_FB19                       CAN_F27R1_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F27R1_FB20_Pos                   (20U)                             
+#define CAN_F27R1_FB20_Msk                   (0x1U << CAN_F27R1_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F27R1_FB20                       CAN_F27R1_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F27R1_FB21_Pos                   (21U)                             
+#define CAN_F27R1_FB21_Msk                   (0x1U << CAN_F27R1_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F27R1_FB21                       CAN_F27R1_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F27R1_FB22_Pos                   (22U)                             
+#define CAN_F27R1_FB22_Msk                   (0x1U << CAN_F27R1_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F27R1_FB22                       CAN_F27R1_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F27R1_FB23_Pos                   (23U)                             
+#define CAN_F27R1_FB23_Msk                   (0x1U << CAN_F27R1_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F27R1_FB23                       CAN_F27R1_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F27R1_FB24_Pos                   (24U)                             
+#define CAN_F27R1_FB24_Msk                   (0x1U << CAN_F27R1_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F27R1_FB24                       CAN_F27R1_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F27R1_FB25_Pos                   (25U)                             
+#define CAN_F27R1_FB25_Msk                   (0x1U << CAN_F27R1_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F27R1_FB25                       CAN_F27R1_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F27R1_FB26_Pos                   (26U)                             
+#define CAN_F27R1_FB26_Msk                   (0x1U << CAN_F27R1_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F27R1_FB26                       CAN_F27R1_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F27R1_FB27_Pos                   (27U)                             
+#define CAN_F27R1_FB27_Msk                   (0x1U << CAN_F27R1_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F27R1_FB27                       CAN_F27R1_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F27R1_FB28_Pos                   (28U)                             
+#define CAN_F27R1_FB28_Msk                   (0x1U << CAN_F27R1_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F27R1_FB28                       CAN_F27R1_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F27R1_FB29_Pos                   (29U)                             
+#define CAN_F27R1_FB29_Msk                   (0x1U << CAN_F27R1_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F27R1_FB29                       CAN_F27R1_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F27R1_FB30_Pos                   (30U)                             
+#define CAN_F27R1_FB30_Msk                   (0x1U << CAN_F27R1_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F27R1_FB30                       CAN_F27R1_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F27R1_FB31_Pos                   (31U)                             
+#define CAN_F27R1_FB31_Msk                   (0x1U << CAN_F27R1_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F27R1_FB31                       CAN_F27R1_FB31_Msk                /*!< Filter bit 31 */
+
 /*******************  Bit definition for CAN_F0R2 register  *******************/
 #define CAN_F0R2_FB0_Pos                     (0U)                              
 #define CAN_F0R2_FB0_Msk                     (0x1U << CAN_F0R2_FB0_Pos)        /*!< 0x00000001 */
@@ -9475,12 +10785,1388 @@ typedef struct
 #define CAN_F13R2_FB31_Msk                   (0x1U << CAN_F13R2_FB31_Pos)      /*!< 0x80000000 */
 #define CAN_F13R2_FB31                       CAN_F13R2_FB31_Msk                /*!< Filter bit 31 */
 
+/*******************  Bit definition for CAN_F14R2 register  ******************/
+#define CAN_F14R2_FB0_Pos                    (0U)                              
+#define CAN_F14R2_FB0_Msk                    (0x1U << CAN_F14R2_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F14R2_FB0                        CAN_F14R2_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F14R2_FB1_Pos                    (1U)                              
+#define CAN_F14R2_FB1_Msk                    (0x1U << CAN_F14R2_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F14R2_FB1                        CAN_F14R2_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F14R2_FB2_Pos                    (2U)                              
+#define CAN_F14R2_FB2_Msk                    (0x1U << CAN_F14R2_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F14R2_FB2                        CAN_F14R2_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F14R2_FB3_Pos                    (3U)                              
+#define CAN_F14R2_FB3_Msk                    (0x1U << CAN_F14R2_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F14R2_FB3                        CAN_F14R2_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F14R2_FB4_Pos                    (4U)                              
+#define CAN_F14R2_FB4_Msk                    (0x1U << CAN_F14R2_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F14R2_FB4                        CAN_F14R2_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F14R2_FB5_Pos                    (5U)                              
+#define CAN_F14R2_FB5_Msk                    (0x1U << CAN_F14R2_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F14R2_FB5                        CAN_F14R2_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F14R2_FB6_Pos                    (6U)                              
+#define CAN_F14R2_FB6_Msk                    (0x1U << CAN_F14R2_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F14R2_FB6                        CAN_F14R2_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F14R2_FB7_Pos                    (7U)                              
+#define CAN_F14R2_FB7_Msk                    (0x1U << CAN_F14R2_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F14R2_FB7                        CAN_F14R2_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F14R2_FB8_Pos                    (8U)                              
+#define CAN_F14R2_FB8_Msk                    (0x1U << CAN_F14R2_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F14R2_FB8                        CAN_F14R2_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F14R2_FB9_Pos                    (9U)                              
+#define CAN_F14R2_FB9_Msk                    (0x1U << CAN_F14R2_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F14R2_FB9                        CAN_F14R2_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F14R2_FB10_Pos                   (10U)                             
+#define CAN_F14R2_FB10_Msk                   (0x1U << CAN_F14R2_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F14R2_FB10                       CAN_F14R2_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F14R2_FB11_Pos                   (11U)                             
+#define CAN_F14R2_FB11_Msk                   (0x1U << CAN_F14R2_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F14R2_FB11                       CAN_F14R2_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F14R2_FB12_Pos                   (12U)                             
+#define CAN_F14R2_FB12_Msk                   (0x1U << CAN_F14R2_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F14R2_FB12                       CAN_F14R2_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F14R2_FB13_Pos                   (13U)                             
+#define CAN_F14R2_FB13_Msk                   (0x1U << CAN_F14R2_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F14R2_FB13                       CAN_F14R2_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F14R2_FB14_Pos                   (14U)                             
+#define CAN_F14R2_FB14_Msk                   (0x1U << CAN_F14R2_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F14R2_FB14                       CAN_F14R2_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F14R2_FB15_Pos                   (15U)                             
+#define CAN_F14R2_FB15_Msk                   (0x1U << CAN_F14R2_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F14R2_FB15                       CAN_F14R2_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F14R2_FB16_Pos                   (16U)                             
+#define CAN_F14R2_FB16_Msk                   (0x1U << CAN_F14R2_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F14R2_FB16                       CAN_F14R2_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F14R2_FB17_Pos                   (17U)                             
+#define CAN_F14R2_FB17_Msk                   (0x1U << CAN_F14R2_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F14R2_FB17                       CAN_F14R2_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F14R2_FB18_Pos                   (18U)                             
+#define CAN_F14R2_FB18_Msk                   (0x1U << CAN_F14R2_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F14R2_FB18                       CAN_F14R2_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F14R2_FB19_Pos                   (19U)                             
+#define CAN_F14R2_FB19_Msk                   (0x1U << CAN_F14R2_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F14R2_FB19                       CAN_F14R2_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F14R2_FB20_Pos                   (20U)                             
+#define CAN_F14R2_FB20_Msk                   (0x1U << CAN_F14R2_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F14R2_FB20                       CAN_F14R2_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F14R2_FB21_Pos                   (21U)                             
+#define CAN_F14R2_FB21_Msk                   (0x1U << CAN_F14R2_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F14R2_FB21                       CAN_F14R2_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F14R2_FB22_Pos                   (22U)                             
+#define CAN_F14R2_FB22_Msk                   (0x1U << CAN_F14R2_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F14R2_FB22                       CAN_F14R2_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F14R2_FB23_Pos                   (23U)                             
+#define CAN_F14R2_FB23_Msk                   (0x1U << CAN_F14R2_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F14R2_FB23                       CAN_F14R2_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F14R2_FB24_Pos                   (24U)                             
+#define CAN_F14R2_FB24_Msk                   (0x1U << CAN_F14R2_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F14R2_FB24                       CAN_F14R2_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F14R2_FB25_Pos                   (25U)                             
+#define CAN_F14R2_FB25_Msk                   (0x1U << CAN_F14R2_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F14R2_FB25                       CAN_F14R2_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F14R2_FB26_Pos                   (26U)                             
+#define CAN_F14R2_FB26_Msk                   (0x1U << CAN_F14R2_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F14R2_FB26                       CAN_F14R2_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F14R2_FB27_Pos                   (27U)                             
+#define CAN_F14R2_FB27_Msk                   (0x1U << CAN_F14R2_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F14R2_FB27                       CAN_F14R2_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F14R2_FB28_Pos                   (28U)                             
+#define CAN_F14R2_FB28_Msk                   (0x1U << CAN_F14R2_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F14R2_FB28                       CAN_F14R2_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F14R2_FB29_Pos                   (29U)                             
+#define CAN_F14R2_FB29_Msk                   (0x1U << CAN_F14R2_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F14R2_FB29                       CAN_F14R2_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F14R2_FB30_Pos                   (30U)                             
+#define CAN_F14R2_FB30_Msk                   (0x1U << CAN_F14R2_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F14R2_FB30                       CAN_F14R2_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F14R2_FB31_Pos                   (31U)                             
+#define CAN_F14R2_FB31_Msk                   (0x1U << CAN_F14R2_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F14R2_FB31                       CAN_F14R2_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F15R2 register  ******************/
+#define CAN_F15R2_FB0_Pos                    (0U)                              
+#define CAN_F15R2_FB0_Msk                    (0x1U << CAN_F15R2_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F15R2_FB0                        CAN_F15R2_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F15R2_FB1_Pos                    (1U)                              
+#define CAN_F15R2_FB1_Msk                    (0x1U << CAN_F15R2_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F15R2_FB1                        CAN_F15R2_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F15R2_FB2_Pos                    (2U)                              
+#define CAN_F15R2_FB2_Msk                    (0x1U << CAN_F15R2_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F15R2_FB2                        CAN_F15R2_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F15R2_FB3_Pos                    (3U)                              
+#define CAN_F15R2_FB3_Msk                    (0x1U << CAN_F15R2_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F15R2_FB3                        CAN_F15R2_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F15R2_FB4_Pos                    (4U)                              
+#define CAN_F15R2_FB4_Msk                    (0x1U << CAN_F15R2_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F15R2_FB4                        CAN_F15R2_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F15R2_FB5_Pos                    (5U)                              
+#define CAN_F15R2_FB5_Msk                    (0x1U << CAN_F15R2_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F15R2_FB5                        CAN_F15R2_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F15R2_FB6_Pos                    (6U)                              
+#define CAN_F15R2_FB6_Msk                    (0x1U << CAN_F15R2_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F15R2_FB6                        CAN_F15R2_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F15R2_FB7_Pos                    (7U)                              
+#define CAN_F15R2_FB7_Msk                    (0x1U << CAN_F15R2_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F15R2_FB7                        CAN_F15R2_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F15R2_FB8_Pos                    (8U)                              
+#define CAN_F15R2_FB8_Msk                    (0x1U << CAN_F15R2_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F15R2_FB8                        CAN_F15R2_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F15R2_FB9_Pos                    (9U)                              
+#define CAN_F15R2_FB9_Msk                    (0x1U << CAN_F15R2_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F15R2_FB9                        CAN_F15R2_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F15R2_FB10_Pos                   (10U)                             
+#define CAN_F15R2_FB10_Msk                   (0x1U << CAN_F15R2_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F15R2_FB10                       CAN_F15R2_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F15R2_FB11_Pos                   (11U)                             
+#define CAN_F15R2_FB11_Msk                   (0x1U << CAN_F15R2_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F15R2_FB11                       CAN_F15R2_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F15R2_FB12_Pos                   (12U)                             
+#define CAN_F15R2_FB12_Msk                   (0x1U << CAN_F15R2_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F15R2_FB12                       CAN_F15R2_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F15R2_FB13_Pos                   (13U)                             
+#define CAN_F15R2_FB13_Msk                   (0x1U << CAN_F15R2_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F15R2_FB13                       CAN_F15R2_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F15R2_FB14_Pos                   (14U)                             
+#define CAN_F15R2_FB14_Msk                   (0x1U << CAN_F15R2_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F15R2_FB14                       CAN_F15R2_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F15R2_FB15_Pos                   (15U)                             
+#define CAN_F15R2_FB15_Msk                   (0x1U << CAN_F15R2_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F15R2_FB15                       CAN_F15R2_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F15R2_FB16_Pos                   (16U)                             
+#define CAN_F15R2_FB16_Msk                   (0x1U << CAN_F15R2_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F15R2_FB16                       CAN_F15R2_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F15R2_FB17_Pos                   (17U)                             
+#define CAN_F15R2_FB17_Msk                   (0x1U << CAN_F15R2_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F15R2_FB17                       CAN_F15R2_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F15R2_FB18_Pos                   (18U)                             
+#define CAN_F15R2_FB18_Msk                   (0x1U << CAN_F15R2_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F15R2_FB18                       CAN_F15R2_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F15R2_FB19_Pos                   (19U)                             
+#define CAN_F15R2_FB19_Msk                   (0x1U << CAN_F15R2_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F15R2_FB19                       CAN_F15R2_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F15R2_FB20_Pos                   (20U)                             
+#define CAN_F15R2_FB20_Msk                   (0x1U << CAN_F15R2_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F15R2_FB20                       CAN_F15R2_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F15R2_FB21_Pos                   (21U)                             
+#define CAN_F15R2_FB21_Msk                   (0x1U << CAN_F15R2_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F15R2_FB21                       CAN_F15R2_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F15R2_FB22_Pos                   (22U)                             
+#define CAN_F15R2_FB22_Msk                   (0x1U << CAN_F15R2_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F15R2_FB22                       CAN_F15R2_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F15R2_FB23_Pos                   (23U)                             
+#define CAN_F15R2_FB23_Msk                   (0x1U << CAN_F15R2_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F15R2_FB23                       CAN_F15R2_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F15R2_FB24_Pos                   (24U)                             
+#define CAN_F15R2_FB24_Msk                   (0x1U << CAN_F15R2_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F15R2_FB24                       CAN_F15R2_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F15R2_FB25_Pos                   (25U)                             
+#define CAN_F15R2_FB25_Msk                   (0x1U << CAN_F15R2_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F15R2_FB25                       CAN_F15R2_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F15R2_FB26_Pos                   (26U)                             
+#define CAN_F15R2_FB26_Msk                   (0x1U << CAN_F15R2_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F15R2_FB26                       CAN_F15R2_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F15R2_FB27_Pos                   (27U)                             
+#define CAN_F15R2_FB27_Msk                   (0x1U << CAN_F15R2_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F15R2_FB27                       CAN_F15R2_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F15R2_FB28_Pos                   (28U)                             
+#define CAN_F15R2_FB28_Msk                   (0x1U << CAN_F15R2_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F15R2_FB28                       CAN_F15R2_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F15R2_FB29_Pos                   (29U)                             
+#define CAN_F15R2_FB29_Msk                   (0x1U << CAN_F15R2_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F15R2_FB29                       CAN_F15R2_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F15R2_FB30_Pos                   (30U)                             
+#define CAN_F15R2_FB30_Msk                   (0x1U << CAN_F15R2_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F15R2_FB30                       CAN_F15R2_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F15R2_FB31_Pos                   (31U)                             
+#define CAN_F15R2_FB31_Msk                   (0x1U << CAN_F15R2_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F15R2_FB31                       CAN_F15R2_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F16R2 register  ******************/
+#define CAN_F16R2_FB0_Pos                    (0U)                              
+#define CAN_F16R2_FB0_Msk                    (0x1U << CAN_F16R2_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F16R2_FB0                        CAN_F16R2_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F16R2_FB1_Pos                    (1U)                              
+#define CAN_F16R2_FB1_Msk                    (0x1U << CAN_F16R2_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F16R2_FB1                        CAN_F16R2_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F16R2_FB2_Pos                    (2U)                              
+#define CAN_F16R2_FB2_Msk                    (0x1U << CAN_F16R2_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F16R2_FB2                        CAN_F16R2_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F16R2_FB3_Pos                    (3U)                              
+#define CAN_F16R2_FB3_Msk                    (0x1U << CAN_F16R2_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F16R2_FB3                        CAN_F16R2_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F16R2_FB4_Pos                    (4U)                              
+#define CAN_F16R2_FB4_Msk                    (0x1U << CAN_F16R2_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F16R2_FB4                        CAN_F16R2_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F16R2_FB5_Pos                    (5U)                              
+#define CAN_F16R2_FB5_Msk                    (0x1U << CAN_F16R2_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F16R2_FB5                        CAN_F16R2_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F16R2_FB6_Pos                    (6U)                              
+#define CAN_F16R2_FB6_Msk                    (0x1U << CAN_F16R2_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F16R2_FB6                        CAN_F16R2_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F16R2_FB7_Pos                    (7U)                              
+#define CAN_F16R2_FB7_Msk                    (0x1U << CAN_F16R2_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F16R2_FB7                        CAN_F16R2_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F16R2_FB8_Pos                    (8U)                              
+#define CAN_F16R2_FB8_Msk                    (0x1U << CAN_F16R2_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F16R2_FB8                        CAN_F16R2_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F16R2_FB9_Pos                    (9U)                              
+#define CAN_F16R2_FB9_Msk                    (0x1U << CAN_F16R2_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F16R2_FB9                        CAN_F16R2_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F16R2_FB10_Pos                   (10U)                             
+#define CAN_F16R2_FB10_Msk                   (0x1U << CAN_F16R2_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F16R2_FB10                       CAN_F16R2_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F16R2_FB11_Pos                   (11U)                             
+#define CAN_F16R2_FB11_Msk                   (0x1U << CAN_F16R2_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F16R2_FB11                       CAN_F16R2_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F16R2_FB12_Pos                   (12U)                             
+#define CAN_F16R2_FB12_Msk                   (0x1U << CAN_F16R2_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F16R2_FB12                       CAN_F16R2_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F16R2_FB13_Pos                   (13U)                             
+#define CAN_F16R2_FB13_Msk                   (0x1U << CAN_F16R2_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F16R2_FB13                       CAN_F16R2_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F16R2_FB14_Pos                   (14U)                             
+#define CAN_F16R2_FB14_Msk                   (0x1U << CAN_F16R2_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F16R2_FB14                       CAN_F16R2_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F16R2_FB15_Pos                   (15U)                             
+#define CAN_F16R2_FB15_Msk                   (0x1U << CAN_F16R2_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F16R2_FB15                       CAN_F16R2_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F16R2_FB16_Pos                   (16U)                             
+#define CAN_F16R2_FB16_Msk                   (0x1U << CAN_F16R2_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F16R2_FB16                       CAN_F16R2_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F16R2_FB17_Pos                   (17U)                             
+#define CAN_F16R2_FB17_Msk                   (0x1U << CAN_F16R2_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F16R2_FB17                       CAN_F16R2_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F16R2_FB18_Pos                   (18U)                             
+#define CAN_F16R2_FB18_Msk                   (0x1U << CAN_F16R2_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F16R2_FB18                       CAN_F16R2_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F16R2_FB19_Pos                   (19U)                             
+#define CAN_F16R2_FB19_Msk                   (0x1U << CAN_F16R2_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F16R2_FB19                       CAN_F16R2_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F16R2_FB20_Pos                   (20U)                             
+#define CAN_F16R2_FB20_Msk                   (0x1U << CAN_F16R2_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F16R2_FB20                       CAN_F16R2_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F16R2_FB21_Pos                   (21U)                             
+#define CAN_F16R2_FB21_Msk                   (0x1U << CAN_F16R2_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F16R2_FB21                       CAN_F16R2_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F16R2_FB22_Pos                   (22U)                             
+#define CAN_F16R2_FB22_Msk                   (0x1U << CAN_F16R2_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F16R2_FB22                       CAN_F16R2_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F16R2_FB23_Pos                   (23U)                             
+#define CAN_F16R2_FB23_Msk                   (0x1U << CAN_F16R2_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F16R2_FB23                       CAN_F16R2_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F16R2_FB24_Pos                   (24U)                             
+#define CAN_F16R2_FB24_Msk                   (0x1U << CAN_F16R2_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F16R2_FB24                       CAN_F16R2_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F16R2_FB25_Pos                   (25U)                             
+#define CAN_F16R2_FB25_Msk                   (0x1U << CAN_F16R2_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F16R2_FB25                       CAN_F16R2_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F16R2_FB26_Pos                   (26U)                             
+#define CAN_F16R2_FB26_Msk                   (0x1U << CAN_F16R2_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F16R2_FB26                       CAN_F16R2_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F16R2_FB27_Pos                   (27U)                             
+#define CAN_F16R2_FB27_Msk                   (0x1U << CAN_F16R2_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F16R2_FB27                       CAN_F16R2_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F16R2_FB28_Pos                   (28U)                             
+#define CAN_F16R2_FB28_Msk                   (0x1U << CAN_F16R2_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F16R2_FB28                       CAN_F16R2_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F16R2_FB29_Pos                   (29U)                             
+#define CAN_F16R2_FB29_Msk                   (0x1U << CAN_F16R2_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F16R2_FB29                       CAN_F16R2_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F16R2_FB30_Pos                   (30U)                             
+#define CAN_F16R2_FB30_Msk                   (0x1U << CAN_F16R2_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F16R2_FB30                       CAN_F16R2_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F16R2_FB31_Pos                   (31U)                             
+#define CAN_F16R2_FB31_Msk                   (0x1U << CAN_F16R2_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F16R2_FB31                       CAN_F16R2_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F17R2 register  ******************/
+#define CAN_F17R2_FB0_Pos                    (0U)                              
+#define CAN_F17R2_FB0_Msk                    (0x1U << CAN_F17R2_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F17R2_FB0                        CAN_F17R2_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F17R2_FB1_Pos                    (1U)                              
+#define CAN_F17R2_FB1_Msk                    (0x1U << CAN_F17R2_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F17R2_FB1                        CAN_F17R2_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F17R2_FB2_Pos                    (2U)                              
+#define CAN_F17R2_FB2_Msk                    (0x1U << CAN_F17R2_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F17R2_FB2                        CAN_F17R2_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F17R2_FB3_Pos                    (3U)                              
+#define CAN_F17R2_FB3_Msk                    (0x1U << CAN_F17R2_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F17R2_FB3                        CAN_F17R2_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F17R2_FB4_Pos                    (4U)                              
+#define CAN_F17R2_FB4_Msk                    (0x1U << CAN_F17R2_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F17R2_FB4                        CAN_F17R2_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F17R2_FB5_Pos                    (5U)                              
+#define CAN_F17R2_FB5_Msk                    (0x1U << CAN_F17R2_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F17R2_FB5                        CAN_F17R2_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F17R2_FB6_Pos                    (6U)                              
+#define CAN_F17R2_FB6_Msk                    (0x1U << CAN_F17R2_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F17R2_FB6                        CAN_F17R2_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F17R2_FB7_Pos                    (7U)                              
+#define CAN_F17R2_FB7_Msk                    (0x1U << CAN_F17R2_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F17R2_FB7                        CAN_F17R2_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F17R2_FB8_Pos                    (8U)                              
+#define CAN_F17R2_FB8_Msk                    (0x1U << CAN_F17R2_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F17R2_FB8                        CAN_F17R2_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F17R2_FB9_Pos                    (9U)                              
+#define CAN_F17R2_FB9_Msk                    (0x1U << CAN_F17R2_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F17R2_FB9                        CAN_F17R2_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F17R2_FB10_Pos                   (10U)                             
+#define CAN_F17R2_FB10_Msk                   (0x1U << CAN_F17R2_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F17R2_FB10                       CAN_F17R2_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F17R2_FB11_Pos                   (11U)                             
+#define CAN_F17R2_FB11_Msk                   (0x1U << CAN_F17R2_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F17R2_FB11                       CAN_F17R2_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F17R2_FB12_Pos                   (12U)                             
+#define CAN_F17R2_FB12_Msk                   (0x1U << CAN_F17R2_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F17R2_FB12                       CAN_F17R2_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F17R2_FB13_Pos                   (13U)                             
+#define CAN_F17R2_FB13_Msk                   (0x1U << CAN_F17R2_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F17R2_FB13                       CAN_F17R2_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F17R2_FB14_Pos                   (14U)                             
+#define CAN_F17R2_FB14_Msk                   (0x1U << CAN_F17R2_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F17R2_FB14                       CAN_F17R2_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F17R2_FB15_Pos                   (15U)                             
+#define CAN_F17R2_FB15_Msk                   (0x1U << CAN_F17R2_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F17R2_FB15                       CAN_F17R2_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F17R2_FB16_Pos                   (16U)                             
+#define CAN_F17R2_FB16_Msk                   (0x1U << CAN_F17R2_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F17R2_FB16                       CAN_F17R2_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F17R2_FB17_Pos                   (17U)                             
+#define CAN_F17R2_FB17_Msk                   (0x1U << CAN_F17R2_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F17R2_FB17                       CAN_F17R2_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F17R2_FB18_Pos                   (18U)                             
+#define CAN_F17R2_FB18_Msk                   (0x1U << CAN_F17R2_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F17R2_FB18                       CAN_F17R2_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F17R2_FB19_Pos                   (19U)                             
+#define CAN_F17R2_FB19_Msk                   (0x1U << CAN_F17R2_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F17R2_FB19                       CAN_F17R2_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F17R2_FB20_Pos                   (20U)                             
+#define CAN_F17R2_FB20_Msk                   (0x1U << CAN_F17R2_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F17R2_FB20                       CAN_F17R2_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F17R2_FB21_Pos                   (21U)                             
+#define CAN_F17R2_FB21_Msk                   (0x1U << CAN_F17R2_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F17R2_FB21                       CAN_F17R2_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F17R2_FB22_Pos                   (22U)                             
+#define CAN_F17R2_FB22_Msk                   (0x1U << CAN_F17R2_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F17R2_FB22                       CAN_F17R2_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F17R2_FB23_Pos                   (23U)                             
+#define CAN_F17R2_FB23_Msk                   (0x1U << CAN_F17R2_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F17R2_FB23                       CAN_F17R2_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F17R2_FB24_Pos                   (24U)                             
+#define CAN_F17R2_FB24_Msk                   (0x1U << CAN_F17R2_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F17R2_FB24                       CAN_F17R2_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F17R2_FB25_Pos                   (25U)                             
+#define CAN_F17R2_FB25_Msk                   (0x1U << CAN_F17R2_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F17R2_FB25                       CAN_F17R2_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F17R2_FB26_Pos                   (26U)                             
+#define CAN_F17R2_FB26_Msk                   (0x1U << CAN_F17R2_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F17R2_FB26                       CAN_F17R2_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F17R2_FB27_Pos                   (27U)                             
+#define CAN_F17R2_FB27_Msk                   (0x1U << CAN_F17R2_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F17R2_FB27                       CAN_F17R2_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F17R2_FB28_Pos                   (28U)                             
+#define CAN_F17R2_FB28_Msk                   (0x1U << CAN_F17R2_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F17R2_FB28                       CAN_F17R2_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F17R2_FB29_Pos                   (29U)                             
+#define CAN_F17R2_FB29_Msk                   (0x1U << CAN_F17R2_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F17R2_FB29                       CAN_F17R2_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F17R2_FB30_Pos                   (30U)                             
+#define CAN_F17R2_FB30_Msk                   (0x1U << CAN_F17R2_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F17R2_FB30                       CAN_F17R2_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F17R2_FB31_Pos                   (31U)                             
+#define CAN_F17R2_FB31_Msk                   (0x1U << CAN_F17R2_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F17R2_FB31                       CAN_F17R2_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F18R2 register  ******************/
+#define CAN_F18R2_FB0_Pos                    (0U)                              
+#define CAN_F18R2_FB0_Msk                    (0x1U << CAN_F18R2_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F18R2_FB0                        CAN_F18R2_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F18R2_FB1_Pos                    (1U)                              
+#define CAN_F18R2_FB1_Msk                    (0x1U << CAN_F18R2_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F18R2_FB1                        CAN_F18R2_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F18R2_FB2_Pos                    (2U)                              
+#define CAN_F18R2_FB2_Msk                    (0x1U << CAN_F18R2_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F18R2_FB2                        CAN_F18R2_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F18R2_FB3_Pos                    (3U)                              
+#define CAN_F18R2_FB3_Msk                    (0x1U << CAN_F18R2_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F18R2_FB3                        CAN_F18R2_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F18R2_FB4_Pos                    (4U)                              
+#define CAN_F18R2_FB4_Msk                    (0x1U << CAN_F18R2_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F18R2_FB4                        CAN_F18R2_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F18R2_FB5_Pos                    (5U)                              
+#define CAN_F18R2_FB5_Msk                    (0x1U << CAN_F18R2_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F18R2_FB5                        CAN_F18R2_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F18R2_FB6_Pos                    (6U)                              
+#define CAN_F18R2_FB6_Msk                    (0x1U << CAN_F18R2_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F18R2_FB6                        CAN_F18R2_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F18R2_FB7_Pos                    (7U)                              
+#define CAN_F18R2_FB7_Msk                    (0x1U << CAN_F18R2_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F18R2_FB7                        CAN_F18R2_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F18R2_FB8_Pos                    (8U)                              
+#define CAN_F18R2_FB8_Msk                    (0x1U << CAN_F18R2_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F18R2_FB8                        CAN_F18R2_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F18R2_FB9_Pos                    (9U)                              
+#define CAN_F18R2_FB9_Msk                    (0x1U << CAN_F18R2_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F18R2_FB9                        CAN_F18R2_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F18R2_FB10_Pos                   (10U)                             
+#define CAN_F18R2_FB10_Msk                   (0x1U << CAN_F18R2_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F18R2_FB10                       CAN_F18R2_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F18R2_FB11_Pos                   (11U)                             
+#define CAN_F18R2_FB11_Msk                   (0x1U << CAN_F18R2_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F18R2_FB11                       CAN_F18R2_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F18R2_FB12_Pos                   (12U)                             
+#define CAN_F18R2_FB12_Msk                   (0x1U << CAN_F18R2_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F18R2_FB12                       CAN_F18R2_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F18R2_FB13_Pos                   (13U)                             
+#define CAN_F18R2_FB13_Msk                   (0x1U << CAN_F18R2_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F18R2_FB13                       CAN_F18R2_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F18R2_FB14_Pos                   (14U)                             
+#define CAN_F18R2_FB14_Msk                   (0x1U << CAN_F18R2_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F18R2_FB14                       CAN_F18R2_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F18R2_FB15_Pos                   (15U)                             
+#define CAN_F18R2_FB15_Msk                   (0x1U << CAN_F18R2_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F18R2_FB15                       CAN_F18R2_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F18R2_FB16_Pos                   (16U)                             
+#define CAN_F18R2_FB16_Msk                   (0x1U << CAN_F18R2_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F18R2_FB16                       CAN_F18R2_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F18R2_FB17_Pos                   (17U)                             
+#define CAN_F18R2_FB17_Msk                   (0x1U << CAN_F18R2_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F18R2_FB17                       CAN_F18R2_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F18R2_FB18_Pos                   (18U)                             
+#define CAN_F18R2_FB18_Msk                   (0x1U << CAN_F18R2_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F18R2_FB18                       CAN_F18R2_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F18R2_FB19_Pos                   (19U)                             
+#define CAN_F18R2_FB19_Msk                   (0x1U << CAN_F18R2_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F18R2_FB19                       CAN_F18R2_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F18R2_FB20_Pos                   (20U)                             
+#define CAN_F18R2_FB20_Msk                   (0x1U << CAN_F18R2_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F18R2_FB20                       CAN_F18R2_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F18R2_FB21_Pos                   (21U)                             
+#define CAN_F18R2_FB21_Msk                   (0x1U << CAN_F18R2_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F18R2_FB21                       CAN_F18R2_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F18R2_FB22_Pos                   (22U)                             
+#define CAN_F18R2_FB22_Msk                   (0x1U << CAN_F18R2_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F18R2_FB22                       CAN_F18R2_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F18R2_FB23_Pos                   (23U)                             
+#define CAN_F18R2_FB23_Msk                   (0x1U << CAN_F18R2_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F18R2_FB23                       CAN_F18R2_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F18R2_FB24_Pos                   (24U)                             
+#define CAN_F18R2_FB24_Msk                   (0x1U << CAN_F18R2_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F18R2_FB24                       CAN_F18R2_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F18R2_FB25_Pos                   (25U)                             
+#define CAN_F18R2_FB25_Msk                   (0x1U << CAN_F18R2_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F18R2_FB25                       CAN_F18R2_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F18R2_FB26_Pos                   (26U)                             
+#define CAN_F18R2_FB26_Msk                   (0x1U << CAN_F18R2_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F18R2_FB26                       CAN_F18R2_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F18R2_FB27_Pos                   (27U)                             
+#define CAN_F18R2_FB27_Msk                   (0x1U << CAN_F18R2_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F18R2_FB27                       CAN_F18R2_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F18R2_FB28_Pos                   (28U)                             
+#define CAN_F18R2_FB28_Msk                   (0x1U << CAN_F18R2_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F18R2_FB28                       CAN_F18R2_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F18R2_FB29_Pos                   (29U)                             
+#define CAN_F18R2_FB29_Msk                   (0x1U << CAN_F18R2_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F18R2_FB29                       CAN_F18R2_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F18R2_FB30_Pos                   (30U)                             
+#define CAN_F18R2_FB30_Msk                   (0x1U << CAN_F18R2_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F18R2_FB30                       CAN_F18R2_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F18R2_FB31_Pos                   (31U)                             
+#define CAN_F18R2_FB31_Msk                   (0x1U << CAN_F18R2_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F18R2_FB31                       CAN_F18R2_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F19R2 register  ******************/
+#define CAN_F19R2_FB0_Pos                    (0U)                              
+#define CAN_F19R2_FB0_Msk                    (0x1U << CAN_F19R2_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F19R2_FB0                        CAN_F19R2_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F19R2_FB1_Pos                    (1U)                              
+#define CAN_F19R2_FB1_Msk                    (0x1U << CAN_F19R2_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F19R2_FB1                        CAN_F19R2_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F19R2_FB2_Pos                    (2U)                              
+#define CAN_F19R2_FB2_Msk                    (0x1U << CAN_F19R2_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F19R2_FB2                        CAN_F19R2_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F19R2_FB3_Pos                    (3U)                              
+#define CAN_F19R2_FB3_Msk                    (0x1U << CAN_F19R2_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F19R2_FB3                        CAN_F19R2_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F19R2_FB4_Pos                    (4U)                              
+#define CAN_F19R2_FB4_Msk                    (0x1U << CAN_F19R2_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F19R2_FB4                        CAN_F19R2_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F19R2_FB5_Pos                    (5U)                              
+#define CAN_F19R2_FB5_Msk                    (0x1U << CAN_F19R2_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F19R2_FB5                        CAN_F19R2_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F19R2_FB6_Pos                    (6U)                              
+#define CAN_F19R2_FB6_Msk                    (0x1U << CAN_F19R2_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F19R2_FB6                        CAN_F19R2_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F19R2_FB7_Pos                    (7U)                              
+#define CAN_F19R2_FB7_Msk                    (0x1U << CAN_F19R2_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F19R2_FB7                        CAN_F19R2_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F19R2_FB8_Pos                    (8U)                              
+#define CAN_F19R2_FB8_Msk                    (0x1U << CAN_F19R2_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F19R2_FB8                        CAN_F19R2_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F19R2_FB9_Pos                    (9U)                              
+#define CAN_F19R2_FB9_Msk                    (0x1U << CAN_F19R2_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F19R2_FB9                        CAN_F19R2_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F19R2_FB10_Pos                   (10U)                             
+#define CAN_F19R2_FB10_Msk                   (0x1U << CAN_F19R2_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F19R2_FB10                       CAN_F19R2_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F19R2_FB11_Pos                   (11U)                             
+#define CAN_F19R2_FB11_Msk                   (0x1U << CAN_F19R2_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F19R2_FB11                       CAN_F19R2_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F19R2_FB12_Pos                   (12U)                             
+#define CAN_F19R2_FB12_Msk                   (0x1U << CAN_F19R2_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F19R2_FB12                       CAN_F19R2_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F19R2_FB13_Pos                   (13U)                             
+#define CAN_F19R2_FB13_Msk                   (0x1U << CAN_F19R2_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F19R2_FB13                       CAN_F19R2_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F19R2_FB14_Pos                   (14U)                             
+#define CAN_F19R2_FB14_Msk                   (0x1U << CAN_F19R2_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F19R2_FB14                       CAN_F19R2_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F19R2_FB15_Pos                   (15U)                             
+#define CAN_F19R2_FB15_Msk                   (0x1U << CAN_F19R2_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F19R2_FB15                       CAN_F19R2_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F19R2_FB16_Pos                   (16U)                             
+#define CAN_F19R2_FB16_Msk                   (0x1U << CAN_F19R2_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F19R2_FB16                       CAN_F19R2_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F19R2_FB17_Pos                   (17U)                             
+#define CAN_F19R2_FB17_Msk                   (0x1U << CAN_F19R2_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F19R2_FB17                       CAN_F19R2_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F19R2_FB18_Pos                   (18U)                             
+#define CAN_F19R2_FB18_Msk                   (0x1U << CAN_F19R2_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F19R2_FB18                       CAN_F19R2_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F19R2_FB19_Pos                   (19U)                             
+#define CAN_F19R2_FB19_Msk                   (0x1U << CAN_F19R2_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F19R2_FB19                       CAN_F19R2_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F19R2_FB20_Pos                   (20U)                             
+#define CAN_F19R2_FB20_Msk                   (0x1U << CAN_F19R2_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F19R2_FB20                       CAN_F19R2_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F19R2_FB21_Pos                   (21U)                             
+#define CAN_F19R2_FB21_Msk                   (0x1U << CAN_F19R2_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F19R2_FB21                       CAN_F19R2_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F19R2_FB22_Pos                   (22U)                             
+#define CAN_F19R2_FB22_Msk                   (0x1U << CAN_F19R2_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F19R2_FB22                       CAN_F19R2_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F19R2_FB23_Pos                   (23U)                             
+#define CAN_F19R2_FB23_Msk                   (0x1U << CAN_F19R2_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F19R2_FB23                       CAN_F19R2_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F19R2_FB24_Pos                   (24U)                             
+#define CAN_F19R2_FB24_Msk                   (0x1U << CAN_F19R2_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F19R2_FB24                       CAN_F19R2_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F19R2_FB25_Pos                   (25U)                             
+#define CAN_F19R2_FB25_Msk                   (0x1U << CAN_F19R2_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F19R2_FB25                       CAN_F19R2_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F19R2_FB26_Pos                   (26U)                             
+#define CAN_F19R2_FB26_Msk                   (0x1U << CAN_F19R2_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F19R2_FB26                       CAN_F19R2_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F19R2_FB27_Pos                   (27U)                             
+#define CAN_F19R2_FB27_Msk                   (0x1U << CAN_F19R2_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F19R2_FB27                       CAN_F19R2_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F19R2_FB28_Pos                   (28U)                             
+#define CAN_F19R2_FB28_Msk                   (0x1U << CAN_F19R2_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F19R2_FB28                       CAN_F19R2_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F19R2_FB29_Pos                   (29U)                             
+#define CAN_F19R2_FB29_Msk                   (0x1U << CAN_F19R2_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F19R2_FB29                       CAN_F19R2_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F19R2_FB30_Pos                   (30U)                             
+#define CAN_F19R2_FB30_Msk                   (0x1U << CAN_F19R2_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F19R2_FB30                       CAN_F19R2_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F19R2_FB31_Pos                   (31U)                             
+#define CAN_F19R2_FB31_Msk                   (0x1U << CAN_F19R2_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F19R2_FB31                       CAN_F19R2_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F20R2 register  ******************/
+#define CAN_F20R2_FB0_Pos                    (0U)                              
+#define CAN_F20R2_FB0_Msk                    (0x1U << CAN_F20R2_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F20R2_FB0                        CAN_F20R2_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F20R2_FB1_Pos                    (1U)                              
+#define CAN_F20R2_FB1_Msk                    (0x1U << CAN_F20R2_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F20R2_FB1                        CAN_F20R2_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F20R2_FB2_Pos                    (2U)                              
+#define CAN_F20R2_FB2_Msk                    (0x1U << CAN_F20R2_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F20R2_FB2                        CAN_F20R2_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F20R2_FB3_Pos                    (3U)                              
+#define CAN_F20R2_FB3_Msk                    (0x1U << CAN_F20R2_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F20R2_FB3                        CAN_F20R2_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F20R2_FB4_Pos                    (4U)                              
+#define CAN_F20R2_FB4_Msk                    (0x1U << CAN_F20R2_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F20R2_FB4                        CAN_F20R2_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F20R2_FB5_Pos                    (5U)                              
+#define CAN_F20R2_FB5_Msk                    (0x1U << CAN_F20R2_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F20R2_FB5                        CAN_F20R2_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F20R2_FB6_Pos                    (6U)                              
+#define CAN_F20R2_FB6_Msk                    (0x1U << CAN_F20R2_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F20R2_FB6                        CAN_F20R2_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F20R2_FB7_Pos                    (7U)                              
+#define CAN_F20R2_FB7_Msk                    (0x1U << CAN_F20R2_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F20R2_FB7                        CAN_F20R2_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F20R2_FB8_Pos                    (8U)                              
+#define CAN_F20R2_FB8_Msk                    (0x1U << CAN_F20R2_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F20R2_FB8                        CAN_F20R2_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F20R2_FB9_Pos                    (9U)                              
+#define CAN_F20R2_FB9_Msk                    (0x1U << CAN_F20R2_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F20R2_FB9                        CAN_F20R2_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F20R2_FB10_Pos                   (10U)                             
+#define CAN_F20R2_FB10_Msk                   (0x1U << CAN_F20R2_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F20R2_FB10                       CAN_F20R2_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F20R2_FB11_Pos                   (11U)                             
+#define CAN_F20R2_FB11_Msk                   (0x1U << CAN_F20R2_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F20R2_FB11                       CAN_F20R2_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F20R2_FB12_Pos                   (12U)                             
+#define CAN_F20R2_FB12_Msk                   (0x1U << CAN_F20R2_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F20R2_FB12                       CAN_F20R2_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F20R2_FB13_Pos                   (13U)                             
+#define CAN_F20R2_FB13_Msk                   (0x1U << CAN_F20R2_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F20R2_FB13                       CAN_F20R2_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F20R2_FB14_Pos                   (14U)                             
+#define CAN_F20R2_FB14_Msk                   (0x1U << CAN_F20R2_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F20R2_FB14                       CAN_F20R2_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F20R2_FB15_Pos                   (15U)                             
+#define CAN_F20R2_FB15_Msk                   (0x1U << CAN_F20R2_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F20R2_FB15                       CAN_F20R2_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F20R2_FB16_Pos                   (16U)                             
+#define CAN_F20R2_FB16_Msk                   (0x1U << CAN_F20R2_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F20R2_FB16                       CAN_F20R2_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F20R2_FB17_Pos                   (17U)                             
+#define CAN_F20R2_FB17_Msk                   (0x1U << CAN_F20R2_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F20R2_FB17                       CAN_F20R2_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F20R2_FB18_Pos                   (18U)                             
+#define CAN_F20R2_FB18_Msk                   (0x1U << CAN_F20R2_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F20R2_FB18                       CAN_F20R2_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F20R2_FB19_Pos                   (19U)                             
+#define CAN_F20R2_FB19_Msk                   (0x1U << CAN_F20R2_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F20R2_FB19                       CAN_F20R2_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F20R2_FB20_Pos                   (20U)                             
+#define CAN_F20R2_FB20_Msk                   (0x1U << CAN_F20R2_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F20R2_FB20                       CAN_F20R2_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F20R2_FB21_Pos                   (21U)                             
+#define CAN_F20R2_FB21_Msk                   (0x1U << CAN_F20R2_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F20R2_FB21                       CAN_F20R2_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F20R2_FB22_Pos                   (22U)                             
+#define CAN_F20R2_FB22_Msk                   (0x1U << CAN_F20R2_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F20R2_FB22                       CAN_F20R2_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F20R2_FB23_Pos                   (23U)                             
+#define CAN_F20R2_FB23_Msk                   (0x1U << CAN_F20R2_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F20R2_FB23                       CAN_F20R2_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F20R2_FB24_Pos                   (24U)                             
+#define CAN_F20R2_FB24_Msk                   (0x1U << CAN_F20R2_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F20R2_FB24                       CAN_F20R2_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F20R2_FB25_Pos                   (25U)                             
+#define CAN_F20R2_FB25_Msk                   (0x1U << CAN_F20R2_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F20R2_FB25                       CAN_F20R2_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F20R2_FB26_Pos                   (26U)                             
+#define CAN_F20R2_FB26_Msk                   (0x1U << CAN_F20R2_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F20R2_FB26                       CAN_F20R2_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F20R2_FB27_Pos                   (27U)                             
+#define CAN_F20R2_FB27_Msk                   (0x1U << CAN_F20R2_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F20R2_FB27                       CAN_F20R2_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F20R2_FB28_Pos                   (28U)                             
+#define CAN_F20R2_FB28_Msk                   (0x1U << CAN_F20R2_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F20R2_FB28                       CAN_F20R2_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F20R2_FB29_Pos                   (29U)                             
+#define CAN_F20R2_FB29_Msk                   (0x1U << CAN_F20R2_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F20R2_FB29                       CAN_F20R2_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F20R2_FB30_Pos                   (30U)                             
+#define CAN_F20R2_FB30_Msk                   (0x1U << CAN_F20R2_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F20R2_FB30                       CAN_F20R2_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F20R2_FB31_Pos                   (31U)                             
+#define CAN_F20R2_FB31_Msk                   (0x1U << CAN_F20R2_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F20R2_FB31                       CAN_F20R2_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F21R2 register  ******************/
+#define CAN_F21R2_FB0_Pos                    (0U)                              
+#define CAN_F21R2_FB0_Msk                    (0x1U << CAN_F21R2_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F21R2_FB0                        CAN_F21R2_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F21R2_FB1_Pos                    (1U)                              
+#define CAN_F21R2_FB1_Msk                    (0x1U << CAN_F21R2_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F21R2_FB1                        CAN_F21R2_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F21R2_FB2_Pos                    (2U)                              
+#define CAN_F21R2_FB2_Msk                    (0x1U << CAN_F21R2_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F21R2_FB2                        CAN_F21R2_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F21R2_FB3_Pos                    (3U)                              
+#define CAN_F21R2_FB3_Msk                    (0x1U << CAN_F21R2_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F21R2_FB3                        CAN_F21R2_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F21R2_FB4_Pos                    (4U)                              
+#define CAN_F21R2_FB4_Msk                    (0x1U << CAN_F21R2_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F21R2_FB4                        CAN_F21R2_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F21R2_FB5_Pos                    (5U)                              
+#define CAN_F21R2_FB5_Msk                    (0x1U << CAN_F21R2_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F21R2_FB5                        CAN_F21R2_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F21R2_FB6_Pos                    (6U)                              
+#define CAN_F21R2_FB6_Msk                    (0x1U << CAN_F21R2_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F21R2_FB6                        CAN_F21R2_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F21R2_FB7_Pos                    (7U)                              
+#define CAN_F21R2_FB7_Msk                    (0x1U << CAN_F21R2_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F21R2_FB7                        CAN_F21R2_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F21R2_FB8_Pos                    (8U)                              
+#define CAN_F21R2_FB8_Msk                    (0x1U << CAN_F21R2_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F21R2_FB8                        CAN_F21R2_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F21R2_FB9_Pos                    (9U)                              
+#define CAN_F21R2_FB9_Msk                    (0x1U << CAN_F21R2_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F21R2_FB9                        CAN_F21R2_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F21R2_FB10_Pos                   (10U)                             
+#define CAN_F21R2_FB10_Msk                   (0x1U << CAN_F21R2_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F21R2_FB10                       CAN_F21R2_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F21R2_FB11_Pos                   (11U)                             
+#define CAN_F21R2_FB11_Msk                   (0x1U << CAN_F21R2_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F21R2_FB11                       CAN_F21R2_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F21R2_FB12_Pos                   (12U)                             
+#define CAN_F21R2_FB12_Msk                   (0x1U << CAN_F21R2_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F21R2_FB12                       CAN_F21R2_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F21R2_FB13_Pos                   (13U)                             
+#define CAN_F21R2_FB13_Msk                   (0x1U << CAN_F21R2_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F21R2_FB13                       CAN_F21R2_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F21R2_FB14_Pos                   (14U)                             
+#define CAN_F21R2_FB14_Msk                   (0x1U << CAN_F21R2_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F21R2_FB14                       CAN_F21R2_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F21R2_FB15_Pos                   (15U)                             
+#define CAN_F21R2_FB15_Msk                   (0x1U << CAN_F21R2_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F21R2_FB15                       CAN_F21R2_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F21R2_FB16_Pos                   (16U)                             
+#define CAN_F21R2_FB16_Msk                   (0x1U << CAN_F21R2_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F21R2_FB16                       CAN_F21R2_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F21R2_FB17_Pos                   (17U)                             
+#define CAN_F21R2_FB17_Msk                   (0x1U << CAN_F21R2_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F21R2_FB17                       CAN_F21R2_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F21R2_FB18_Pos                   (18U)                             
+#define CAN_F21R2_FB18_Msk                   (0x1U << CAN_F21R2_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F21R2_FB18                       CAN_F21R2_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F21R2_FB19_Pos                   (19U)                             
+#define CAN_F21R2_FB19_Msk                   (0x1U << CAN_F21R2_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F21R2_FB19                       CAN_F21R2_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F21R2_FB20_Pos                   (20U)                             
+#define CAN_F21R2_FB20_Msk                   (0x1U << CAN_F21R2_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F21R2_FB20                       CAN_F21R2_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F21R2_FB21_Pos                   (21U)                             
+#define CAN_F21R2_FB21_Msk                   (0x1U << CAN_F21R2_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F21R2_FB21                       CAN_F21R2_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F21R2_FB22_Pos                   (22U)                             
+#define CAN_F21R2_FB22_Msk                   (0x1U << CAN_F21R2_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F21R2_FB22                       CAN_F21R2_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F21R2_FB23_Pos                   (23U)                             
+#define CAN_F21R2_FB23_Msk                   (0x1U << CAN_F21R2_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F21R2_FB23                       CAN_F21R2_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F21R2_FB24_Pos                   (24U)                             
+#define CAN_F21R2_FB24_Msk                   (0x1U << CAN_F21R2_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F21R2_FB24                       CAN_F21R2_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F21R2_FB25_Pos                   (25U)                             
+#define CAN_F21R2_FB25_Msk                   (0x1U << CAN_F21R2_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F21R2_FB25                       CAN_F21R2_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F21R2_FB26_Pos                   (26U)                             
+#define CAN_F21R2_FB26_Msk                   (0x1U << CAN_F21R2_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F21R2_FB26                       CAN_F21R2_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F21R2_FB27_Pos                   (27U)                             
+#define CAN_F21R2_FB27_Msk                   (0x1U << CAN_F21R2_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F21R2_FB27                       CAN_F21R2_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F21R2_FB28_Pos                   (28U)                             
+#define CAN_F21R2_FB28_Msk                   (0x1U << CAN_F21R2_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F21R2_FB28                       CAN_F21R2_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F21R2_FB29_Pos                   (29U)                             
+#define CAN_F21R2_FB29_Msk                   (0x1U << CAN_F21R2_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F21R2_FB29                       CAN_F21R2_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F21R2_FB30_Pos                   (30U)                             
+#define CAN_F21R2_FB30_Msk                   (0x1U << CAN_F21R2_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F21R2_FB30                       CAN_F21R2_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F21R2_FB31_Pos                   (31U)                             
+#define CAN_F21R2_FB31_Msk                   (0x1U << CAN_F21R2_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F21R2_FB31                       CAN_F21R2_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F22R2 register  ******************/
+#define CAN_F22R2_FB0_Pos                    (0U)                              
+#define CAN_F22R2_FB0_Msk                    (0x1U << CAN_F22R2_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F22R2_FB0                        CAN_F22R2_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F22R2_FB1_Pos                    (1U)                              
+#define CAN_F22R2_FB1_Msk                    (0x1U << CAN_F22R2_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F22R2_FB1                        CAN_F22R2_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F22R2_FB2_Pos                    (2U)                              
+#define CAN_F22R2_FB2_Msk                    (0x1U << CAN_F22R2_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F22R2_FB2                        CAN_F22R2_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F22R2_FB3_Pos                    (3U)                              
+#define CAN_F22R2_FB3_Msk                    (0x1U << CAN_F22R2_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F22R2_FB3                        CAN_F22R2_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F22R2_FB4_Pos                    (4U)                              
+#define CAN_F22R2_FB4_Msk                    (0x1U << CAN_F22R2_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F22R2_FB4                        CAN_F22R2_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F22R2_FB5_Pos                    (5U)                              
+#define CAN_F22R2_FB5_Msk                    (0x1U << CAN_F22R2_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F22R2_FB5                        CAN_F22R2_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F22R2_FB6_Pos                    (6U)                              
+#define CAN_F22R2_FB6_Msk                    (0x1U << CAN_F22R2_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F22R2_FB6                        CAN_F22R2_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F22R2_FB7_Pos                    (7U)                              
+#define CAN_F22R2_FB7_Msk                    (0x1U << CAN_F22R2_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F22R2_FB7                        CAN_F22R2_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F22R2_FB8_Pos                    (8U)                              
+#define CAN_F22R2_FB8_Msk                    (0x1U << CAN_F22R2_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F22R2_FB8                        CAN_F22R2_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F22R2_FB9_Pos                    (9U)                              
+#define CAN_F22R2_FB9_Msk                    (0x1U << CAN_F22R2_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F22R2_FB9                        CAN_F22R2_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F22R2_FB10_Pos                   (10U)                             
+#define CAN_F22R2_FB10_Msk                   (0x1U << CAN_F22R2_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F22R2_FB10                       CAN_F22R2_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F22R2_FB11_Pos                   (11U)                             
+#define CAN_F22R2_FB11_Msk                   (0x1U << CAN_F22R2_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F22R2_FB11                       CAN_F22R2_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F22R2_FB12_Pos                   (12U)                             
+#define CAN_F22R2_FB12_Msk                   (0x1U << CAN_F22R2_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F22R2_FB12                       CAN_F22R2_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F22R2_FB13_Pos                   (13U)                             
+#define CAN_F22R2_FB13_Msk                   (0x1U << CAN_F22R2_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F22R2_FB13                       CAN_F22R2_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F22R2_FB14_Pos                   (14U)                             
+#define CAN_F22R2_FB14_Msk                   (0x1U << CAN_F22R2_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F22R2_FB14                       CAN_F22R2_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F22R2_FB15_Pos                   (15U)                             
+#define CAN_F22R2_FB15_Msk                   (0x1U << CAN_F22R2_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F22R2_FB15                       CAN_F22R2_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F22R2_FB16_Pos                   (16U)                             
+#define CAN_F22R2_FB16_Msk                   (0x1U << CAN_F22R2_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F22R2_FB16                       CAN_F22R2_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F22R2_FB17_Pos                   (17U)                             
+#define CAN_F22R2_FB17_Msk                   (0x1U << CAN_F22R2_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F22R2_FB17                       CAN_F22R2_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F22R2_FB18_Pos                   (18U)                             
+#define CAN_F22R2_FB18_Msk                   (0x1U << CAN_F22R2_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F22R2_FB18                       CAN_F22R2_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F22R2_FB19_Pos                   (19U)                             
+#define CAN_F22R2_FB19_Msk                   (0x1U << CAN_F22R2_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F22R2_FB19                       CAN_F22R2_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F22R2_FB20_Pos                   (20U)                             
+#define CAN_F22R2_FB20_Msk                   (0x1U << CAN_F22R2_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F22R2_FB20                       CAN_F22R2_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F22R2_FB21_Pos                   (21U)                             
+#define CAN_F22R2_FB21_Msk                   (0x1U << CAN_F22R2_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F22R2_FB21                       CAN_F22R2_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F22R2_FB22_Pos                   (22U)                             
+#define CAN_F22R2_FB22_Msk                   (0x1U << CAN_F22R2_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F22R2_FB22                       CAN_F22R2_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F22R2_FB23_Pos                   (23U)                             
+#define CAN_F22R2_FB23_Msk                   (0x1U << CAN_F22R2_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F22R2_FB23                       CAN_F22R2_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F22R2_FB24_Pos                   (24U)                             
+#define CAN_F22R2_FB24_Msk                   (0x1U << CAN_F22R2_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F22R2_FB24                       CAN_F22R2_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F22R2_FB25_Pos                   (25U)                             
+#define CAN_F22R2_FB25_Msk                   (0x1U << CAN_F22R2_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F22R2_FB25                       CAN_F22R2_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F22R2_FB26_Pos                   (26U)                             
+#define CAN_F22R2_FB26_Msk                   (0x1U << CAN_F22R2_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F22R2_FB26                       CAN_F22R2_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F22R2_FB27_Pos                   (27U)                             
+#define CAN_F22R2_FB27_Msk                   (0x1U << CAN_F22R2_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F22R2_FB27                       CAN_F22R2_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F22R2_FB28_Pos                   (28U)                             
+#define CAN_F22R2_FB28_Msk                   (0x1U << CAN_F22R2_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F22R2_FB28                       CAN_F22R2_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F22R2_FB29_Pos                   (29U)                             
+#define CAN_F22R2_FB29_Msk                   (0x1U << CAN_F22R2_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F22R2_FB29                       CAN_F22R2_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F22R2_FB30_Pos                   (30U)                             
+#define CAN_F22R2_FB30_Msk                   (0x1U << CAN_F22R2_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F22R2_FB30                       CAN_F22R2_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F22R2_FB31_Pos                   (31U)                             
+#define CAN_F22R2_FB31_Msk                   (0x1U << CAN_F22R2_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F22R2_FB31                       CAN_F22R2_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F23R2 register  ******************/
+#define CAN_F23R2_FB0_Pos                    (0U)                              
+#define CAN_F23R2_FB0_Msk                    (0x1U << CAN_F23R2_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F23R2_FB0                        CAN_F23R2_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F23R2_FB1_Pos                    (1U)                              
+#define CAN_F23R2_FB1_Msk                    (0x1U << CAN_F23R2_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F23R2_FB1                        CAN_F23R2_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F23R2_FB2_Pos                    (2U)                              
+#define CAN_F23R2_FB2_Msk                    (0x1U << CAN_F23R2_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F23R2_FB2                        CAN_F23R2_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F23R2_FB3_Pos                    (3U)                              
+#define CAN_F23R2_FB3_Msk                    (0x1U << CAN_F23R2_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F23R2_FB3                        CAN_F23R2_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F23R2_FB4_Pos                    (4U)                              
+#define CAN_F23R2_FB4_Msk                    (0x1U << CAN_F23R2_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F23R2_FB4                        CAN_F23R2_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F23R2_FB5_Pos                    (5U)                              
+#define CAN_F23R2_FB5_Msk                    (0x1U << CAN_F23R2_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F23R2_FB5                        CAN_F23R2_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F23R2_FB6_Pos                    (6U)                              
+#define CAN_F23R2_FB6_Msk                    (0x1U << CAN_F23R2_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F23R2_FB6                        CAN_F23R2_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F23R2_FB7_Pos                    (7U)                              
+#define CAN_F23R2_FB7_Msk                    (0x1U << CAN_F23R2_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F23R2_FB7                        CAN_F23R2_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F23R2_FB8_Pos                    (8U)                              
+#define CAN_F23R2_FB8_Msk                    (0x1U << CAN_F23R2_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F23R2_FB8                        CAN_F23R2_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F23R2_FB9_Pos                    (9U)                              
+#define CAN_F23R2_FB9_Msk                    (0x1U << CAN_F23R2_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F23R2_FB9                        CAN_F23R2_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F23R2_FB10_Pos                   (10U)                             
+#define CAN_F23R2_FB10_Msk                   (0x1U << CAN_F23R2_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F23R2_FB10                       CAN_F23R2_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F23R2_FB11_Pos                   (11U)                             
+#define CAN_F23R2_FB11_Msk                   (0x1U << CAN_F23R2_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F23R2_FB11                       CAN_F23R2_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F23R2_FB12_Pos                   (12U)                             
+#define CAN_F23R2_FB12_Msk                   (0x1U << CAN_F23R2_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F23R2_FB12                       CAN_F23R2_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F23R2_FB13_Pos                   (13U)                             
+#define CAN_F23R2_FB13_Msk                   (0x1U << CAN_F23R2_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F23R2_FB13                       CAN_F23R2_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F23R2_FB14_Pos                   (14U)                             
+#define CAN_F23R2_FB14_Msk                   (0x1U << CAN_F23R2_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F23R2_FB14                       CAN_F23R2_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F23R2_FB15_Pos                   (15U)                             
+#define CAN_F23R2_FB15_Msk                   (0x1U << CAN_F23R2_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F23R2_FB15                       CAN_F23R2_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F23R2_FB16_Pos                   (16U)                             
+#define CAN_F23R2_FB16_Msk                   (0x1U << CAN_F23R2_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F23R2_FB16                       CAN_F23R2_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F23R2_FB17_Pos                   (17U)                             
+#define CAN_F23R2_FB17_Msk                   (0x1U << CAN_F23R2_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F23R2_FB17                       CAN_F23R2_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F23R2_FB18_Pos                   (18U)                             
+#define CAN_F23R2_FB18_Msk                   (0x1U << CAN_F23R2_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F23R2_FB18                       CAN_F23R2_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F23R2_FB19_Pos                   (19U)                             
+#define CAN_F23R2_FB19_Msk                   (0x1U << CAN_F23R2_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F23R2_FB19                       CAN_F23R2_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F23R2_FB20_Pos                   (20U)                             
+#define CAN_F23R2_FB20_Msk                   (0x1U << CAN_F23R2_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F23R2_FB20                       CAN_F23R2_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F23R2_FB21_Pos                   (21U)                             
+#define CAN_F23R2_FB21_Msk                   (0x1U << CAN_F23R2_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F23R2_FB21                       CAN_F23R2_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F23R2_FB22_Pos                   (22U)                             
+#define CAN_F23R2_FB22_Msk                   (0x1U << CAN_F23R2_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F23R2_FB22                       CAN_F23R2_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F23R2_FB23_Pos                   (23U)                             
+#define CAN_F23R2_FB23_Msk                   (0x1U << CAN_F23R2_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F23R2_FB23                       CAN_F23R2_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F23R2_FB24_Pos                   (24U)                             
+#define CAN_F23R2_FB24_Msk                   (0x1U << CAN_F23R2_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F23R2_FB24                       CAN_F23R2_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F23R2_FB25_Pos                   (25U)                             
+#define CAN_F23R2_FB25_Msk                   (0x1U << CAN_F23R2_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F23R2_FB25                       CAN_F23R2_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F23R2_FB26_Pos                   (26U)                             
+#define CAN_F23R2_FB26_Msk                   (0x1U << CAN_F23R2_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F23R2_FB26                       CAN_F23R2_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F23R2_FB27_Pos                   (27U)                             
+#define CAN_F23R2_FB27_Msk                   (0x1U << CAN_F23R2_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F23R2_FB27                       CAN_F23R2_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F23R2_FB28_Pos                   (28U)                             
+#define CAN_F23R2_FB28_Msk                   (0x1U << CAN_F23R2_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F23R2_FB28                       CAN_F23R2_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F23R2_FB29_Pos                   (29U)                             
+#define CAN_F23R2_FB29_Msk                   (0x1U << CAN_F23R2_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F23R2_FB29                       CAN_F23R2_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F23R2_FB30_Pos                   (30U)                             
+#define CAN_F23R2_FB30_Msk                   (0x1U << CAN_F23R2_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F23R2_FB30                       CAN_F23R2_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F23R2_FB31_Pos                   (31U)                             
+#define CAN_F23R2_FB31_Msk                   (0x1U << CAN_F23R2_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F23R2_FB31                       CAN_F23R2_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F24R2 register  ******************/
+#define CAN_F24R2_FB0_Pos                    (0U)                              
+#define CAN_F24R2_FB0_Msk                    (0x1U << CAN_F24R2_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F24R2_FB0                        CAN_F24R2_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F24R2_FB1_Pos                    (1U)                              
+#define CAN_F24R2_FB1_Msk                    (0x1U << CAN_F24R2_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F24R2_FB1                        CAN_F24R2_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F24R2_FB2_Pos                    (2U)                              
+#define CAN_F24R2_FB2_Msk                    (0x1U << CAN_F24R2_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F24R2_FB2                        CAN_F24R2_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F24R2_FB3_Pos                    (3U)                              
+#define CAN_F24R2_FB3_Msk                    (0x1U << CAN_F24R2_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F24R2_FB3                        CAN_F24R2_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F24R2_FB4_Pos                    (4U)                              
+#define CAN_F24R2_FB4_Msk                    (0x1U << CAN_F24R2_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F24R2_FB4                        CAN_F24R2_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F24R2_FB5_Pos                    (5U)                              
+#define CAN_F24R2_FB5_Msk                    (0x1U << CAN_F24R2_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F24R2_FB5                        CAN_F24R2_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F24R2_FB6_Pos                    (6U)                              
+#define CAN_F24R2_FB6_Msk                    (0x1U << CAN_F24R2_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F24R2_FB6                        CAN_F24R2_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F24R2_FB7_Pos                    (7U)                              
+#define CAN_F24R2_FB7_Msk                    (0x1U << CAN_F24R2_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F24R2_FB7                        CAN_F24R2_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F24R2_FB8_Pos                    (8U)                              
+#define CAN_F24R2_FB8_Msk                    (0x1U << CAN_F24R2_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F24R2_FB8                        CAN_F24R2_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F24R2_FB9_Pos                    (9U)                              
+#define CAN_F24R2_FB9_Msk                    (0x1U << CAN_F24R2_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F24R2_FB9                        CAN_F24R2_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F24R2_FB10_Pos                   (10U)                             
+#define CAN_F24R2_FB10_Msk                   (0x1U << CAN_F24R2_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F24R2_FB10                       CAN_F24R2_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F24R2_FB11_Pos                   (11U)                             
+#define CAN_F24R2_FB11_Msk                   (0x1U << CAN_F24R2_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F24R2_FB11                       CAN_F24R2_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F24R2_FB12_Pos                   (12U)                             
+#define CAN_F24R2_FB12_Msk                   (0x1U << CAN_F24R2_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F24R2_FB12                       CAN_F24R2_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F24R2_FB13_Pos                   (13U)                             
+#define CAN_F24R2_FB13_Msk                   (0x1U << CAN_F24R2_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F24R2_FB13                       CAN_F24R2_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F24R2_FB14_Pos                   (14U)                             
+#define CAN_F24R2_FB14_Msk                   (0x1U << CAN_F24R2_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F24R2_FB14                       CAN_F24R2_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F24R2_FB15_Pos                   (15U)                             
+#define CAN_F24R2_FB15_Msk                   (0x1U << CAN_F24R2_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F24R2_FB15                       CAN_F24R2_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F24R2_FB16_Pos                   (16U)                             
+#define CAN_F24R2_FB16_Msk                   (0x1U << CAN_F24R2_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F24R2_FB16                       CAN_F24R2_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F24R2_FB17_Pos                   (17U)                             
+#define CAN_F24R2_FB17_Msk                   (0x1U << CAN_F24R2_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F24R2_FB17                       CAN_F24R2_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F24R2_FB18_Pos                   (18U)                             
+#define CAN_F24R2_FB18_Msk                   (0x1U << CAN_F24R2_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F24R2_FB18                       CAN_F24R2_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F24R2_FB19_Pos                   (19U)                             
+#define CAN_F24R2_FB19_Msk                   (0x1U << CAN_F24R2_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F24R2_FB19                       CAN_F24R2_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F24R2_FB20_Pos                   (20U)                             
+#define CAN_F24R2_FB20_Msk                   (0x1U << CAN_F24R2_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F24R2_FB20                       CAN_F24R2_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F24R2_FB21_Pos                   (21U)                             
+#define CAN_F24R2_FB21_Msk                   (0x1U << CAN_F24R2_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F24R2_FB21                       CAN_F24R2_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F24R2_FB22_Pos                   (22U)                             
+#define CAN_F24R2_FB22_Msk                   (0x1U << CAN_F24R2_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F24R2_FB22                       CAN_F24R2_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F24R2_FB23_Pos                   (23U)                             
+#define CAN_F24R2_FB23_Msk                   (0x1U << CAN_F24R2_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F24R2_FB23                       CAN_F24R2_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F24R2_FB24_Pos                   (24U)                             
+#define CAN_F24R2_FB24_Msk                   (0x1U << CAN_F24R2_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F24R2_FB24                       CAN_F24R2_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F24R2_FB25_Pos                   (25U)                             
+#define CAN_F24R2_FB25_Msk                   (0x1U << CAN_F24R2_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F24R2_FB25                       CAN_F24R2_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F24R2_FB26_Pos                   (26U)                             
+#define CAN_F24R2_FB26_Msk                   (0x1U << CAN_F24R2_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F24R2_FB26                       CAN_F24R2_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F24R2_FB27_Pos                   (27U)                             
+#define CAN_F24R2_FB27_Msk                   (0x1U << CAN_F24R2_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F24R2_FB27                       CAN_F24R2_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F24R2_FB28_Pos                   (28U)                             
+#define CAN_F24R2_FB28_Msk                   (0x1U << CAN_F24R2_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F24R2_FB28                       CAN_F24R2_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F24R2_FB29_Pos                   (29U)                             
+#define CAN_F24R2_FB29_Msk                   (0x1U << CAN_F24R2_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F24R2_FB29                       CAN_F24R2_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F24R2_FB30_Pos                   (30U)                             
+#define CAN_F24R2_FB30_Msk                   (0x1U << CAN_F24R2_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F24R2_FB30                       CAN_F24R2_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F24R2_FB31_Pos                   (31U)                             
+#define CAN_F24R2_FB31_Msk                   (0x1U << CAN_F24R2_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F24R2_FB31                       CAN_F24R2_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F25R2 register  ******************/
+#define CAN_F25R2_FB0_Pos                    (0U)                              
+#define CAN_F25R2_FB0_Msk                    (0x1U << CAN_F25R2_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F25R2_FB0                        CAN_F25R2_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F25R2_FB1_Pos                    (1U)                              
+#define CAN_F25R2_FB1_Msk                    (0x1U << CAN_F25R2_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F25R2_FB1                        CAN_F25R2_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F25R2_FB2_Pos                    (2U)                              
+#define CAN_F25R2_FB2_Msk                    (0x1U << CAN_F25R2_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F25R2_FB2                        CAN_F25R2_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F25R2_FB3_Pos                    (3U)                              
+#define CAN_F25R2_FB3_Msk                    (0x1U << CAN_F25R2_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F25R2_FB3                        CAN_F25R2_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F25R2_FB4_Pos                    (4U)                              
+#define CAN_F25R2_FB4_Msk                    (0x1U << CAN_F25R2_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F25R2_FB4                        CAN_F25R2_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F25R2_FB5_Pos                    (5U)                              
+#define CAN_F25R2_FB5_Msk                    (0x1U << CAN_F25R2_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F25R2_FB5                        CAN_F25R2_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F25R2_FB6_Pos                    (6U)                              
+#define CAN_F25R2_FB6_Msk                    (0x1U << CAN_F25R2_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F25R2_FB6                        CAN_F25R2_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F25R2_FB7_Pos                    (7U)                              
+#define CAN_F25R2_FB7_Msk                    (0x1U << CAN_F25R2_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F25R2_FB7                        CAN_F25R2_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F25R2_FB8_Pos                    (8U)                              
+#define CAN_F25R2_FB8_Msk                    (0x1U << CAN_F25R2_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F25R2_FB8                        CAN_F25R2_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F25R2_FB9_Pos                    (9U)                              
+#define CAN_F25R2_FB9_Msk                    (0x1U << CAN_F25R2_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F25R2_FB9                        CAN_F25R2_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F25R2_FB10_Pos                   (10U)                             
+#define CAN_F25R2_FB10_Msk                   (0x1U << CAN_F25R2_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F25R2_FB10                       CAN_F25R2_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F25R2_FB11_Pos                   (11U)                             
+#define CAN_F25R2_FB11_Msk                   (0x1U << CAN_F25R2_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F25R2_FB11                       CAN_F25R2_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F25R2_FB12_Pos                   (12U)                             
+#define CAN_F25R2_FB12_Msk                   (0x1U << CAN_F25R2_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F25R2_FB12                       CAN_F25R2_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F25R2_FB13_Pos                   (13U)                             
+#define CAN_F25R2_FB13_Msk                   (0x1U << CAN_F25R2_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F25R2_FB13                       CAN_F25R2_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F25R2_FB14_Pos                   (14U)                             
+#define CAN_F25R2_FB14_Msk                   (0x1U << CAN_F25R2_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F25R2_FB14                       CAN_F25R2_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F25R2_FB15_Pos                   (15U)                             
+#define CAN_F25R2_FB15_Msk                   (0x1U << CAN_F25R2_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F25R2_FB15                       CAN_F25R2_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F25R2_FB16_Pos                   (16U)                             
+#define CAN_F25R2_FB16_Msk                   (0x1U << CAN_F25R2_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F25R2_FB16                       CAN_F25R2_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F25R2_FB17_Pos                   (17U)                             
+#define CAN_F25R2_FB17_Msk                   (0x1U << CAN_F25R2_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F25R2_FB17                       CAN_F25R2_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F25R2_FB18_Pos                   (18U)                             
+#define CAN_F25R2_FB18_Msk                   (0x1U << CAN_F25R2_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F25R2_FB18                       CAN_F25R2_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F25R2_FB19_Pos                   (19U)                             
+#define CAN_F25R2_FB19_Msk                   (0x1U << CAN_F25R2_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F25R2_FB19                       CAN_F25R2_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F25R2_FB20_Pos                   (20U)                             
+#define CAN_F25R2_FB20_Msk                   (0x1U << CAN_F25R2_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F25R2_FB20                       CAN_F25R2_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F25R2_FB21_Pos                   (21U)                             
+#define CAN_F25R2_FB21_Msk                   (0x1U << CAN_F25R2_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F25R2_FB21                       CAN_F25R2_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F25R2_FB22_Pos                   (22U)                             
+#define CAN_F25R2_FB22_Msk                   (0x1U << CAN_F25R2_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F25R2_FB22                       CAN_F25R2_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F25R2_FB23_Pos                   (23U)                             
+#define CAN_F25R2_FB23_Msk                   (0x1U << CAN_F25R2_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F25R2_FB23                       CAN_F25R2_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F25R2_FB24_Pos                   (24U)                             
+#define CAN_F25R2_FB24_Msk                   (0x1U << CAN_F25R2_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F25R2_FB24                       CAN_F25R2_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F25R2_FB25_Pos                   (25U)                             
+#define CAN_F25R2_FB25_Msk                   (0x1U << CAN_F25R2_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F25R2_FB25                       CAN_F25R2_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F25R2_FB26_Pos                   (26U)                             
+#define CAN_F25R2_FB26_Msk                   (0x1U << CAN_F25R2_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F25R2_FB26                       CAN_F25R2_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F25R2_FB27_Pos                   (27U)                             
+#define CAN_F25R2_FB27_Msk                   (0x1U << CAN_F25R2_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F25R2_FB27                       CAN_F25R2_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F25R2_FB28_Pos                   (28U)                             
+#define CAN_F25R2_FB28_Msk                   (0x1U << CAN_F25R2_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F25R2_FB28                       CAN_F25R2_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F25R2_FB29_Pos                   (29U)                             
+#define CAN_F25R2_FB29_Msk                   (0x1U << CAN_F25R2_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F25R2_FB29                       CAN_F25R2_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F25R2_FB30_Pos                   (30U)                             
+#define CAN_F25R2_FB30_Msk                   (0x1U << CAN_F25R2_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F25R2_FB30                       CAN_F25R2_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F25R2_FB31_Pos                   (31U)                             
+#define CAN_F25R2_FB31_Msk                   (0x1U << CAN_F25R2_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F25R2_FB31                       CAN_F25R2_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F26R2 register  ******************/
+#define CAN_F26R2_FB0_Pos                    (0U)                              
+#define CAN_F26R2_FB0_Msk                    (0x1U << CAN_F26R2_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F26R2_FB0                        CAN_F26R2_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F26R2_FB1_Pos                    (1U)                              
+#define CAN_F26R2_FB1_Msk                    (0x1U << CAN_F26R2_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F26R2_FB1                        CAN_F26R2_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F26R2_FB2_Pos                    (2U)                              
+#define CAN_F26R2_FB2_Msk                    (0x1U << CAN_F26R2_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F26R2_FB2                        CAN_F26R2_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F26R2_FB3_Pos                    (3U)                              
+#define CAN_F26R2_FB3_Msk                    (0x1U << CAN_F26R2_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F26R2_FB3                        CAN_F26R2_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F26R2_FB4_Pos                    (4U)                              
+#define CAN_F26R2_FB4_Msk                    (0x1U << CAN_F26R2_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F26R2_FB4                        CAN_F26R2_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F26R2_FB5_Pos                    (5U)                              
+#define CAN_F26R2_FB5_Msk                    (0x1U << CAN_F26R2_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F26R2_FB5                        CAN_F26R2_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F26R2_FB6_Pos                    (6U)                              
+#define CAN_F26R2_FB6_Msk                    (0x1U << CAN_F26R2_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F26R2_FB6                        CAN_F26R2_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F26R2_FB7_Pos                    (7U)                              
+#define CAN_F26R2_FB7_Msk                    (0x1U << CAN_F26R2_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F26R2_FB7                        CAN_F26R2_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F26R2_FB8_Pos                    (8U)                              
+#define CAN_F26R2_FB8_Msk                    (0x1U << CAN_F26R2_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F26R2_FB8                        CAN_F26R2_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F26R2_FB9_Pos                    (9U)                              
+#define CAN_F26R2_FB9_Msk                    (0x1U << CAN_F26R2_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F26R2_FB9                        CAN_F26R2_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F26R2_FB10_Pos                   (10U)                             
+#define CAN_F26R2_FB10_Msk                   (0x1U << CAN_F26R2_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F26R2_FB10                       CAN_F26R2_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F26R2_FB11_Pos                   (11U)                             
+#define CAN_F26R2_FB11_Msk                   (0x1U << CAN_F26R2_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F26R2_FB11                       CAN_F26R2_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F26R2_FB12_Pos                   (12U)                             
+#define CAN_F26R2_FB12_Msk                   (0x1U << CAN_F26R2_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F26R2_FB12                       CAN_F26R2_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F26R2_FB13_Pos                   (13U)                             
+#define CAN_F26R2_FB13_Msk                   (0x1U << CAN_F26R2_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F26R2_FB13                       CAN_F26R2_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F26R2_FB14_Pos                   (14U)                             
+#define CAN_F26R2_FB14_Msk                   (0x1U << CAN_F26R2_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F26R2_FB14                       CAN_F26R2_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F26R2_FB15_Pos                   (15U)                             
+#define CAN_F26R2_FB15_Msk                   (0x1U << CAN_F26R2_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F26R2_FB15                       CAN_F26R2_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F26R2_FB16_Pos                   (16U)                             
+#define CAN_F26R2_FB16_Msk                   (0x1U << CAN_F26R2_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F26R2_FB16                       CAN_F26R2_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F26R2_FB17_Pos                   (17U)                             
+#define CAN_F26R2_FB17_Msk                   (0x1U << CAN_F26R2_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F26R2_FB17                       CAN_F26R2_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F26R2_FB18_Pos                   (18U)                             
+#define CAN_F26R2_FB18_Msk                   (0x1U << CAN_F26R2_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F26R2_FB18                       CAN_F26R2_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F26R2_FB19_Pos                   (19U)                             
+#define CAN_F26R2_FB19_Msk                   (0x1U << CAN_F26R2_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F26R2_FB19                       CAN_F26R2_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F26R2_FB20_Pos                   (20U)                             
+#define CAN_F26R2_FB20_Msk                   (0x1U << CAN_F26R2_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F26R2_FB20                       CAN_F26R2_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F26R2_FB21_Pos                   (21U)                             
+#define CAN_F26R2_FB21_Msk                   (0x1U << CAN_F26R2_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F26R2_FB21                       CAN_F26R2_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F26R2_FB22_Pos                   (22U)                             
+#define CAN_F26R2_FB22_Msk                   (0x1U << CAN_F26R2_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F26R2_FB22                       CAN_F26R2_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F26R2_FB23_Pos                   (23U)                             
+#define CAN_F26R2_FB23_Msk                   (0x1U << CAN_F26R2_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F26R2_FB23                       CAN_F26R2_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F26R2_FB24_Pos                   (24U)                             
+#define CAN_F26R2_FB24_Msk                   (0x1U << CAN_F26R2_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F26R2_FB24                       CAN_F26R2_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F26R2_FB25_Pos                   (25U)                             
+#define CAN_F26R2_FB25_Msk                   (0x1U << CAN_F26R2_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F26R2_FB25                       CAN_F26R2_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F26R2_FB26_Pos                   (26U)                             
+#define CAN_F26R2_FB26_Msk                   (0x1U << CAN_F26R2_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F26R2_FB26                       CAN_F26R2_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F26R2_FB27_Pos                   (27U)                             
+#define CAN_F26R2_FB27_Msk                   (0x1U << CAN_F26R2_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F26R2_FB27                       CAN_F26R2_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F26R2_FB28_Pos                   (28U)                             
+#define CAN_F26R2_FB28_Msk                   (0x1U << CAN_F26R2_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F26R2_FB28                       CAN_F26R2_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F26R2_FB29_Pos                   (29U)                             
+#define CAN_F26R2_FB29_Msk                   (0x1U << CAN_F26R2_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F26R2_FB29                       CAN_F26R2_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F26R2_FB30_Pos                   (30U)                             
+#define CAN_F26R2_FB30_Msk                   (0x1U << CAN_F26R2_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F26R2_FB30                       CAN_F26R2_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F26R2_FB31_Pos                   (31U)                             
+#define CAN_F26R2_FB31_Msk                   (0x1U << CAN_F26R2_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F26R2_FB31                       CAN_F26R2_FB31_Msk                /*!< Filter bit 31 */
+
+/*******************  Bit definition for CAN_F27R2 register  ******************/
+#define CAN_F27R2_FB0_Pos                    (0U)                              
+#define CAN_F27R2_FB0_Msk                    (0x1U << CAN_F27R2_FB0_Pos)       /*!< 0x00000001 */
+#define CAN_F27R2_FB0                        CAN_F27R2_FB0_Msk                 /*!< Filter bit 0 */
+#define CAN_F27R2_FB1_Pos                    (1U)                              
+#define CAN_F27R2_FB1_Msk                    (0x1U << CAN_F27R2_FB1_Pos)       /*!< 0x00000002 */
+#define CAN_F27R2_FB1                        CAN_F27R2_FB1_Msk                 /*!< Filter bit 1 */
+#define CAN_F27R2_FB2_Pos                    (2U)                              
+#define CAN_F27R2_FB2_Msk                    (0x1U << CAN_F27R2_FB2_Pos)       /*!< 0x00000004 */
+#define CAN_F27R2_FB2                        CAN_F27R2_FB2_Msk                 /*!< Filter bit 2 */
+#define CAN_F27R2_FB3_Pos                    (3U)                              
+#define CAN_F27R2_FB3_Msk                    (0x1U << CAN_F27R2_FB3_Pos)       /*!< 0x00000008 */
+#define CAN_F27R2_FB3                        CAN_F27R2_FB3_Msk                 /*!< Filter bit 3 */
+#define CAN_F27R2_FB4_Pos                    (4U)                              
+#define CAN_F27R2_FB4_Msk                    (0x1U << CAN_F27R2_FB4_Pos)       /*!< 0x00000010 */
+#define CAN_F27R2_FB4                        CAN_F27R2_FB4_Msk                 /*!< Filter bit 4 */
+#define CAN_F27R2_FB5_Pos                    (5U)                              
+#define CAN_F27R2_FB5_Msk                    (0x1U << CAN_F27R2_FB5_Pos)       /*!< 0x00000020 */
+#define CAN_F27R2_FB5                        CAN_F27R2_FB5_Msk                 /*!< Filter bit 5 */
+#define CAN_F27R2_FB6_Pos                    (6U)                              
+#define CAN_F27R2_FB6_Msk                    (0x1U << CAN_F27R2_FB6_Pos)       /*!< 0x00000040 */
+#define CAN_F27R2_FB6                        CAN_F27R2_FB6_Msk                 /*!< Filter bit 6 */
+#define CAN_F27R2_FB7_Pos                    (7U)                              
+#define CAN_F27R2_FB7_Msk                    (0x1U << CAN_F27R2_FB7_Pos)       /*!< 0x00000080 */
+#define CAN_F27R2_FB7                        CAN_F27R2_FB7_Msk                 /*!< Filter bit 7 */
+#define CAN_F27R2_FB8_Pos                    (8U)                              
+#define CAN_F27R2_FB8_Msk                    (0x1U << CAN_F27R2_FB8_Pos)       /*!< 0x00000100 */
+#define CAN_F27R2_FB8                        CAN_F27R2_FB8_Msk                 /*!< Filter bit 8 */
+#define CAN_F27R2_FB9_Pos                    (9U)                              
+#define CAN_F27R2_FB9_Msk                    (0x1U << CAN_F27R2_FB9_Pos)       /*!< 0x00000200 */
+#define CAN_F27R2_FB9                        CAN_F27R2_FB9_Msk                 /*!< Filter bit 9 */
+#define CAN_F27R2_FB10_Pos                   (10U)                             
+#define CAN_F27R2_FB10_Msk                   (0x1U << CAN_F27R2_FB10_Pos)      /*!< 0x00000400 */
+#define CAN_F27R2_FB10                       CAN_F27R2_FB10_Msk                /*!< Filter bit 10 */
+#define CAN_F27R2_FB11_Pos                   (11U)                             
+#define CAN_F27R2_FB11_Msk                   (0x1U << CAN_F27R2_FB11_Pos)      /*!< 0x00000800 */
+#define CAN_F27R2_FB11                       CAN_F27R2_FB11_Msk                /*!< Filter bit 11 */
+#define CAN_F27R2_FB12_Pos                   (12U)                             
+#define CAN_F27R2_FB12_Msk                   (0x1U << CAN_F27R2_FB12_Pos)      /*!< 0x00001000 */
+#define CAN_F27R2_FB12                       CAN_F27R2_FB12_Msk                /*!< Filter bit 12 */
+#define CAN_F27R2_FB13_Pos                   (13U)                             
+#define CAN_F27R2_FB13_Msk                   (0x1U << CAN_F27R2_FB13_Pos)      /*!< 0x00002000 */
+#define CAN_F27R2_FB13                       CAN_F27R2_FB13_Msk                /*!< Filter bit 13 */
+#define CAN_F27R2_FB14_Pos                   (14U)                             
+#define CAN_F27R2_FB14_Msk                   (0x1U << CAN_F27R2_FB14_Pos)      /*!< 0x00004000 */
+#define CAN_F27R2_FB14                       CAN_F27R2_FB14_Msk                /*!< Filter bit 14 */
+#define CAN_F27R2_FB15_Pos                   (15U)                             
+#define CAN_F27R2_FB15_Msk                   (0x1U << CAN_F27R2_FB15_Pos)      /*!< 0x00008000 */
+#define CAN_F27R2_FB15                       CAN_F27R2_FB15_Msk                /*!< Filter bit 15 */
+#define CAN_F27R2_FB16_Pos                   (16U)                             
+#define CAN_F27R2_FB16_Msk                   (0x1U << CAN_F27R2_FB16_Pos)      /*!< 0x00010000 */
+#define CAN_F27R2_FB16                       CAN_F27R2_FB16_Msk                /*!< Filter bit 16 */
+#define CAN_F27R2_FB17_Pos                   (17U)                             
+#define CAN_F27R2_FB17_Msk                   (0x1U << CAN_F27R2_FB17_Pos)      /*!< 0x00020000 */
+#define CAN_F27R2_FB17                       CAN_F27R2_FB17_Msk                /*!< Filter bit 17 */
+#define CAN_F27R2_FB18_Pos                   (18U)                             
+#define CAN_F27R2_FB18_Msk                   (0x1U << CAN_F27R2_FB18_Pos)      /*!< 0x00040000 */
+#define CAN_F27R2_FB18                       CAN_F27R2_FB18_Msk                /*!< Filter bit 18 */
+#define CAN_F27R2_FB19_Pos                   (19U)                             
+#define CAN_F27R2_FB19_Msk                   (0x1U << CAN_F27R2_FB19_Pos)      /*!< 0x00080000 */
+#define CAN_F27R2_FB19                       CAN_F27R2_FB19_Msk                /*!< Filter bit 19 */
+#define CAN_F27R2_FB20_Pos                   (20U)                             
+#define CAN_F27R2_FB20_Msk                   (0x1U << CAN_F27R2_FB20_Pos)      /*!< 0x00100000 */
+#define CAN_F27R2_FB20                       CAN_F27R2_FB20_Msk                /*!< Filter bit 20 */
+#define CAN_F27R2_FB21_Pos                   (21U)                             
+#define CAN_F27R2_FB21_Msk                   (0x1U << CAN_F27R2_FB21_Pos)      /*!< 0x00200000 */
+#define CAN_F27R2_FB21                       CAN_F27R2_FB21_Msk                /*!< Filter bit 21 */
+#define CAN_F27R2_FB22_Pos                   (22U)                             
+#define CAN_F27R2_FB22_Msk                   (0x1U << CAN_F27R2_FB22_Pos)      /*!< 0x00400000 */
+#define CAN_F27R2_FB22                       CAN_F27R2_FB22_Msk                /*!< Filter bit 22 */
+#define CAN_F27R2_FB23_Pos                   (23U)                             
+#define CAN_F27R2_FB23_Msk                   (0x1U << CAN_F27R2_FB23_Pos)      /*!< 0x00800000 */
+#define CAN_F27R2_FB23                       CAN_F27R2_FB23_Msk                /*!< Filter bit 23 */
+#define CAN_F27R2_FB24_Pos                   (24U)                             
+#define CAN_F27R2_FB24_Msk                   (0x1U << CAN_F27R2_FB24_Pos)      /*!< 0x01000000 */
+#define CAN_F27R2_FB24                       CAN_F27R2_FB24_Msk                /*!< Filter bit 24 */
+#define CAN_F27R2_FB25_Pos                   (25U)                             
+#define CAN_F27R2_FB25_Msk                   (0x1U << CAN_F27R2_FB25_Pos)      /*!< 0x02000000 */
+#define CAN_F27R2_FB25                       CAN_F27R2_FB25_Msk                /*!< Filter bit 25 */
+#define CAN_F27R2_FB26_Pos                   (26U)                             
+#define CAN_F27R2_FB26_Msk                   (0x1U << CAN_F27R2_FB26_Pos)      /*!< 0x04000000 */
+#define CAN_F27R2_FB26                       CAN_F27R2_FB26_Msk                /*!< Filter bit 26 */
+#define CAN_F27R2_FB27_Pos                   (27U)                             
+#define CAN_F27R2_FB27_Msk                   (0x1U << CAN_F27R2_FB27_Pos)      /*!< 0x08000000 */
+#define CAN_F27R2_FB27                       CAN_F27R2_FB27_Msk                /*!< Filter bit 27 */
+#define CAN_F27R2_FB28_Pos                   (28U)                             
+#define CAN_F27R2_FB28_Msk                   (0x1U << CAN_F27R2_FB28_Pos)      /*!< 0x10000000 */
+#define CAN_F27R2_FB28                       CAN_F27R2_FB28_Msk                /*!< Filter bit 28 */
+#define CAN_F27R2_FB29_Pos                   (29U)                             
+#define CAN_F27R2_FB29_Msk                   (0x1U << CAN_F27R2_FB29_Pos)      /*!< 0x20000000 */
+#define CAN_F27R2_FB29                       CAN_F27R2_FB29_Msk                /*!< Filter bit 29 */
+#define CAN_F27R2_FB30_Pos                   (30U)                             
+#define CAN_F27R2_FB30_Msk                   (0x1U << CAN_F27R2_FB30_Pos)      /*!< 0x40000000 */
+#define CAN_F27R2_FB30                       CAN_F27R2_FB30_Msk                /*!< Filter bit 30 */
+#define CAN_F27R2_FB31_Pos                   (31U)                             
+#define CAN_F27R2_FB31_Msk                   (0x1U << CAN_F27R2_FB31_Pos)      /*!< 0x80000000 */
+#define CAN_F27R2_FB31                       CAN_F27R2_FB31_Msk                /*!< Filter bit 31 */
+
 /******************************************************************************/
 /*                                                                            */
 /*                        Serial Peripheral Interface                         */
 /*                                                                            */
 /******************************************************************************/
-
+/*
+ * @brief Specific device feature definitions (not present on all devices in the STM32F1 serie)
+ */
+#define SPI_I2S_SUPPORT       /*!< I2S support */
+#define I2S2_I2S3_CLOCK_FEATURE
 /*******************  Bit definition for SPI_CR1 register  ********************/
 #define SPI_CR1_CPHA_Pos                    (0U)                               
 #define SPI_CR1_CPHA_Msk                    (0x1U << SPI_CR1_CPHA_Pos)         /*!< 0x00000001 */
@@ -9597,10 +12283,53 @@ typedef struct
 #define SPI_TXCRCR_TXCRC                    SPI_TXCRCR_TXCRC_Msk               /*!< Tx CRC Register */
 
 /******************  Bit definition for SPI_I2SCFGR register  *****************/
+#define SPI_I2SCFGR_CHLEN_Pos               (0U)                               
+#define SPI_I2SCFGR_CHLEN_Msk               (0x1U << SPI_I2SCFGR_CHLEN_Pos)    /*!< 0x00000001 */
+#define SPI_I2SCFGR_CHLEN                   SPI_I2SCFGR_CHLEN_Msk              /*!< Channel length (number of bits per audio channel) */
+
+#define SPI_I2SCFGR_DATLEN_Pos              (1U)                               
+#define SPI_I2SCFGR_DATLEN_Msk              (0x3U << SPI_I2SCFGR_DATLEN_Pos)   /*!< 0x00000006 */
+#define SPI_I2SCFGR_DATLEN                  SPI_I2SCFGR_DATLEN_Msk             /*!< DATLEN[1:0] bits (Data length to be transferred) */
+#define SPI_I2SCFGR_DATLEN_0                (0x1U << SPI_I2SCFGR_DATLEN_Pos)   /*!< 0x00000002 */
+#define SPI_I2SCFGR_DATLEN_1                (0x2U << SPI_I2SCFGR_DATLEN_Pos)   /*!< 0x00000004 */
+
+#define SPI_I2SCFGR_CKPOL_Pos               (3U)                               
+#define SPI_I2SCFGR_CKPOL_Msk               (0x1U << SPI_I2SCFGR_CKPOL_Pos)    /*!< 0x00000008 */
+#define SPI_I2SCFGR_CKPOL                   SPI_I2SCFGR_CKPOL_Msk              /*!< steady state clock polarity */
+
+#define SPI_I2SCFGR_I2SSTD_Pos              (4U)                               
+#define SPI_I2SCFGR_I2SSTD_Msk              (0x3U << SPI_I2SCFGR_I2SSTD_Pos)   /*!< 0x00000030 */
+#define SPI_I2SCFGR_I2SSTD                  SPI_I2SCFGR_I2SSTD_Msk             /*!< I2SSTD[1:0] bits (I2S standard selection) */
+#define SPI_I2SCFGR_I2SSTD_0                (0x1U << SPI_I2SCFGR_I2SSTD_Pos)   /*!< 0x00000010 */
+#define SPI_I2SCFGR_I2SSTD_1                (0x2U << SPI_I2SCFGR_I2SSTD_Pos)   /*!< 0x00000020 */
+
+#define SPI_I2SCFGR_PCMSYNC_Pos             (7U)                               
+#define SPI_I2SCFGR_PCMSYNC_Msk             (0x1U << SPI_I2SCFGR_PCMSYNC_Pos)  /*!< 0x00000080 */
+#define SPI_I2SCFGR_PCMSYNC                 SPI_I2SCFGR_PCMSYNC_Msk            /*!< PCM frame synchronization */
+
+#define SPI_I2SCFGR_I2SCFG_Pos              (8U)                               
+#define SPI_I2SCFGR_I2SCFG_Msk              (0x3U << SPI_I2SCFGR_I2SCFG_Pos)   /*!< 0x00000300 */
+#define SPI_I2SCFGR_I2SCFG                  SPI_I2SCFGR_I2SCFG_Msk             /*!< I2SCFG[1:0] bits (I2S configuration mode) */
+#define SPI_I2SCFGR_I2SCFG_0                (0x1U << SPI_I2SCFGR_I2SCFG_Pos)   /*!< 0x00000100 */
+#define SPI_I2SCFGR_I2SCFG_1                (0x2U << SPI_I2SCFGR_I2SCFG_Pos)   /*!< 0x00000200 */
+
+#define SPI_I2SCFGR_I2SE_Pos                (10U)                              
+#define SPI_I2SCFGR_I2SE_Msk                (0x1U << SPI_I2SCFGR_I2SE_Pos)     /*!< 0x00000400 */
+#define SPI_I2SCFGR_I2SE                    SPI_I2SCFGR_I2SE_Msk               /*!< I2S Enable */
 #define SPI_I2SCFGR_I2SMOD_Pos              (11U)                              
 #define SPI_I2SCFGR_I2SMOD_Msk              (0x1U << SPI_I2SCFGR_I2SMOD_Pos)   /*!< 0x00000800 */
 #define SPI_I2SCFGR_I2SMOD                  SPI_I2SCFGR_I2SMOD_Msk             /*!< I2S mode selection */
 
+/******************  Bit definition for SPI_I2SPR register  *******************/
+#define SPI_I2SPR_I2SDIV_Pos                (0U)                               
+#define SPI_I2SPR_I2SDIV_Msk                (0xFFU << SPI_I2SPR_I2SDIV_Pos)    /*!< 0x000000FF */
+#define SPI_I2SPR_I2SDIV                    SPI_I2SPR_I2SDIV_Msk               /*!< I2S Linear prescaler */
+#define SPI_I2SPR_ODD_Pos                   (8U)                               
+#define SPI_I2SPR_ODD_Msk                   (0x1U << SPI_I2SPR_ODD_Pos)        /*!< 0x00000100 */
+#define SPI_I2SPR_ODD                       SPI_I2SPR_ODD_Msk                  /*!< Odd factor for the prescaler */
+#define SPI_I2SPR_MCKOE_Pos                 (9U)                               
+#define SPI_I2SPR_MCKOE_Msk                 (0x1U << SPI_I2SPR_MCKOE_Pos)      /*!< 0x00000200 */
+#define SPI_I2SPR_MCKOE                     SPI_I2SPR_MCKOE_Msk                /*!< Master Clock Output Enable */
 
 /******************************************************************************/
 /*                                                                            */
@@ -10075,6 +12804,27 @@ typedef struct
 #define DBGMCU_CR_DBG_I2C2_SMBUS_TIMEOUT_Pos (16U)                             
 #define DBGMCU_CR_DBG_I2C2_SMBUS_TIMEOUT_Msk (0x1U << DBGMCU_CR_DBG_I2C2_SMBUS_TIMEOUT_Pos) /*!< 0x00010000 */
 #define DBGMCU_CR_DBG_I2C2_SMBUS_TIMEOUT    DBGMCU_CR_DBG_I2C2_SMBUS_TIMEOUT_Msk /*!< SMBUS timeout mode stopped when Core is halted */
+#define DBGMCU_CR_DBG_TIM5_STOP_Pos         (18U)                              
+#define DBGMCU_CR_DBG_TIM5_STOP_Msk         (0x1U << DBGMCU_CR_DBG_TIM5_STOP_Pos) /*!< 0x00040000 */
+#define DBGMCU_CR_DBG_TIM5_STOP             DBGMCU_CR_DBG_TIM5_STOP_Msk        /*!< TIM5 counter stopped when core is halted */
+#define DBGMCU_CR_DBG_TIM6_STOP_Pos         (19U)                              
+#define DBGMCU_CR_DBG_TIM6_STOP_Msk         (0x1U << DBGMCU_CR_DBG_TIM6_STOP_Pos) /*!< 0x00080000 */
+#define DBGMCU_CR_DBG_TIM6_STOP             DBGMCU_CR_DBG_TIM6_STOP_Msk        /*!< TIM6 counter stopped when core is halted */
+#define DBGMCU_CR_DBG_TIM7_STOP_Pos         (20U)                              
+#define DBGMCU_CR_DBG_TIM7_STOP_Msk         (0x1U << DBGMCU_CR_DBG_TIM7_STOP_Pos) /*!< 0x00100000 */
+#define DBGMCU_CR_DBG_TIM7_STOP             DBGMCU_CR_DBG_TIM7_STOP_Msk        /*!< TIM7 counter stopped when core is halted */
+#define DBGMCU_CR_DBG_CAN2_STOP_Pos         (21U)                              
+#define DBGMCU_CR_DBG_CAN2_STOP_Msk         (0x1U << DBGMCU_CR_DBG_CAN2_STOP_Pos) /*!< 0x00200000 */
+#define DBGMCU_CR_DBG_CAN2_STOP             DBGMCU_CR_DBG_CAN2_STOP_Msk        /*!< Debug CAN2 stopped when Core is halted */
+#define DBGMCU_CR_DBG_TIM9_STOP_Pos         (28U)                              
+#define DBGMCU_CR_DBG_TIM9_STOP_Msk         (0x1U << DBGMCU_CR_DBG_TIM9_STOP_Pos) /*!< 0x10000000 */
+#define DBGMCU_CR_DBG_TIM9_STOP             DBGMCU_CR_DBG_TIM9_STOP_Msk        /*!< Debug TIM9 stopped when Core is halted */
+#define DBGMCU_CR_DBG_TIM10_STOP_Pos        (29U)                              
+#define DBGMCU_CR_DBG_TIM10_STOP_Msk        (0x1U << DBGMCU_CR_DBG_TIM10_STOP_Pos) /*!< 0x20000000 */
+#define DBGMCU_CR_DBG_TIM10_STOP            DBGMCU_CR_DBG_TIM10_STOP_Msk       /*!< Debug TIM10 stopped when Core is halted */
+#define DBGMCU_CR_DBG_TIM11_STOP_Pos        (30U)                              
+#define DBGMCU_CR_DBG_TIM11_STOP_Msk        (0x1U << DBGMCU_CR_DBG_TIM11_STOP_Pos) /*!< 0x40000000 */
+#define DBGMCU_CR_DBG_TIM11_STOP            DBGMCU_CR_DBG_TIM11_STOP_Msk       /*!< Debug TIM11 stopped when Core is halted */
 
 /******************************************************************************/
 /*                                                                            */
@@ -10272,6 +13022,1304 @@ typedef struct
 #define FLASH_WRP3_nWRP3                    FLASH_WRP3_nWRP3_Msk               /*!< Flash memory write protection complemented option bytes */
 
 
+/******************************************************************************/
+/*                                                                            */
+/*                                 USB_OTG                                    */
+/*                                                                            */
+/******************************************************************************/
+
+/********************  Bit definition forUSB_OTG_GOTGCTL register  ********************/
+#define USB_OTG_GOTGCTL_SRQSCS_Pos              (0U)                           
+#define USB_OTG_GOTGCTL_SRQSCS_Msk              (0x1U << USB_OTG_GOTGCTL_SRQSCS_Pos) /*!< 0x00000001 */
+#define USB_OTG_GOTGCTL_SRQSCS                  USB_OTG_GOTGCTL_SRQSCS_Msk     /*!< Session request success */
+#define USB_OTG_GOTGCTL_SRQ_Pos                 (1U)                           
+#define USB_OTG_GOTGCTL_SRQ_Msk                 (0x1U << USB_OTG_GOTGCTL_SRQ_Pos) /*!< 0x00000002 */
+#define USB_OTG_GOTGCTL_SRQ                     USB_OTG_GOTGCTL_SRQ_Msk        /*!< Session request */
+#define USB_OTG_GOTGCTL_HNGSCS_Pos              (8U)                           
+#define USB_OTG_GOTGCTL_HNGSCS_Msk              (0x1U << USB_OTG_GOTGCTL_HNGSCS_Pos) /*!< 0x00000100 */
+#define USB_OTG_GOTGCTL_HNGSCS                  USB_OTG_GOTGCTL_HNGSCS_Msk     /*!< Host negotiation success */
+#define USB_OTG_GOTGCTL_HNPRQ_Pos               (9U)                           
+#define USB_OTG_GOTGCTL_HNPRQ_Msk               (0x1U << USB_OTG_GOTGCTL_HNPRQ_Pos) /*!< 0x00000200 */
+#define USB_OTG_GOTGCTL_HNPRQ                   USB_OTG_GOTGCTL_HNPRQ_Msk      /*!< HNP request */
+#define USB_OTG_GOTGCTL_HSHNPEN_Pos             (10U)                          
+#define USB_OTG_GOTGCTL_HSHNPEN_Msk             (0x1U << USB_OTG_GOTGCTL_HSHNPEN_Pos) /*!< 0x00000400 */
+#define USB_OTG_GOTGCTL_HSHNPEN                 USB_OTG_GOTGCTL_HSHNPEN_Msk    /*!< Host set HNP enable */
+#define USB_OTG_GOTGCTL_DHNPEN_Pos              (11U)                          
+#define USB_OTG_GOTGCTL_DHNPEN_Msk              (0x1U << USB_OTG_GOTGCTL_DHNPEN_Pos) /*!< 0x00000800 */
+#define USB_OTG_GOTGCTL_DHNPEN                  USB_OTG_GOTGCTL_DHNPEN_Msk     /*!< Device HNP enabled */
+#define USB_OTG_GOTGCTL_CIDSTS_Pos              (16U)                          
+#define USB_OTG_GOTGCTL_CIDSTS_Msk              (0x1U << USB_OTG_GOTGCTL_CIDSTS_Pos) /*!< 0x00010000 */
+#define USB_OTG_GOTGCTL_CIDSTS                  USB_OTG_GOTGCTL_CIDSTS_Msk     /*!< Connector ID status */
+#define USB_OTG_GOTGCTL_DBCT_Pos                (17U)                          
+#define USB_OTG_GOTGCTL_DBCT_Msk                (0x1U << USB_OTG_GOTGCTL_DBCT_Pos) /*!< 0x00020000 */
+#define USB_OTG_GOTGCTL_DBCT                    USB_OTG_GOTGCTL_DBCT_Msk       /*!< Long/short debounce time */
+#define USB_OTG_GOTGCTL_ASVLD_Pos               (18U)                          
+#define USB_OTG_GOTGCTL_ASVLD_Msk               (0x1U << USB_OTG_GOTGCTL_ASVLD_Pos) /*!< 0x00040000 */
+#define USB_OTG_GOTGCTL_ASVLD                   USB_OTG_GOTGCTL_ASVLD_Msk      /*!< A-session valid */
+#define USB_OTG_GOTGCTL_BSVLD_Pos               (19U)                          
+#define USB_OTG_GOTGCTL_BSVLD_Msk               (0x1U << USB_OTG_GOTGCTL_BSVLD_Pos) /*!< 0x00080000 */
+#define USB_OTG_GOTGCTL_BSVLD                   USB_OTG_GOTGCTL_BSVLD_Msk      /*!< B-session valid */
+
+/********************  Bit definition forUSB_OTG_HCFG register  ********************/
+
+#define USB_OTG_HCFG_FSLSPCS_Pos                (0U)                           
+#define USB_OTG_HCFG_FSLSPCS_Msk                (0x3U << USB_OTG_HCFG_FSLSPCS_Pos) /*!< 0x00000003 */
+#define USB_OTG_HCFG_FSLSPCS                    USB_OTG_HCFG_FSLSPCS_Msk       /*!< FS/LS PHY clock select */
+#define USB_OTG_HCFG_FSLSPCS_0                  (0x1U << USB_OTG_HCFG_FSLSPCS_Pos) /*!< 0x00000001 */
+#define USB_OTG_HCFG_FSLSPCS_1                  (0x2U << USB_OTG_HCFG_FSLSPCS_Pos) /*!< 0x00000002 */
+#define USB_OTG_HCFG_FSLSS_Pos                  (2U)                           
+#define USB_OTG_HCFG_FSLSS_Msk                  (0x1U << USB_OTG_HCFG_FSLSS_Pos) /*!< 0x00000004 */
+#define USB_OTG_HCFG_FSLSS                      USB_OTG_HCFG_FSLSS_Msk         /*!< FS- and LS-only support */
+
+/********************  Bit definition forUSB_OTG_DCFG register  ********************/
+
+#define USB_OTG_DCFG_DSPD_Pos                   (0U)                           
+#define USB_OTG_DCFG_DSPD_Msk                   (0x3U << USB_OTG_DCFG_DSPD_Pos) /*!< 0x00000003 */
+#define USB_OTG_DCFG_DSPD                       USB_OTG_DCFG_DSPD_Msk          /*!< Device speed */
+#define USB_OTG_DCFG_DSPD_0                     (0x1U << USB_OTG_DCFG_DSPD_Pos) /*!< 0x00000001 */
+#define USB_OTG_DCFG_DSPD_1                     (0x2U << USB_OTG_DCFG_DSPD_Pos) /*!< 0x00000002 */
+#define USB_OTG_DCFG_NZLSOHSK_Pos               (2U)                           
+#define USB_OTG_DCFG_NZLSOHSK_Msk               (0x1U << USB_OTG_DCFG_NZLSOHSK_Pos) /*!< 0x00000004 */
+#define USB_OTG_DCFG_NZLSOHSK                   USB_OTG_DCFG_NZLSOHSK_Msk      /*!< Nonzero-length status OUT handshake */
+
+#define USB_OTG_DCFG_DAD_Pos                    (4U)                           
+#define USB_OTG_DCFG_DAD_Msk                    (0x7FU << USB_OTG_DCFG_DAD_Pos) /*!< 0x000007F0 */
+#define USB_OTG_DCFG_DAD                        USB_OTG_DCFG_DAD_Msk           /*!< Device address */
+#define USB_OTG_DCFG_DAD_0                      (0x01U << USB_OTG_DCFG_DAD_Pos) /*!< 0x00000010 */
+#define USB_OTG_DCFG_DAD_1                      (0x02U << USB_OTG_DCFG_DAD_Pos) /*!< 0x00000020 */
+#define USB_OTG_DCFG_DAD_2                      (0x04U << USB_OTG_DCFG_DAD_Pos) /*!< 0x00000040 */
+#define USB_OTG_DCFG_DAD_3                      (0x08U << USB_OTG_DCFG_DAD_Pos) /*!< 0x00000080 */
+#define USB_OTG_DCFG_DAD_4                      (0x10U << USB_OTG_DCFG_DAD_Pos) /*!< 0x00000100 */
+#define USB_OTG_DCFG_DAD_5                      (0x20U << USB_OTG_DCFG_DAD_Pos) /*!< 0x00000200 */
+#define USB_OTG_DCFG_DAD_6                      (0x40U << USB_OTG_DCFG_DAD_Pos) /*!< 0x00000400 */
+
+#define USB_OTG_DCFG_PFIVL_Pos                  (11U)                          
+#define USB_OTG_DCFG_PFIVL_Msk                  (0x3U << USB_OTG_DCFG_PFIVL_Pos) /*!< 0x00001800 */
+#define USB_OTG_DCFG_PFIVL                      USB_OTG_DCFG_PFIVL_Msk         /*!< Periodic (micro)frame interval */
+#define USB_OTG_DCFG_PFIVL_0                    (0x1U << USB_OTG_DCFG_PFIVL_Pos) /*!< 0x00000800 */
+#define USB_OTG_DCFG_PFIVL_1                    (0x2U << USB_OTG_DCFG_PFIVL_Pos) /*!< 0x00001000 */
+
+#define USB_OTG_DCFG_PERSCHIVL_Pos              (24U)                          
+#define USB_OTG_DCFG_PERSCHIVL_Msk              (0x3U << USB_OTG_DCFG_PERSCHIVL_Pos) /*!< 0x03000000 */
+#define USB_OTG_DCFG_PERSCHIVL                  USB_OTG_DCFG_PERSCHIVL_Msk     /*!< Periodic scheduling interval */
+#define USB_OTG_DCFG_PERSCHIVL_0                (0x1U << USB_OTG_DCFG_PERSCHIVL_Pos) /*!< 0x01000000 */
+#define USB_OTG_DCFG_PERSCHIVL_1                (0x2U << USB_OTG_DCFG_PERSCHIVL_Pos) /*!< 0x02000000 */
+
+/********************  Bit definition forUSB_OTG_PCGCR register  ********************/
+#define USB_OTG_PCGCR_STPPCLK_Pos               (0U)                           
+#define USB_OTG_PCGCR_STPPCLK_Msk               (0x1U << USB_OTG_PCGCR_STPPCLK_Pos) /*!< 0x00000001 */
+#define USB_OTG_PCGCR_STPPCLK                   USB_OTG_PCGCR_STPPCLK_Msk      /*!< Stop PHY clock */
+#define USB_OTG_PCGCR_GATEHCLK_Pos              (1U)                           
+#define USB_OTG_PCGCR_GATEHCLK_Msk              (0x1U << USB_OTG_PCGCR_GATEHCLK_Pos) /*!< 0x00000002 */
+#define USB_OTG_PCGCR_GATEHCLK                  USB_OTG_PCGCR_GATEHCLK_Msk     /*!< Gate HCLK */
+#define USB_OTG_PCGCR_PHYSUSP_Pos               (4U)                           
+#define USB_OTG_PCGCR_PHYSUSP_Msk               (0x1U << USB_OTG_PCGCR_PHYSUSP_Pos) /*!< 0x00000010 */
+#define USB_OTG_PCGCR_PHYSUSP                   USB_OTG_PCGCR_PHYSUSP_Msk      /*!< PHY suspended */
+
+/********************  Bit definition forUSB_OTG_GOTGINT register  ******************/
+#define USB_OTG_GOTGINT_SEDET_Pos               (2U)                           
+#define USB_OTG_GOTGINT_SEDET_Msk               (0x1U << USB_OTG_GOTGINT_SEDET_Pos) /*!< 0x00000004 */
+#define USB_OTG_GOTGINT_SEDET                   USB_OTG_GOTGINT_SEDET_Msk      /*!< Session end detected */
+#define USB_OTG_GOTGINT_SRSSCHG_Pos             (8U)                           
+#define USB_OTG_GOTGINT_SRSSCHG_Msk             (0x1U << USB_OTG_GOTGINT_SRSSCHG_Pos) /*!< 0x00000100 */
+#define USB_OTG_GOTGINT_SRSSCHG                 USB_OTG_GOTGINT_SRSSCHG_Msk    /*!< Session request success status change */
+#define USB_OTG_GOTGINT_HNSSCHG_Pos             (9U)                           
+#define USB_OTG_GOTGINT_HNSSCHG_Msk             (0x1U << USB_OTG_GOTGINT_HNSSCHG_Pos) /*!< 0x00000200 */
+#define USB_OTG_GOTGINT_HNSSCHG                 USB_OTG_GOTGINT_HNSSCHG_Msk    /*!< Host negotiation success status change */
+#define USB_OTG_GOTGINT_HNGDET_Pos              (17U)                          
+#define USB_OTG_GOTGINT_HNGDET_Msk              (0x1U << USB_OTG_GOTGINT_HNGDET_Pos) /*!< 0x00020000 */
+#define USB_OTG_GOTGINT_HNGDET                  USB_OTG_GOTGINT_HNGDET_Msk     /*!< Host negotiation detected */
+#define USB_OTG_GOTGINT_ADTOCHG_Pos             (18U)                          
+#define USB_OTG_GOTGINT_ADTOCHG_Msk             (0x1U << USB_OTG_GOTGINT_ADTOCHG_Pos) /*!< 0x00040000 */
+#define USB_OTG_GOTGINT_ADTOCHG                 USB_OTG_GOTGINT_ADTOCHG_Msk    /*!< A-device timeout change */
+#define USB_OTG_GOTGINT_DBCDNE_Pos              (19U)                          
+#define USB_OTG_GOTGINT_DBCDNE_Msk              (0x1U << USB_OTG_GOTGINT_DBCDNE_Pos) /*!< 0x00080000 */
+#define USB_OTG_GOTGINT_DBCDNE                  USB_OTG_GOTGINT_DBCDNE_Msk     /*!< Debounce done */
+
+/********************  Bit definition forUSB_OTG_DCTL register  ********************/
+#define USB_OTG_DCTL_RWUSIG_Pos                 (0U)                           
+#define USB_OTG_DCTL_RWUSIG_Msk                 (0x1U << USB_OTG_DCTL_RWUSIG_Pos) /*!< 0x00000001 */
+#define USB_OTG_DCTL_RWUSIG                     USB_OTG_DCTL_RWUSIG_Msk        /*!< Remote wakeup signaling */
+#define USB_OTG_DCTL_SDIS_Pos                   (1U)                           
+#define USB_OTG_DCTL_SDIS_Msk                   (0x1U << USB_OTG_DCTL_SDIS_Pos) /*!< 0x00000002 */
+#define USB_OTG_DCTL_SDIS                       USB_OTG_DCTL_SDIS_Msk          /*!< Soft disconnect */
+#define USB_OTG_DCTL_GINSTS_Pos                 (2U)                           
+#define USB_OTG_DCTL_GINSTS_Msk                 (0x1U << USB_OTG_DCTL_GINSTS_Pos) /*!< 0x00000004 */
+#define USB_OTG_DCTL_GINSTS                     USB_OTG_DCTL_GINSTS_Msk        /*!< Global IN NAK status */
+#define USB_OTG_DCTL_GONSTS_Pos                 (3U)                           
+#define USB_OTG_DCTL_GONSTS_Msk                 (0x1U << USB_OTG_DCTL_GONSTS_Pos) /*!< 0x00000008 */
+#define USB_OTG_DCTL_GONSTS                     USB_OTG_DCTL_GONSTS_Msk        /*!< Global OUT NAK status */
+
+#define USB_OTG_DCTL_TCTL_Pos                   (4U)                           
+#define USB_OTG_DCTL_TCTL_Msk                   (0x7U << USB_OTG_DCTL_TCTL_Pos) /*!< 0x00000070 */
+#define USB_OTG_DCTL_TCTL                       USB_OTG_DCTL_TCTL_Msk          /*!< Test control */
+#define USB_OTG_DCTL_TCTL_0                     (0x1U << USB_OTG_DCTL_TCTL_Pos) /*!< 0x00000010 */
+#define USB_OTG_DCTL_TCTL_1                     (0x2U << USB_OTG_DCTL_TCTL_Pos) /*!< 0x00000020 */
+#define USB_OTG_DCTL_TCTL_2                     (0x4U << USB_OTG_DCTL_TCTL_Pos) /*!< 0x00000040 */
+#define USB_OTG_DCTL_SGINAK_Pos                 (7U)                           
+#define USB_OTG_DCTL_SGINAK_Msk                 (0x1U << USB_OTG_DCTL_SGINAK_Pos) /*!< 0x00000080 */
+#define USB_OTG_DCTL_SGINAK                     USB_OTG_DCTL_SGINAK_Msk        /*!< Set global IN NAK */
+#define USB_OTG_DCTL_CGINAK_Pos                 (8U)                           
+#define USB_OTG_DCTL_CGINAK_Msk                 (0x1U << USB_OTG_DCTL_CGINAK_Pos) /*!< 0x00000100 */
+#define USB_OTG_DCTL_CGINAK                     USB_OTG_DCTL_CGINAK_Msk        /*!< Clear global IN NAK */
+#define USB_OTG_DCTL_SGONAK_Pos                 (9U)                           
+#define USB_OTG_DCTL_SGONAK_Msk                 (0x1U << USB_OTG_DCTL_SGONAK_Pos) /*!< 0x00000200 */
+#define USB_OTG_DCTL_SGONAK                     USB_OTG_DCTL_SGONAK_Msk        /*!< Set global OUT NAK */
+#define USB_OTG_DCTL_CGONAK_Pos                 (10U)                          
+#define USB_OTG_DCTL_CGONAK_Msk                 (0x1U << USB_OTG_DCTL_CGONAK_Pos) /*!< 0x00000400 */
+#define USB_OTG_DCTL_CGONAK                     USB_OTG_DCTL_CGONAK_Msk        /*!< Clear global OUT NAK */
+#define USB_OTG_DCTL_POPRGDNE_Pos               (11U)                          
+#define USB_OTG_DCTL_POPRGDNE_Msk               (0x1U << USB_OTG_DCTL_POPRGDNE_Pos) /*!< 0x00000800 */
+#define USB_OTG_DCTL_POPRGDNE                   USB_OTG_DCTL_POPRGDNE_Msk      /*!< Power-on programming done */
+
+/********************  Bit definition forUSB_OTG_HFIR register  ********************/
+#define USB_OTG_HFIR_FRIVL_Pos                  (0U)                           
+#define USB_OTG_HFIR_FRIVL_Msk                  (0xFFFFU << USB_OTG_HFIR_FRIVL_Pos) /*!< 0x0000FFFF */
+#define USB_OTG_HFIR_FRIVL                      USB_OTG_HFIR_FRIVL_Msk         /*!< Frame interval */
+
+/********************  Bit definition forUSB_OTG_HFNUM register  ********************/
+#define USB_OTG_HFNUM_FRNUM_Pos                 (0U)                           
+#define USB_OTG_HFNUM_FRNUM_Msk                 (0xFFFFU << USB_OTG_HFNUM_FRNUM_Pos) /*!< 0x0000FFFF */
+#define USB_OTG_HFNUM_FRNUM                     USB_OTG_HFNUM_FRNUM_Msk        /*!< Frame number */
+#define USB_OTG_HFNUM_FTREM_Pos                 (16U)                          
+#define USB_OTG_HFNUM_FTREM_Msk                 (0xFFFFU << USB_OTG_HFNUM_FTREM_Pos) /*!< 0xFFFF0000 */
+#define USB_OTG_HFNUM_FTREM                     USB_OTG_HFNUM_FTREM_Msk        /*!< Frame time remaining */
+
+/********************  Bit definition forUSB_OTG_DSTS register  ********************/
+#define USB_OTG_DSTS_SUSPSTS_Pos                (0U)                           
+#define USB_OTG_DSTS_SUSPSTS_Msk                (0x1U << USB_OTG_DSTS_SUSPSTS_Pos) /*!< 0x00000001 */
+#define USB_OTG_DSTS_SUSPSTS                    USB_OTG_DSTS_SUSPSTS_Msk       /*!< Suspend status */
+
+#define USB_OTG_DSTS_ENUMSPD_Pos                (1U)                           
+#define USB_OTG_DSTS_ENUMSPD_Msk                (0x3U << USB_OTG_DSTS_ENUMSPD_Pos) /*!< 0x00000006 */
+#define USB_OTG_DSTS_ENUMSPD                    USB_OTG_DSTS_ENUMSPD_Msk       /*!< Enumerated speed */
+#define USB_OTG_DSTS_ENUMSPD_0                  (0x1U << USB_OTG_DSTS_ENUMSPD_Pos) /*!< 0x00000002 */
+#define USB_OTG_DSTS_ENUMSPD_1                  (0x2U << USB_OTG_DSTS_ENUMSPD_Pos) /*!< 0x00000004 */
+#define USB_OTG_DSTS_EERR_Pos                   (3U)                           
+#define USB_OTG_DSTS_EERR_Msk                   (0x1U << USB_OTG_DSTS_EERR_Pos) /*!< 0x00000008 */
+#define USB_OTG_DSTS_EERR                       USB_OTG_DSTS_EERR_Msk          /*!< Erratic error */
+#define USB_OTG_DSTS_FNSOF_Pos                  (8U)                           
+#define USB_OTG_DSTS_FNSOF_Msk                  (0x3FFFU << USB_OTG_DSTS_FNSOF_Pos) /*!< 0x003FFF00 */
+#define USB_OTG_DSTS_FNSOF                      USB_OTG_DSTS_FNSOF_Msk         /*!< Frame number of the received SOF */
+
+/********************  Bit definition forUSB_OTG_GAHBCFG register  *****************/
+#define USB_OTG_GAHBCFG_GINT_Pos                (0U)                           
+#define USB_OTG_GAHBCFG_GINT_Msk                (0x1U << USB_OTG_GAHBCFG_GINT_Pos) /*!< 0x00000001 */
+#define USB_OTG_GAHBCFG_GINT                    USB_OTG_GAHBCFG_GINT_Msk       /*!< Global interrupt mask */
+
+#define USB_OTG_GAHBCFG_HBSTLEN_Pos             (1U)                           
+#define USB_OTG_GAHBCFG_HBSTLEN_Msk             (0xFU << USB_OTG_GAHBCFG_HBSTLEN_Pos) /*!< 0x0000001E */
+#define USB_OTG_GAHBCFG_HBSTLEN                 USB_OTG_GAHBCFG_HBSTLEN_Msk    /*!< Burst length/type */
+#define USB_OTG_GAHBCFG_HBSTLEN_0                (0x0U << USB_OTG_GAHBCFG_HBSTLEN_Pos) /*!< Single */
+#define USB_OTG_GAHBCFG_HBSTLEN_1                (0x1U << USB_OTG_GAHBCFG_HBSTLEN_Pos) /*!< INCR */
+#define USB_OTG_GAHBCFG_HBSTLEN_2                (0x3U << USB_OTG_GAHBCFG_HBSTLEN_Pos) /*!< INCR4 */
+#define USB_OTG_GAHBCFG_HBSTLEN_3                (0x5U << USB_OTG_GAHBCFG_HBSTLEN_Pos) /*!< INCR8 */
+#define USB_OTG_GAHBCFG_HBSTLEN_4                (0x7U << USB_OTG_GAHBCFG_HBSTLEN_Pos) /*!< INCR16 */
+#define USB_OTG_GAHBCFG_DMAEN_Pos               (5U)                           
+#define USB_OTG_GAHBCFG_DMAEN_Msk               (0x1U << USB_OTG_GAHBCFG_DMAEN_Pos) /*!< 0x00000020 */
+#define USB_OTG_GAHBCFG_DMAEN                   USB_OTG_GAHBCFG_DMAEN_Msk      /*!< DMA enable */
+#define USB_OTG_GAHBCFG_TXFELVL_Pos             (7U)                           
+#define USB_OTG_GAHBCFG_TXFELVL_Msk             (0x1U << USB_OTG_GAHBCFG_TXFELVL_Pos) /*!< 0x00000080 */
+#define USB_OTG_GAHBCFG_TXFELVL                 USB_OTG_GAHBCFG_TXFELVL_Msk    /*!< TxFIFO empty level */
+#define USB_OTG_GAHBCFG_PTXFELVL_Pos            (8U)                           
+#define USB_OTG_GAHBCFG_PTXFELVL_Msk            (0x1U << USB_OTG_GAHBCFG_PTXFELVL_Pos) /*!< 0x00000100 */
+#define USB_OTG_GAHBCFG_PTXFELVL                USB_OTG_GAHBCFG_PTXFELVL_Msk   /*!< Periodic TxFIFO empty level */
+
+/********************  Bit definition forUSB_OTG_GUSBCFG register  *****************/
+
+#define USB_OTG_GUSBCFG_TOCAL_Pos               (0U)                           
+#define USB_OTG_GUSBCFG_TOCAL_Msk               (0x7U << USB_OTG_GUSBCFG_TOCAL_Pos) /*!< 0x00000007 */
+#define USB_OTG_GUSBCFG_TOCAL                   USB_OTG_GUSBCFG_TOCAL_Msk      /*!< FS timeout calibration */
+#define USB_OTG_GUSBCFG_TOCAL_0                 (0x1U << USB_OTG_GUSBCFG_TOCAL_Pos) /*!< 0x00000001 */
+#define USB_OTG_GUSBCFG_TOCAL_1                 (0x2U << USB_OTG_GUSBCFG_TOCAL_Pos) /*!< 0x00000002 */
+#define USB_OTG_GUSBCFG_TOCAL_2                 (0x4U << USB_OTG_GUSBCFG_TOCAL_Pos) /*!< 0x00000004 */
+#define USB_OTG_GUSBCFG_PHYSEL_Pos              (6U)                           
+#define USB_OTG_GUSBCFG_PHYSEL_Msk              (0x1U << USB_OTG_GUSBCFG_PHYSEL_Pos) /*!< 0x00000040 */
+#define USB_OTG_GUSBCFG_PHYSEL                  USB_OTG_GUSBCFG_PHYSEL_Msk     /*!< USB 2.0 high-speed ULPI PHY or USB 1.1 full-speed serial transceiver select */
+#define USB_OTG_GUSBCFG_SRPCAP_Pos              (8U)                           
+#define USB_OTG_GUSBCFG_SRPCAP_Msk              (0x1U << USB_OTG_GUSBCFG_SRPCAP_Pos) /*!< 0x00000100 */
+#define USB_OTG_GUSBCFG_SRPCAP                  USB_OTG_GUSBCFG_SRPCAP_Msk     /*!< SRP-capable */
+#define USB_OTG_GUSBCFG_HNPCAP_Pos              (9U)                           
+#define USB_OTG_GUSBCFG_HNPCAP_Msk              (0x1U << USB_OTG_GUSBCFG_HNPCAP_Pos) /*!< 0x00000200 */
+#define USB_OTG_GUSBCFG_HNPCAP                  USB_OTG_GUSBCFG_HNPCAP_Msk     /*!< HNP-capable */
+
+#define USB_OTG_GUSBCFG_TRDT_Pos                (10U)                          
+#define USB_OTG_GUSBCFG_TRDT_Msk                (0xFU << USB_OTG_GUSBCFG_TRDT_Pos) /*!< 0x00003C00 */
+#define USB_OTG_GUSBCFG_TRDT                    USB_OTG_GUSBCFG_TRDT_Msk       /*!< USB turnaround time */
+#define USB_OTG_GUSBCFG_TRDT_0                  (0x1U << USB_OTG_GUSBCFG_TRDT_Pos) /*!< 0x00000400 */
+#define USB_OTG_GUSBCFG_TRDT_1                  (0x2U << USB_OTG_GUSBCFG_TRDT_Pos) /*!< 0x00000800 */
+#define USB_OTG_GUSBCFG_TRDT_2                  (0x4U << USB_OTG_GUSBCFG_TRDT_Pos) /*!< 0x00001000 */
+#define USB_OTG_GUSBCFG_TRDT_3                  (0x8U << USB_OTG_GUSBCFG_TRDT_Pos) /*!< 0x00002000 */
+#define USB_OTG_GUSBCFG_PHYLPCS_Pos             (15U)                          
+#define USB_OTG_GUSBCFG_PHYLPCS_Msk             (0x1U << USB_OTG_GUSBCFG_PHYLPCS_Pos) /*!< 0x00008000 */
+#define USB_OTG_GUSBCFG_PHYLPCS                 USB_OTG_GUSBCFG_PHYLPCS_Msk    /*!< PHY Low-power clock select */
+#define USB_OTG_GUSBCFG_ULPIFSLS_Pos            (17U)                          
+#define USB_OTG_GUSBCFG_ULPIFSLS_Msk            (0x1U << USB_OTG_GUSBCFG_ULPIFSLS_Pos) /*!< 0x00020000 */
+#define USB_OTG_GUSBCFG_ULPIFSLS                USB_OTG_GUSBCFG_ULPIFSLS_Msk   /*!< ULPI FS/LS select */
+#define USB_OTG_GUSBCFG_ULPIAR_Pos              (18U)                          
+#define USB_OTG_GUSBCFG_ULPIAR_Msk              (0x1U << USB_OTG_GUSBCFG_ULPIAR_Pos) /*!< 0x00040000 */
+#define USB_OTG_GUSBCFG_ULPIAR                  USB_OTG_GUSBCFG_ULPIAR_Msk     /*!< ULPI Auto-resume */
+#define USB_OTG_GUSBCFG_ULPICSM_Pos             (19U)                          
+#define USB_OTG_GUSBCFG_ULPICSM_Msk             (0x1U << USB_OTG_GUSBCFG_ULPICSM_Pos) /*!< 0x00080000 */
+#define USB_OTG_GUSBCFG_ULPICSM                 USB_OTG_GUSBCFG_ULPICSM_Msk    /*!< ULPI Clock SuspendM */
+#define USB_OTG_GUSBCFG_ULPIEVBUSD_Pos          (20U)                          
+#define USB_OTG_GUSBCFG_ULPIEVBUSD_Msk          (0x1U << USB_OTG_GUSBCFG_ULPIEVBUSD_Pos) /*!< 0x00100000 */
+#define USB_OTG_GUSBCFG_ULPIEVBUSD              USB_OTG_GUSBCFG_ULPIEVBUSD_Msk /*!< ULPI External VBUS Drive */
+#define USB_OTG_GUSBCFG_ULPIEVBUSI_Pos          (21U)                          
+#define USB_OTG_GUSBCFG_ULPIEVBUSI_Msk          (0x1U << USB_OTG_GUSBCFG_ULPIEVBUSI_Pos) /*!< 0x00200000 */
+#define USB_OTG_GUSBCFG_ULPIEVBUSI              USB_OTG_GUSBCFG_ULPIEVBUSI_Msk /*!< ULPI external VBUS indicator */
+#define USB_OTG_GUSBCFG_TSDPS_Pos               (22U)                          
+#define USB_OTG_GUSBCFG_TSDPS_Msk               (0x1U << USB_OTG_GUSBCFG_TSDPS_Pos) /*!< 0x00400000 */
+#define USB_OTG_GUSBCFG_TSDPS                   USB_OTG_GUSBCFG_TSDPS_Msk      /*!< TermSel DLine pulsing selection */
+#define USB_OTG_GUSBCFG_PCCI_Pos                (23U)                          
+#define USB_OTG_GUSBCFG_PCCI_Msk                (0x1U << USB_OTG_GUSBCFG_PCCI_Pos) /*!< 0x00800000 */
+#define USB_OTG_GUSBCFG_PCCI                    USB_OTG_GUSBCFG_PCCI_Msk       /*!< Indicator complement */
+#define USB_OTG_GUSBCFG_PTCI_Pos                (24U)                          
+#define USB_OTG_GUSBCFG_PTCI_Msk                (0x1U << USB_OTG_GUSBCFG_PTCI_Pos) /*!< 0x01000000 */
+#define USB_OTG_GUSBCFG_PTCI                    USB_OTG_GUSBCFG_PTCI_Msk       /*!< Indicator pass through */
+#define USB_OTG_GUSBCFG_ULPIIPD_Pos             (25U)                          
+#define USB_OTG_GUSBCFG_ULPIIPD_Msk             (0x1U << USB_OTG_GUSBCFG_ULPIIPD_Pos) /*!< 0x02000000 */
+#define USB_OTG_GUSBCFG_ULPIIPD                 USB_OTG_GUSBCFG_ULPIIPD_Msk    /*!< ULPI interface protect disable */
+#define USB_OTG_GUSBCFG_FHMOD_Pos               (29U)                          
+#define USB_OTG_GUSBCFG_FHMOD_Msk               (0x1U << USB_OTG_GUSBCFG_FHMOD_Pos) /*!< 0x20000000 */
+#define USB_OTG_GUSBCFG_FHMOD                   USB_OTG_GUSBCFG_FHMOD_Msk      /*!< Forced host mode */
+#define USB_OTG_GUSBCFG_FDMOD_Pos               (30U)                          
+#define USB_OTG_GUSBCFG_FDMOD_Msk               (0x1U << USB_OTG_GUSBCFG_FDMOD_Pos) /*!< 0x40000000 */
+#define USB_OTG_GUSBCFG_FDMOD                   USB_OTG_GUSBCFG_FDMOD_Msk      /*!< Forced peripheral mode */
+#define USB_OTG_GUSBCFG_CTXPKT_Pos              (31U)                          
+#define USB_OTG_GUSBCFG_CTXPKT_Msk              (0x1U << USB_OTG_GUSBCFG_CTXPKT_Pos) /*!< 0x80000000 */
+#define USB_OTG_GUSBCFG_CTXPKT                  USB_OTG_GUSBCFG_CTXPKT_Msk     /*!< Corrupt Tx packet */
+
+/********************  Bit definition forUSB_OTG_GRSTCTL register  *****************/
+#define USB_OTG_GRSTCTL_CSRST_Pos               (0U)                           
+#define USB_OTG_GRSTCTL_CSRST_Msk               (0x1U << USB_OTG_GRSTCTL_CSRST_Pos) /*!< 0x00000001 */
+#define USB_OTG_GRSTCTL_CSRST                   USB_OTG_GRSTCTL_CSRST_Msk      /*!< Core soft reset */
+#define USB_OTG_GRSTCTL_HSRST_Pos               (1U)                           
+#define USB_OTG_GRSTCTL_HSRST_Msk               (0x1U << USB_OTG_GRSTCTL_HSRST_Pos) /*!< 0x00000002 */
+#define USB_OTG_GRSTCTL_HSRST                   USB_OTG_GRSTCTL_HSRST_Msk      /*!< HCLK soft reset */
+#define USB_OTG_GRSTCTL_FCRST_Pos               (2U)                           
+#define USB_OTG_GRSTCTL_FCRST_Msk               (0x1U << USB_OTG_GRSTCTL_FCRST_Pos) /*!< 0x00000004 */
+#define USB_OTG_GRSTCTL_FCRST                   USB_OTG_GRSTCTL_FCRST_Msk      /*!< Host frame counter reset */
+#define USB_OTG_GRSTCTL_RXFFLSH_Pos             (4U)                           
+#define USB_OTG_GRSTCTL_RXFFLSH_Msk             (0x1U << USB_OTG_GRSTCTL_RXFFLSH_Pos) /*!< 0x00000010 */
+#define USB_OTG_GRSTCTL_RXFFLSH                 USB_OTG_GRSTCTL_RXFFLSH_Msk    /*!< RxFIFO flush */
+#define USB_OTG_GRSTCTL_TXFFLSH_Pos             (5U)                           
+#define USB_OTG_GRSTCTL_TXFFLSH_Msk             (0x1U << USB_OTG_GRSTCTL_TXFFLSH_Pos) /*!< 0x00000020 */
+#define USB_OTG_GRSTCTL_TXFFLSH                 USB_OTG_GRSTCTL_TXFFLSH_Msk    /*!< TxFIFO flush */
+
+#define USB_OTG_GRSTCTL_TXFNUM_Pos              (6U)                           
+#define USB_OTG_GRSTCTL_TXFNUM_Msk              (0x1FU << USB_OTG_GRSTCTL_TXFNUM_Pos) /*!< 0x000007C0 */
+#define USB_OTG_GRSTCTL_TXFNUM                  USB_OTG_GRSTCTL_TXFNUM_Msk     /*!< TxFIFO number */
+#define USB_OTG_GRSTCTL_TXFNUM_0                (0x01U << USB_OTG_GRSTCTL_TXFNUM_Pos) /*!< 0x00000040 */
+#define USB_OTG_GRSTCTL_TXFNUM_1                (0x02U << USB_OTG_GRSTCTL_TXFNUM_Pos) /*!< 0x00000080 */
+#define USB_OTG_GRSTCTL_TXFNUM_2                (0x04U << USB_OTG_GRSTCTL_TXFNUM_Pos) /*!< 0x00000100 */
+#define USB_OTG_GRSTCTL_TXFNUM_3                (0x08U << USB_OTG_GRSTCTL_TXFNUM_Pos) /*!< 0x00000200 */
+#define USB_OTG_GRSTCTL_TXFNUM_4                (0x10U << USB_OTG_GRSTCTL_TXFNUM_Pos) /*!< 0x00000400 */
+#define USB_OTG_GRSTCTL_DMAREQ_Pos              (30U)                          
+#define USB_OTG_GRSTCTL_DMAREQ_Msk              (0x1U << USB_OTG_GRSTCTL_DMAREQ_Pos) /*!< 0x40000000 */
+#define USB_OTG_GRSTCTL_DMAREQ                  USB_OTG_GRSTCTL_DMAREQ_Msk     /*!< DMA request signal */
+#define USB_OTG_GRSTCTL_AHBIDL_Pos              (31U)                          
+#define USB_OTG_GRSTCTL_AHBIDL_Msk              (0x1U << USB_OTG_GRSTCTL_AHBIDL_Pos) /*!< 0x80000000 */
+#define USB_OTG_GRSTCTL_AHBIDL                  USB_OTG_GRSTCTL_AHBIDL_Msk     /*!< AHB master idle */
+
+/********************  Bit definition forUSB_OTG_DIEPMSK register  *****************/
+#define USB_OTG_DIEPMSK_XFRCM_Pos               (0U)                           
+#define USB_OTG_DIEPMSK_XFRCM_Msk               (0x1U << USB_OTG_DIEPMSK_XFRCM_Pos) /*!< 0x00000001 */
+#define USB_OTG_DIEPMSK_XFRCM                   USB_OTG_DIEPMSK_XFRCM_Msk      /*!< Transfer completed interrupt mask */
+#define USB_OTG_DIEPMSK_EPDM_Pos                (1U)                           
+#define USB_OTG_DIEPMSK_EPDM_Msk                (0x1U << USB_OTG_DIEPMSK_EPDM_Pos) /*!< 0x00000002 */
+#define USB_OTG_DIEPMSK_EPDM                    USB_OTG_DIEPMSK_EPDM_Msk       /*!< Endpoint disabled interrupt mask */
+#define USB_OTG_DIEPMSK_TOM_Pos                 (3U)                           
+#define USB_OTG_DIEPMSK_TOM_Msk                 (0x1U << USB_OTG_DIEPMSK_TOM_Pos) /*!< 0x00000008 */
+#define USB_OTG_DIEPMSK_TOM                     USB_OTG_DIEPMSK_TOM_Msk        /*!< Timeout condition mask (nonisochronous endpoints) */
+#define USB_OTG_DIEPMSK_ITTXFEMSK_Pos           (4U)                           
+#define USB_OTG_DIEPMSK_ITTXFEMSK_Msk           (0x1U << USB_OTG_DIEPMSK_ITTXFEMSK_Pos) /*!< 0x00000010 */
+#define USB_OTG_DIEPMSK_ITTXFEMSK               USB_OTG_DIEPMSK_ITTXFEMSK_Msk  /*!< IN token received when TxFIFO empty mask */
+#define USB_OTG_DIEPMSK_INEPNMM_Pos             (5U)                           
+#define USB_OTG_DIEPMSK_INEPNMM_Msk             (0x1U << USB_OTG_DIEPMSK_INEPNMM_Pos) /*!< 0x00000020 */
+#define USB_OTG_DIEPMSK_INEPNMM                 USB_OTG_DIEPMSK_INEPNMM_Msk    /*!< IN token received with EP mismatch mask */
+#define USB_OTG_DIEPMSK_INEPNEM_Pos             (6U)                           
+#define USB_OTG_DIEPMSK_INEPNEM_Msk             (0x1U << USB_OTG_DIEPMSK_INEPNEM_Pos) /*!< 0x00000040 */
+#define USB_OTG_DIEPMSK_INEPNEM                 USB_OTG_DIEPMSK_INEPNEM_Msk    /*!< IN endpoint NAK effective mask */
+#define USB_OTG_DIEPMSK_TXFURM_Pos              (8U)                           
+#define USB_OTG_DIEPMSK_TXFURM_Msk              (0x1U << USB_OTG_DIEPMSK_TXFURM_Pos) /*!< 0x00000100 */
+#define USB_OTG_DIEPMSK_TXFURM                  USB_OTG_DIEPMSK_TXFURM_Msk     /*!< FIFO underrun mask */
+#define USB_OTG_DIEPMSK_BIM_Pos                 (9U)                           
+#define USB_OTG_DIEPMSK_BIM_Msk                 (0x1U << USB_OTG_DIEPMSK_BIM_Pos) /*!< 0x00000200 */
+#define USB_OTG_DIEPMSK_BIM                     USB_OTG_DIEPMSK_BIM_Msk        /*!< BNA interrupt mask */
+
+/********************  Bit definition forUSB_OTG_HPTXSTS register  *****************/
+#define USB_OTG_HPTXSTS_PTXFSAVL_Pos            (0U)                           
+#define USB_OTG_HPTXSTS_PTXFSAVL_Msk            (0xFFFFU << USB_OTG_HPTXSTS_PTXFSAVL_Pos) /*!< 0x0000FFFF */
+#define USB_OTG_HPTXSTS_PTXFSAVL                USB_OTG_HPTXSTS_PTXFSAVL_Msk   /*!< Periodic transmit data FIFO space available */
+                                          
+#define USB_OTG_HPTXSTS_PTXQSAV_Pos             (16U)                          
+#define USB_OTG_HPTXSTS_PTXQSAV_Msk             (0xFFU << USB_OTG_HPTXSTS_PTXQSAV_Pos) /*!< 0x00FF0000 */
+#define USB_OTG_HPTXSTS_PTXQSAV                 USB_OTG_HPTXSTS_PTXQSAV_Msk    /*!< Periodic transmit request queue space available */
+#define USB_OTG_HPTXSTS_PTXQSAV_0               (0x01U << USB_OTG_HPTXSTS_PTXQSAV_Pos) /*!< 0x00010000 */
+#define USB_OTG_HPTXSTS_PTXQSAV_1               (0x02U << USB_OTG_HPTXSTS_PTXQSAV_Pos) /*!< 0x00020000 */
+#define USB_OTG_HPTXSTS_PTXQSAV_2               (0x04U << USB_OTG_HPTXSTS_PTXQSAV_Pos) /*!< 0x00040000 */
+#define USB_OTG_HPTXSTS_PTXQSAV_3               (0x08U << USB_OTG_HPTXSTS_PTXQSAV_Pos) /*!< 0x00080000 */
+#define USB_OTG_HPTXSTS_PTXQSAV_4               (0x10U << USB_OTG_HPTXSTS_PTXQSAV_Pos) /*!< 0x00100000 */
+#define USB_OTG_HPTXSTS_PTXQSAV_5               (0x20U << USB_OTG_HPTXSTS_PTXQSAV_Pos) /*!< 0x00200000 */
+#define USB_OTG_HPTXSTS_PTXQSAV_6               (0x40U << USB_OTG_HPTXSTS_PTXQSAV_Pos) /*!< 0x00400000 */
+#define USB_OTG_HPTXSTS_PTXQSAV_7               (0x80U << USB_OTG_HPTXSTS_PTXQSAV_Pos) /*!< 0x00800000 */
+
+#define USB_OTG_HPTXSTS_PTXQTOP_Pos             (24U)                          
+#define USB_OTG_HPTXSTS_PTXQTOP_Msk             (0xFFU << USB_OTG_HPTXSTS_PTXQTOP_Pos) /*!< 0xFF000000 */
+#define USB_OTG_HPTXSTS_PTXQTOP                 USB_OTG_HPTXSTS_PTXQTOP_Msk    /*!< Top of the periodic transmit request queue */
+#define USB_OTG_HPTXSTS_PTXQTOP_0               (0x01U << USB_OTG_HPTXSTS_PTXQTOP_Pos) /*!< 0x01000000 */
+#define USB_OTG_HPTXSTS_PTXQTOP_1               (0x02U << USB_OTG_HPTXSTS_PTXQTOP_Pos) /*!< 0x02000000 */
+#define USB_OTG_HPTXSTS_PTXQTOP_2               (0x04U << USB_OTG_HPTXSTS_PTXQTOP_Pos) /*!< 0x04000000 */
+#define USB_OTG_HPTXSTS_PTXQTOP_3               (0x08U << USB_OTG_HPTXSTS_PTXQTOP_Pos) /*!< 0x08000000 */
+#define USB_OTG_HPTXSTS_PTXQTOP_4               (0x10U << USB_OTG_HPTXSTS_PTXQTOP_Pos) /*!< 0x10000000 */
+#define USB_OTG_HPTXSTS_PTXQTOP_5               (0x20U << USB_OTG_HPTXSTS_PTXQTOP_Pos) /*!< 0x20000000 */
+#define USB_OTG_HPTXSTS_PTXQTOP_6               (0x40U << USB_OTG_HPTXSTS_PTXQTOP_Pos) /*!< 0x40000000 */
+#define USB_OTG_HPTXSTS_PTXQTOP_7               (0x80U << USB_OTG_HPTXSTS_PTXQTOP_Pos) /*!< 0x80000000 */
+
+/********************  Bit definition forUSB_OTG_HAINT register  *******************/
+#define USB_OTG_HAINT_HAINT_Pos                 (0U)                           
+#define USB_OTG_HAINT_HAINT_Msk                 (0xFFFFU << USB_OTG_HAINT_HAINT_Pos) /*!< 0x0000FFFF */
+#define USB_OTG_HAINT_HAINT                     USB_OTG_HAINT_HAINT_Msk        /*!< Channel interrupts */
+
+/********************  Bit definition forUSB_OTG_DOEPMSK register  *****************/
+#define USB_OTG_DOEPMSK_XFRCM_Pos               (0U)                           
+#define USB_OTG_DOEPMSK_XFRCM_Msk               (0x1U << USB_OTG_DOEPMSK_XFRCM_Pos) /*!< 0x00000001 */
+#define USB_OTG_DOEPMSK_XFRCM                   USB_OTG_DOEPMSK_XFRCM_Msk      /*!< Transfer completed interrupt mask */
+#define USB_OTG_DOEPMSK_EPDM_Pos                (1U)                           
+#define USB_OTG_DOEPMSK_EPDM_Msk                (0x1U << USB_OTG_DOEPMSK_EPDM_Pos) /*!< 0x00000002 */
+#define USB_OTG_DOEPMSK_EPDM                    USB_OTG_DOEPMSK_EPDM_Msk       /*!< Endpoint disabled interrupt mask */
+#define USB_OTG_DOEPMSK_STUPM_Pos               (3U)                           
+#define USB_OTG_DOEPMSK_STUPM_Msk               (0x1U << USB_OTG_DOEPMSK_STUPM_Pos) /*!< 0x00000008 */
+#define USB_OTG_DOEPMSK_STUPM                   USB_OTG_DOEPMSK_STUPM_Msk      /*!< SETUP phase done mask */
+#define USB_OTG_DOEPMSK_OTEPDM_Pos              (4U)                           
+#define USB_OTG_DOEPMSK_OTEPDM_Msk              (0x1U << USB_OTG_DOEPMSK_OTEPDM_Pos) /*!< 0x00000010 */
+#define USB_OTG_DOEPMSK_OTEPDM                  USB_OTG_DOEPMSK_OTEPDM_Msk     /*!< OUT token received when endpoint disabled mask */
+#define USB_OTG_DOEPMSK_B2BSTUP_Pos             (6U)                           
+#define USB_OTG_DOEPMSK_B2BSTUP_Msk             (0x1U << USB_OTG_DOEPMSK_B2BSTUP_Pos) /*!< 0x00000040 */
+#define USB_OTG_DOEPMSK_B2BSTUP                 USB_OTG_DOEPMSK_B2BSTUP_Msk    /*!< Back-to-back SETUP packets received mask */
+#define USB_OTG_DOEPMSK_OPEM_Pos                (8U)                           
+#define USB_OTG_DOEPMSK_OPEM_Msk                (0x1U << USB_OTG_DOEPMSK_OPEM_Pos) /*!< 0x00000100 */
+#define USB_OTG_DOEPMSK_OPEM                    USB_OTG_DOEPMSK_OPEM_Msk       /*!< OUT packet error mask */
+#define USB_OTG_DOEPMSK_BOIM_Pos                (9U)                           
+#define USB_OTG_DOEPMSK_BOIM_Msk                (0x1U << USB_OTG_DOEPMSK_BOIM_Pos) /*!< 0x00000200 */
+#define USB_OTG_DOEPMSK_BOIM                    USB_OTG_DOEPMSK_BOIM_Msk       /*!< BNA interrupt mask */
+
+/********************  Bit definition forUSB_OTG_GINTSTS register  *****************/
+#define USB_OTG_GINTSTS_CMOD_Pos                (0U)                           
+#define USB_OTG_GINTSTS_CMOD_Msk                (0x1U << USB_OTG_GINTSTS_CMOD_Pos) /*!< 0x00000001 */
+#define USB_OTG_GINTSTS_CMOD                    USB_OTG_GINTSTS_CMOD_Msk       /*!< Current mode of operation */
+#define USB_OTG_GINTSTS_MMIS_Pos                (1U)                           
+#define USB_OTG_GINTSTS_MMIS_Msk                (0x1U << USB_OTG_GINTSTS_MMIS_Pos) /*!< 0x00000002 */
+#define USB_OTG_GINTSTS_MMIS                    USB_OTG_GINTSTS_MMIS_Msk       /*!< Mode mismatch interrupt */
+#define USB_OTG_GINTSTS_OTGINT_Pos              (2U)                           
+#define USB_OTG_GINTSTS_OTGINT_Msk              (0x1U << USB_OTG_GINTSTS_OTGINT_Pos) /*!< 0x00000004 */
+#define USB_OTG_GINTSTS_OTGINT                  USB_OTG_GINTSTS_OTGINT_Msk     /*!< OTG interrupt */
+#define USB_OTG_GINTSTS_SOF_Pos                 (3U)                           
+#define USB_OTG_GINTSTS_SOF_Msk                 (0x1U << USB_OTG_GINTSTS_SOF_Pos) /*!< 0x00000008 */
+#define USB_OTG_GINTSTS_SOF                     USB_OTG_GINTSTS_SOF_Msk        /*!< Start of frame */
+#define USB_OTG_GINTSTS_RXFLVL_Pos              (4U)                           
+#define USB_OTG_GINTSTS_RXFLVL_Msk              (0x1U << USB_OTG_GINTSTS_RXFLVL_Pos) /*!< 0x00000010 */
+#define USB_OTG_GINTSTS_RXFLVL                  USB_OTG_GINTSTS_RXFLVL_Msk     /*!< RxFIFO nonempty */
+#define USB_OTG_GINTSTS_NPTXFE_Pos              (5U)                           
+#define USB_OTG_GINTSTS_NPTXFE_Msk              (0x1U << USB_OTG_GINTSTS_NPTXFE_Pos) /*!< 0x00000020 */
+#define USB_OTG_GINTSTS_NPTXFE                  USB_OTG_GINTSTS_NPTXFE_Msk     /*!< Nonperiodic TxFIFO empty */
+#define USB_OTG_GINTSTS_GINAKEFF_Pos            (6U)                           
+#define USB_OTG_GINTSTS_GINAKEFF_Msk            (0x1U << USB_OTG_GINTSTS_GINAKEFF_Pos) /*!< 0x00000040 */
+#define USB_OTG_GINTSTS_GINAKEFF                USB_OTG_GINTSTS_GINAKEFF_Msk   /*!< Global IN nonperiodic NAK effective */
+#define USB_OTG_GINTSTS_BOUTNAKEFF_Pos          (7U)                           
+#define USB_OTG_GINTSTS_BOUTNAKEFF_Msk          (0x1U << USB_OTG_GINTSTS_BOUTNAKEFF_Pos) /*!< 0x00000080 */
+#define USB_OTG_GINTSTS_BOUTNAKEFF              USB_OTG_GINTSTS_BOUTNAKEFF_Msk /*!< Global OUT NAK effective */
+#define USB_OTG_GINTSTS_ESUSP_Pos               (10U)                          
+#define USB_OTG_GINTSTS_ESUSP_Msk               (0x1U << USB_OTG_GINTSTS_ESUSP_Pos) /*!< 0x00000400 */
+#define USB_OTG_GINTSTS_ESUSP                   USB_OTG_GINTSTS_ESUSP_Msk      /*!< Early suspend */
+#define USB_OTG_GINTSTS_USBSUSP_Pos             (11U)                          
+#define USB_OTG_GINTSTS_USBSUSP_Msk             (0x1U << USB_OTG_GINTSTS_USBSUSP_Pos) /*!< 0x00000800 */
+#define USB_OTG_GINTSTS_USBSUSP                 USB_OTG_GINTSTS_USBSUSP_Msk    /*!< USB suspend */
+#define USB_OTG_GINTSTS_USBRST_Pos              (12U)                          
+#define USB_OTG_GINTSTS_USBRST_Msk              (0x1U << USB_OTG_GINTSTS_USBRST_Pos) /*!< 0x00001000 */
+#define USB_OTG_GINTSTS_USBRST                  USB_OTG_GINTSTS_USBRST_Msk     /*!< USB reset */
+#define USB_OTG_GINTSTS_ENUMDNE_Pos             (13U)                          
+#define USB_OTG_GINTSTS_ENUMDNE_Msk             (0x1U << USB_OTG_GINTSTS_ENUMDNE_Pos) /*!< 0x00002000 */
+#define USB_OTG_GINTSTS_ENUMDNE                 USB_OTG_GINTSTS_ENUMDNE_Msk    /*!< Enumeration done */
+#define USB_OTG_GINTSTS_ISOODRP_Pos             (14U)                          
+#define USB_OTG_GINTSTS_ISOODRP_Msk             (0x1U << USB_OTG_GINTSTS_ISOODRP_Pos) /*!< 0x00004000 */
+#define USB_OTG_GINTSTS_ISOODRP                 USB_OTG_GINTSTS_ISOODRP_Msk    /*!< Isochronous OUT packet dropped interrupt */
+#define USB_OTG_GINTSTS_EOPF_Pos                (15U)                          
+#define USB_OTG_GINTSTS_EOPF_Msk                (0x1U << USB_OTG_GINTSTS_EOPF_Pos) /*!< 0x00008000 */
+#define USB_OTG_GINTSTS_EOPF                    USB_OTG_GINTSTS_EOPF_Msk       /*!< End of periodic frame interrupt */
+#define USB_OTG_GINTSTS_IEPINT_Pos              (18U)                          
+#define USB_OTG_GINTSTS_IEPINT_Msk              (0x1U << USB_OTG_GINTSTS_IEPINT_Pos) /*!< 0x00040000 */
+#define USB_OTG_GINTSTS_IEPINT                  USB_OTG_GINTSTS_IEPINT_Msk     /*!< IN endpoint interrupt */
+#define USB_OTG_GINTSTS_OEPINT_Pos              (19U)                          
+#define USB_OTG_GINTSTS_OEPINT_Msk              (0x1U << USB_OTG_GINTSTS_OEPINT_Pos) /*!< 0x00080000 */
+#define USB_OTG_GINTSTS_OEPINT                  USB_OTG_GINTSTS_OEPINT_Msk     /*!< OUT endpoint interrupt */
+#define USB_OTG_GINTSTS_IISOIXFR_Pos            (20U)                          
+#define USB_OTG_GINTSTS_IISOIXFR_Msk            (0x1U << USB_OTG_GINTSTS_IISOIXFR_Pos) /*!< 0x00100000 */
+#define USB_OTG_GINTSTS_IISOIXFR                USB_OTG_GINTSTS_IISOIXFR_Msk   /*!< Incomplete isochronous IN transfer */
+#define USB_OTG_GINTSTS_PXFR_INCOMPISOOUT_Pos   (21U)                          
+#define USB_OTG_GINTSTS_PXFR_INCOMPISOOUT_Msk   (0x1U << USB_OTG_GINTSTS_PXFR_INCOMPISOOUT_Pos) /*!< 0x00200000 */
+#define USB_OTG_GINTSTS_PXFR_INCOMPISOOUT       USB_OTG_GINTSTS_PXFR_INCOMPISOOUT_Msk /*!< Incomplete periodic transfer */
+#define USB_OTG_GINTSTS_DATAFSUSP_Pos           (22U)                          
+#define USB_OTG_GINTSTS_DATAFSUSP_Msk           (0x1U << USB_OTG_GINTSTS_DATAFSUSP_Pos) /*!< 0x00400000 */
+#define USB_OTG_GINTSTS_DATAFSUSP               USB_OTG_GINTSTS_DATAFSUSP_Msk  /*!< Data fetch suspended */
+#define USB_OTG_GINTSTS_HPRTINT_Pos             (24U)                          
+#define USB_OTG_GINTSTS_HPRTINT_Msk             (0x1U << USB_OTG_GINTSTS_HPRTINT_Pos) /*!< 0x01000000 */
+#define USB_OTG_GINTSTS_HPRTINT                 USB_OTG_GINTSTS_HPRTINT_Msk    /*!< Host port interrupt */
+#define USB_OTG_GINTSTS_HCINT_Pos               (25U)                          
+#define USB_OTG_GINTSTS_HCINT_Msk               (0x1U << USB_OTG_GINTSTS_HCINT_Pos) /*!< 0x02000000 */
+#define USB_OTG_GINTSTS_HCINT                   USB_OTG_GINTSTS_HCINT_Msk      /*!< Host channels interrupt */
+#define USB_OTG_GINTSTS_PTXFE_Pos               (26U)                          
+#define USB_OTG_GINTSTS_PTXFE_Msk               (0x1U << USB_OTG_GINTSTS_PTXFE_Pos) /*!< 0x04000000 */
+#define USB_OTG_GINTSTS_PTXFE                   USB_OTG_GINTSTS_PTXFE_Msk      /*!< Periodic TxFIFO empty */
+#define USB_OTG_GINTSTS_CIDSCHG_Pos             (28U)                          
+#define USB_OTG_GINTSTS_CIDSCHG_Msk             (0x1U << USB_OTG_GINTSTS_CIDSCHG_Pos) /*!< 0x10000000 */
+#define USB_OTG_GINTSTS_CIDSCHG                 USB_OTG_GINTSTS_CIDSCHG_Msk    /*!< Connector ID status change */
+#define USB_OTG_GINTSTS_DISCINT_Pos             (29U)                          
+#define USB_OTG_GINTSTS_DISCINT_Msk             (0x1U << USB_OTG_GINTSTS_DISCINT_Pos) /*!< 0x20000000 */
+#define USB_OTG_GINTSTS_DISCINT                 USB_OTG_GINTSTS_DISCINT_Msk    /*!< Disconnect detected interrupt */
+#define USB_OTG_GINTSTS_SRQINT_Pos              (30U)                          
+#define USB_OTG_GINTSTS_SRQINT_Msk              (0x1U << USB_OTG_GINTSTS_SRQINT_Pos) /*!< 0x40000000 */
+#define USB_OTG_GINTSTS_SRQINT                  USB_OTG_GINTSTS_SRQINT_Msk     /*!< Session request/new session detected interrupt */
+#define USB_OTG_GINTSTS_WKUINT_Pos              (31U)                          
+#define USB_OTG_GINTSTS_WKUINT_Msk              (0x1U << USB_OTG_GINTSTS_WKUINT_Pos) /*!< 0x80000000 */
+#define USB_OTG_GINTSTS_WKUINT                  USB_OTG_GINTSTS_WKUINT_Msk     /*!< Resume/remote wakeup detected interrupt */
+
+/********************  Bit definition forUSB_OTG_GINTMSK register  *****************/
+#define USB_OTG_GINTMSK_MMISM_Pos               (1U)                           
+#define USB_OTG_GINTMSK_MMISM_Msk               (0x1U << USB_OTG_GINTMSK_MMISM_Pos) /*!< 0x00000002 */
+#define USB_OTG_GINTMSK_MMISM                   USB_OTG_GINTMSK_MMISM_Msk      /*!< Mode mismatch interrupt mask */
+#define USB_OTG_GINTMSK_OTGINT_Pos              (2U)                           
+#define USB_OTG_GINTMSK_OTGINT_Msk              (0x1U << USB_OTG_GINTMSK_OTGINT_Pos) /*!< 0x00000004 */
+#define USB_OTG_GINTMSK_OTGINT                  USB_OTG_GINTMSK_OTGINT_Msk     /*!< OTG interrupt mask */
+#define USB_OTG_GINTMSK_SOFM_Pos                (3U)                           
+#define USB_OTG_GINTMSK_SOFM_Msk                (0x1U << USB_OTG_GINTMSK_SOFM_Pos) /*!< 0x00000008 */
+#define USB_OTG_GINTMSK_SOFM                    USB_OTG_GINTMSK_SOFM_Msk       /*!< Start of frame mask */
+#define USB_OTG_GINTMSK_RXFLVLM_Pos             (4U)                           
+#define USB_OTG_GINTMSK_RXFLVLM_Msk             (0x1U << USB_OTG_GINTMSK_RXFLVLM_Pos) /*!< 0x00000010 */
+#define USB_OTG_GINTMSK_RXFLVLM                 USB_OTG_GINTMSK_RXFLVLM_Msk    /*!< Receive FIFO nonempty mask */
+#define USB_OTG_GINTMSK_NPTXFEM_Pos             (5U)                           
+#define USB_OTG_GINTMSK_NPTXFEM_Msk             (0x1U << USB_OTG_GINTMSK_NPTXFEM_Pos) /*!< 0x00000020 */
+#define USB_OTG_GINTMSK_NPTXFEM                 USB_OTG_GINTMSK_NPTXFEM_Msk    /*!< Nonperiodic TxFIFO empty mask */
+#define USB_OTG_GINTMSK_GINAKEFFM_Pos           (6U)                           
+#define USB_OTG_GINTMSK_GINAKEFFM_Msk           (0x1U << USB_OTG_GINTMSK_GINAKEFFM_Pos) /*!< 0x00000040 */
+#define USB_OTG_GINTMSK_GINAKEFFM               USB_OTG_GINTMSK_GINAKEFFM_Msk  /*!< Global nonperiodic IN NAK effective mask */
+#define USB_OTG_GINTMSK_GONAKEFFM_Pos           (7U)                           
+#define USB_OTG_GINTMSK_GONAKEFFM_Msk           (0x1U << USB_OTG_GINTMSK_GONAKEFFM_Pos) /*!< 0x00000080 */
+#define USB_OTG_GINTMSK_GONAKEFFM               USB_OTG_GINTMSK_GONAKEFFM_Msk  /*!< Global OUT NAK effective mask */
+#define USB_OTG_GINTMSK_ESUSPM_Pos              (10U)                          
+#define USB_OTG_GINTMSK_ESUSPM_Msk              (0x1U << USB_OTG_GINTMSK_ESUSPM_Pos) /*!< 0x00000400 */
+#define USB_OTG_GINTMSK_ESUSPM                  USB_OTG_GINTMSK_ESUSPM_Msk     /*!< Early suspend mask */
+#define USB_OTG_GINTMSK_USBSUSPM_Pos            (11U)                          
+#define USB_OTG_GINTMSK_USBSUSPM_Msk            (0x1U << USB_OTG_GINTMSK_USBSUSPM_Pos) /*!< 0x00000800 */
+#define USB_OTG_GINTMSK_USBSUSPM                USB_OTG_GINTMSK_USBSUSPM_Msk   /*!< USB suspend mask */
+#define USB_OTG_GINTMSK_USBRST_Pos              (12U)                          
+#define USB_OTG_GINTMSK_USBRST_Msk              (0x1U << USB_OTG_GINTMSK_USBRST_Pos) /*!< 0x00001000 */
+#define USB_OTG_GINTMSK_USBRST                  USB_OTG_GINTMSK_USBRST_Msk     /*!< USB reset mask */
+#define USB_OTG_GINTMSK_ENUMDNEM_Pos            (13U)                          
+#define USB_OTG_GINTMSK_ENUMDNEM_Msk            (0x1U << USB_OTG_GINTMSK_ENUMDNEM_Pos) /*!< 0x00002000 */
+#define USB_OTG_GINTMSK_ENUMDNEM                USB_OTG_GINTMSK_ENUMDNEM_Msk   /*!< Enumeration done mask */
+#define USB_OTG_GINTMSK_ISOODRPM_Pos            (14U)                          
+#define USB_OTG_GINTMSK_ISOODRPM_Msk            (0x1U << USB_OTG_GINTMSK_ISOODRPM_Pos) /*!< 0x00004000 */
+#define USB_OTG_GINTMSK_ISOODRPM                USB_OTG_GINTMSK_ISOODRPM_Msk   /*!< Isochronous OUT packet dropped interrupt mask */
+#define USB_OTG_GINTMSK_EOPFM_Pos               (15U)                          
+#define USB_OTG_GINTMSK_EOPFM_Msk               (0x1U << USB_OTG_GINTMSK_EOPFM_Pos) /*!< 0x00008000 */
+#define USB_OTG_GINTMSK_EOPFM                   USB_OTG_GINTMSK_EOPFM_Msk      /*!< End of periodic frame interrupt mask */
+#define USB_OTG_GINTMSK_EPMISM_Pos              (17U)                          
+#define USB_OTG_GINTMSK_EPMISM_Msk              (0x1U << USB_OTG_GINTMSK_EPMISM_Pos) /*!< 0x00020000 */
+#define USB_OTG_GINTMSK_EPMISM                  USB_OTG_GINTMSK_EPMISM_Msk     /*!< Endpoint mismatch interrupt mask */
+#define USB_OTG_GINTMSK_IEPINT_Pos              (18U)                          
+#define USB_OTG_GINTMSK_IEPINT_Msk              (0x1U << USB_OTG_GINTMSK_IEPINT_Pos) /*!< 0x00040000 */
+#define USB_OTG_GINTMSK_IEPINT                  USB_OTG_GINTMSK_IEPINT_Msk     /*!< IN endpoints interrupt mask */
+#define USB_OTG_GINTMSK_OEPINT_Pos              (19U)                          
+#define USB_OTG_GINTMSK_OEPINT_Msk              (0x1U << USB_OTG_GINTMSK_OEPINT_Pos) /*!< 0x00080000 */
+#define USB_OTG_GINTMSK_OEPINT                  USB_OTG_GINTMSK_OEPINT_Msk     /*!< OUT endpoints interrupt mask */
+#define USB_OTG_GINTMSK_IISOIXFRM_Pos           (20U)                          
+#define USB_OTG_GINTMSK_IISOIXFRM_Msk           (0x1U << USB_OTG_GINTMSK_IISOIXFRM_Pos) /*!< 0x00100000 */
+#define USB_OTG_GINTMSK_IISOIXFRM               USB_OTG_GINTMSK_IISOIXFRM_Msk  /*!< Incomplete isochronous IN transfer mask */
+#define USB_OTG_GINTMSK_PXFRM_IISOOXFRM_Pos     (21U)                          
+#define USB_OTG_GINTMSK_PXFRM_IISOOXFRM_Msk     (0x1U << USB_OTG_GINTMSK_PXFRM_IISOOXFRM_Pos) /*!< 0x00200000 */
+#define USB_OTG_GINTMSK_PXFRM_IISOOXFRM         USB_OTG_GINTMSK_PXFRM_IISOOXFRM_Msk /*!< Incomplete periodic transfer mask */
+#define USB_OTG_GINTMSK_FSUSPM_Pos              (22U)                          
+#define USB_OTG_GINTMSK_FSUSPM_Msk              (0x1U << USB_OTG_GINTMSK_FSUSPM_Pos) /*!< 0x00400000 */
+#define USB_OTG_GINTMSK_FSUSPM                  USB_OTG_GINTMSK_FSUSPM_Msk     /*!< Data fetch suspended mask */
+#define USB_OTG_GINTMSK_PRTIM_Pos               (24U)                          
+#define USB_OTG_GINTMSK_PRTIM_Msk               (0x1U << USB_OTG_GINTMSK_PRTIM_Pos) /*!< 0x01000000 */
+#define USB_OTG_GINTMSK_PRTIM                   USB_OTG_GINTMSK_PRTIM_Msk      /*!< Host port interrupt mask */
+#define USB_OTG_GINTMSK_HCIM_Pos                (25U)                          
+#define USB_OTG_GINTMSK_HCIM_Msk                (0x1U << USB_OTG_GINTMSK_HCIM_Pos) /*!< 0x02000000 */
+#define USB_OTG_GINTMSK_HCIM                    USB_OTG_GINTMSK_HCIM_Msk       /*!< Host channels interrupt mask */
+#define USB_OTG_GINTMSK_PTXFEM_Pos              (26U)                          
+#define USB_OTG_GINTMSK_PTXFEM_Msk              (0x1U << USB_OTG_GINTMSK_PTXFEM_Pos) /*!< 0x04000000 */
+#define USB_OTG_GINTMSK_PTXFEM                  USB_OTG_GINTMSK_PTXFEM_Msk     /*!< Periodic TxFIFO empty mask */
+#define USB_OTG_GINTMSK_CIDSCHGM_Pos            (28U)                          
+#define USB_OTG_GINTMSK_CIDSCHGM_Msk            (0x1U << USB_OTG_GINTMSK_CIDSCHGM_Pos) /*!< 0x10000000 */
+#define USB_OTG_GINTMSK_CIDSCHGM                USB_OTG_GINTMSK_CIDSCHGM_Msk   /*!< Connector ID status change mask */
+#define USB_OTG_GINTMSK_DISCINT_Pos             (29U)                          
+#define USB_OTG_GINTMSK_DISCINT_Msk             (0x1U << USB_OTG_GINTMSK_DISCINT_Pos) /*!< 0x20000000 */
+#define USB_OTG_GINTMSK_DISCINT                 USB_OTG_GINTMSK_DISCINT_Msk    /*!< Disconnect detected interrupt mask */
+#define USB_OTG_GINTMSK_SRQIM_Pos               (30U)                          
+#define USB_OTG_GINTMSK_SRQIM_Msk               (0x1U << USB_OTG_GINTMSK_SRQIM_Pos) /*!< 0x40000000 */
+#define USB_OTG_GINTMSK_SRQIM                   USB_OTG_GINTMSK_SRQIM_Msk      /*!< Session request/new session detected interrupt mask */
+#define USB_OTG_GINTMSK_WUIM_Pos                (31U)                          
+#define USB_OTG_GINTMSK_WUIM_Msk                (0x1U << USB_OTG_GINTMSK_WUIM_Pos) /*!< 0x80000000 */
+#define USB_OTG_GINTMSK_WUIM                    USB_OTG_GINTMSK_WUIM_Msk       /*!< Resume/remote wakeup detected interrupt mask */
+
+/********************  Bit definition forUSB_OTG_DAINT register  *******************/
+#define USB_OTG_DAINT_IEPINT_Pos                (0U)                           
+#define USB_OTG_DAINT_IEPINT_Msk                (0xFFFFU << USB_OTG_DAINT_IEPINT_Pos) /*!< 0x0000FFFF */
+#define USB_OTG_DAINT_IEPINT                    USB_OTG_DAINT_IEPINT_Msk       /*!< IN endpoint interrupt bits */
+#define USB_OTG_DAINT_OEPINT_Pos                (16U)                          
+#define USB_OTG_DAINT_OEPINT_Msk                (0xFFFFU << USB_OTG_DAINT_OEPINT_Pos) /*!< 0xFFFF0000 */
+#define USB_OTG_DAINT_OEPINT                    USB_OTG_DAINT_OEPINT_Msk       /*!< OUT endpoint interrupt bits */
+
+/********************  Bit definition forUSB_OTG_HAINTMSK register  ****************/
+#define USB_OTG_HAINTMSK_HAINTM_Pos             (0U)                           
+#define USB_OTG_HAINTMSK_HAINTM_Msk             (0xFFFFU << USB_OTG_HAINTMSK_HAINTM_Pos) /*!< 0x0000FFFF */
+#define USB_OTG_HAINTMSK_HAINTM                 USB_OTG_HAINTMSK_HAINTM_Msk    /*!< Channel interrupt mask */
+
+/********************  Bit definition for USB_OTG_GRXSTSP register  ****************/
+#define USB_OTG_GRXSTSP_EPNUM_Pos               (0U)                           
+#define USB_OTG_GRXSTSP_EPNUM_Msk               (0xFU << USB_OTG_GRXSTSP_EPNUM_Pos) /*!< 0x0000000F */
+#define USB_OTG_GRXSTSP_EPNUM                   USB_OTG_GRXSTSP_EPNUM_Msk      /*!< IN EP interrupt mask bits */
+#define USB_OTG_GRXSTSP_BCNT_Pos                (4U)                           
+#define USB_OTG_GRXSTSP_BCNT_Msk                (0x7FFU << USB_OTG_GRXSTSP_BCNT_Pos) /*!< 0x00007FF0 */
+#define USB_OTG_GRXSTSP_BCNT                    USB_OTG_GRXSTSP_BCNT_Msk       /*!< OUT EP interrupt mask bits */
+#define USB_OTG_GRXSTSP_DPID_Pos                (15U)                          
+#define USB_OTG_GRXSTSP_DPID_Msk                (0x3U << USB_OTG_GRXSTSP_DPID_Pos) /*!< 0x00018000 */
+#define USB_OTG_GRXSTSP_DPID                    USB_OTG_GRXSTSP_DPID_Msk       /*!< OUT EP interrupt mask bits */
+#define USB_OTG_GRXSTSP_PKTSTS_Pos              (17U)                          
+#define USB_OTG_GRXSTSP_PKTSTS_Msk              (0xFU << USB_OTG_GRXSTSP_PKTSTS_Pos) /*!< 0x001E0000 */
+#define USB_OTG_GRXSTSP_PKTSTS                  USB_OTG_GRXSTSP_PKTSTS_Msk     /*!< OUT EP interrupt mask bits */
+
+/********************  Bit definition forUSB_OTG_DAINTMSK register  ****************/
+#define USB_OTG_DAINTMSK_IEPM_Pos               (0U)                           
+#define USB_OTG_DAINTMSK_IEPM_Msk               (0xFFFFU << USB_OTG_DAINTMSK_IEPM_Pos) /*!< 0x0000FFFF */
+#define USB_OTG_DAINTMSK_IEPM                   USB_OTG_DAINTMSK_IEPM_Msk      /*!< IN EP interrupt mask bits */
+#define USB_OTG_DAINTMSK_OEPM_Pos               (16U)                          
+#define USB_OTG_DAINTMSK_OEPM_Msk               (0xFFFFU << USB_OTG_DAINTMSK_OEPM_Pos) /*!< 0xFFFF0000 */
+#define USB_OTG_DAINTMSK_OEPM                   USB_OTG_DAINTMSK_OEPM_Msk      /*!< OUT EP interrupt mask bits */
+
+/********************  Bit definition for OTG register  ****************************/
+#define USB_OTG_CHNUM_Pos                       (0U)                           
+#define USB_OTG_CHNUM_Msk                       (0xFU << USB_OTG_CHNUM_Pos)    /*!< 0x0000000F */
+#define USB_OTG_CHNUM                           USB_OTG_CHNUM_Msk              /*!< Channel number */
+#define USB_OTG_CHNUM_0                         (0x1U << USB_OTG_CHNUM_Pos)    /*!< 0x00000001 */
+#define USB_OTG_CHNUM_1                         (0x2U << USB_OTG_CHNUM_Pos)    /*!< 0x00000002 */
+#define USB_OTG_CHNUM_2                         (0x4U << USB_OTG_CHNUM_Pos)    /*!< 0x00000004 */
+#define USB_OTG_CHNUM_3                         (0x8U << USB_OTG_CHNUM_Pos)    /*!< 0x00000008 */
+#define USB_OTG_BCNT_Pos                        (4U)                           
+#define USB_OTG_BCNT_Msk                        (0x7FFU << USB_OTG_BCNT_Pos)   /*!< 0x00007FF0 */
+#define USB_OTG_BCNT                            USB_OTG_BCNT_Msk               /*!< Byte count */
+
+#define USB_OTG_DPID_Pos                        (15U)                          
+#define USB_OTG_DPID_Msk                        (0x3U << USB_OTG_DPID_Pos)     /*!< 0x00018000 */
+#define USB_OTG_DPID                            USB_OTG_DPID_Msk               /*!< Data PID */
+#define USB_OTG_DPID_0                          (0x1U << USB_OTG_DPID_Pos)     /*!< 0x00008000 */
+#define USB_OTG_DPID_1                          (0x2U << USB_OTG_DPID_Pos)     /*!< 0x00010000 */
+
+#define USB_OTG_PKTSTS_Pos                      (17U)                          
+#define USB_OTG_PKTSTS_Msk                      (0xFU << USB_OTG_PKTSTS_Pos)   /*!< 0x001E0000 */
+#define USB_OTG_PKTSTS                          USB_OTG_PKTSTS_Msk             /*!< Packet status */
+#define USB_OTG_PKTSTS_0                        (0x1U << USB_OTG_PKTSTS_Pos)   /*!< 0x00020000 */
+#define USB_OTG_PKTSTS_1                        (0x2U << USB_OTG_PKTSTS_Pos)   /*!< 0x00040000 */
+#define USB_OTG_PKTSTS_2                        (0x4U << USB_OTG_PKTSTS_Pos)   /*!< 0x00080000 */
+#define USB_OTG_PKTSTS_3                        (0x8U << USB_OTG_PKTSTS_Pos)   /*!< 0x00100000 */
+
+#define USB_OTG_EPNUM_Pos                       (0U)                           
+#define USB_OTG_EPNUM_Msk                       (0xFU << USB_OTG_EPNUM_Pos)    /*!< 0x0000000F */
+#define USB_OTG_EPNUM                           USB_OTG_EPNUM_Msk              /*!< Endpoint number */
+#define USB_OTG_EPNUM_0                         (0x1U << USB_OTG_EPNUM_Pos)    /*!< 0x00000001 */
+#define USB_OTG_EPNUM_1                         (0x2U << USB_OTG_EPNUM_Pos)    /*!< 0x00000002 */
+#define USB_OTG_EPNUM_2                         (0x4U << USB_OTG_EPNUM_Pos)    /*!< 0x00000004 */
+#define USB_OTG_EPNUM_3                         (0x8U << USB_OTG_EPNUM_Pos)    /*!< 0x00000008 */
+
+#define USB_OTG_FRMNUM_Pos                      (21U)                          
+#define USB_OTG_FRMNUM_Msk                      (0xFU << USB_OTG_FRMNUM_Pos)   /*!< 0x01E00000 */
+#define USB_OTG_FRMNUM                          USB_OTG_FRMNUM_Msk             /*!< Frame number */
+#define USB_OTG_FRMNUM_0                        (0x1U << USB_OTG_FRMNUM_Pos)   /*!< 0x00200000 */
+#define USB_OTG_FRMNUM_1                        (0x2U << USB_OTG_FRMNUM_Pos)   /*!< 0x00400000 */
+#define USB_OTG_FRMNUM_2                        (0x4U << USB_OTG_FRMNUM_Pos)   /*!< 0x00800000 */
+#define USB_OTG_FRMNUM_3                        (0x8U << USB_OTG_FRMNUM_Pos)   /*!< 0x01000000 */
+
+/********************  Bit definition for OTG register  ****************************/
+#define USB_OTG_CHNUM_Pos                       (0U)                           
+#define USB_OTG_CHNUM_Msk                       (0xFU << USB_OTG_CHNUM_Pos)    /*!< 0x0000000F */
+#define USB_OTG_CHNUM                           USB_OTG_CHNUM_Msk              /*!< Channel number */
+#define USB_OTG_CHNUM_0                         (0x1U << USB_OTG_CHNUM_Pos)    /*!< 0x00000001 */
+#define USB_OTG_CHNUM_1                         (0x2U << USB_OTG_CHNUM_Pos)    /*!< 0x00000002 */
+#define USB_OTG_CHNUM_2                         (0x4U << USB_OTG_CHNUM_Pos)    /*!< 0x00000004 */
+#define USB_OTG_CHNUM_3                         (0x8U << USB_OTG_CHNUM_Pos)    /*!< 0x00000008 */
+#define USB_OTG_BCNT_Pos                        (4U)                           
+#define USB_OTG_BCNT_Msk                        (0x7FFU << USB_OTG_BCNT_Pos)   /*!< 0x00007FF0 */
+#define USB_OTG_BCNT                            USB_OTG_BCNT_Msk               /*!< Byte count */
+
+#define USB_OTG_DPID_Pos                        (15U)                          
+#define USB_OTG_DPID_Msk                        (0x3U << USB_OTG_DPID_Pos)     /*!< 0x00018000 */
+#define USB_OTG_DPID                            USB_OTG_DPID_Msk               /*!< Data PID */
+#define USB_OTG_DPID_0                          (0x1U << USB_OTG_DPID_Pos)     /*!< 0x00008000 */
+#define USB_OTG_DPID_1                          (0x2U << USB_OTG_DPID_Pos)     /*!< 0x00010000 */
+
+#define USB_OTG_PKTSTS_Pos                      (17U)                          
+#define USB_OTG_PKTSTS_Msk                      (0xFU << USB_OTG_PKTSTS_Pos)   /*!< 0x001E0000 */
+#define USB_OTG_PKTSTS                          USB_OTG_PKTSTS_Msk             /*!< Packet status */
+#define USB_OTG_PKTSTS_0                        (0x1U << USB_OTG_PKTSTS_Pos)   /*!< 0x00020000 */
+#define USB_OTG_PKTSTS_1                        (0x2U << USB_OTG_PKTSTS_Pos)   /*!< 0x00040000 */
+#define USB_OTG_PKTSTS_2                        (0x4U << USB_OTG_PKTSTS_Pos)   /*!< 0x00080000 */
+#define USB_OTG_PKTSTS_3                        (0x8U << USB_OTG_PKTSTS_Pos)   /*!< 0x00100000 */
+
+#define USB_OTG_EPNUM_Pos                       (0U)                           
+#define USB_OTG_EPNUM_Msk                       (0xFU << USB_OTG_EPNUM_Pos)    /*!< 0x0000000F */
+#define USB_OTG_EPNUM                           USB_OTG_EPNUM_Msk              /*!< Endpoint number */
+#define USB_OTG_EPNUM_0                         (0x1U << USB_OTG_EPNUM_Pos)    /*!< 0x00000001 */
+#define USB_OTG_EPNUM_1                         (0x2U << USB_OTG_EPNUM_Pos)    /*!< 0x00000002 */
+#define USB_OTG_EPNUM_2                         (0x4U << USB_OTG_EPNUM_Pos)    /*!< 0x00000004 */
+#define USB_OTG_EPNUM_3                         (0x8U << USB_OTG_EPNUM_Pos)    /*!< 0x00000008 */
+
+#define USB_OTG_FRMNUM_Pos                      (21U)                          
+#define USB_OTG_FRMNUM_Msk                      (0xFU << USB_OTG_FRMNUM_Pos)   /*!< 0x01E00000 */
+#define USB_OTG_FRMNUM                          USB_OTG_FRMNUM_Msk             /*!< Frame number */
+#define USB_OTG_FRMNUM_0                        (0x1U << USB_OTG_FRMNUM_Pos)   /*!< 0x00200000 */
+#define USB_OTG_FRMNUM_1                        (0x2U << USB_OTG_FRMNUM_Pos)   /*!< 0x00400000 */
+#define USB_OTG_FRMNUM_2                        (0x4U << USB_OTG_FRMNUM_Pos)   /*!< 0x00800000 */
+#define USB_OTG_FRMNUM_3                        (0x8U << USB_OTG_FRMNUM_Pos)   /*!< 0x01000000 */
+
+/********************  Bit definition forUSB_OTG_GRXFSIZ register  *****************/
+#define USB_OTG_GRXFSIZ_RXFD_Pos                (0U)                           
+#define USB_OTG_GRXFSIZ_RXFD_Msk                (0xFFFFU << USB_OTG_GRXFSIZ_RXFD_Pos) /*!< 0x0000FFFF */
+#define USB_OTG_GRXFSIZ_RXFD                    USB_OTG_GRXFSIZ_RXFD_Msk       /*!< RxFIFO depth */
+
+/********************  Bit definition forUSB_OTG_DVBUSDIS register  ****************/
+#define USB_OTG_DVBUSDIS_VBUSDT_Pos             (0U)                           
+#define USB_OTG_DVBUSDIS_VBUSDT_Msk             (0xFFFFU << USB_OTG_DVBUSDIS_VBUSDT_Pos) /*!< 0x0000FFFF */
+#define USB_OTG_DVBUSDIS_VBUSDT                 USB_OTG_DVBUSDIS_VBUSDT_Msk    /*!< Device VBUS discharge time */
+
+/********************  Bit definition for OTG register  ****************************/
+#define USB_OTG_NPTXFSA_Pos                     (0U)                           
+#define USB_OTG_NPTXFSA_Msk                     (0xFFFFU << USB_OTG_NPTXFSA_Pos) /*!< 0x0000FFFF */
+#define USB_OTG_NPTXFSA                         USB_OTG_NPTXFSA_Msk            /*!< Nonperiodic transmit RAM start address */
+#define USB_OTG_NPTXFD_Pos                      (16U)                          
+#define USB_OTG_NPTXFD_Msk                      (0xFFFFU << USB_OTG_NPTXFD_Pos) /*!< 0xFFFF0000 */
+#define USB_OTG_NPTXFD                          USB_OTG_NPTXFD_Msk             /*!< Nonperiodic TxFIFO depth */
+#define USB_OTG_TX0FSA_Pos                      (0U)                           
+#define USB_OTG_TX0FSA_Msk                      (0xFFFFU << USB_OTG_TX0FSA_Pos) /*!< 0x0000FFFF */
+#define USB_OTG_TX0FSA                          USB_OTG_TX0FSA_Msk             /*!< Endpoint 0 transmit RAM start address */
+#define USB_OTG_TX0FD_Pos                       (16U)                          
+#define USB_OTG_TX0FD_Msk                       (0xFFFFU << USB_OTG_TX0FD_Pos) /*!< 0xFFFF0000 */
+#define USB_OTG_TX0FD                           USB_OTG_TX0FD_Msk              /*!< Endpoint 0 TxFIFO depth */
+
+/********************  Bit definition forUSB_OTG_DVBUSPULSE register  **************/
+#define USB_OTG_DVBUSPULSE_DVBUSP_Pos           (0U)                           
+#define USB_OTG_DVBUSPULSE_DVBUSP_Msk           (0xFFFU << USB_OTG_DVBUSPULSE_DVBUSP_Pos) /*!< 0x00000FFF */
+#define USB_OTG_DVBUSPULSE_DVBUSP               USB_OTG_DVBUSPULSE_DVBUSP_Msk  /*!< Device VBUS pulsing time */
+
+/********************  Bit definition forUSB_OTG_GNPTXSTS register  ****************/
+#define USB_OTG_GNPTXSTS_NPTXFSAV_Pos           (0U)                           
+#define USB_OTG_GNPTXSTS_NPTXFSAV_Msk           (0xFFFFU << USB_OTG_GNPTXSTS_NPTXFSAV_Pos) /*!< 0x0000FFFF */
+#define USB_OTG_GNPTXSTS_NPTXFSAV               USB_OTG_GNPTXSTS_NPTXFSAV_Msk  /*!< Nonperiodic TxFIFO space available */
+
+#define USB_OTG_GNPTXSTS_NPTQXSAV_Pos           (16U)                          
+#define USB_OTG_GNPTXSTS_NPTQXSAV_Msk           (0xFFU << USB_OTG_GNPTXSTS_NPTQXSAV_Pos) /*!< 0x00FF0000 */
+#define USB_OTG_GNPTXSTS_NPTQXSAV               USB_OTG_GNPTXSTS_NPTQXSAV_Msk  /*!< Nonperiodic transmit request queue space available */
+#define USB_OTG_GNPTXSTS_NPTQXSAV_0             (0x01U << USB_OTG_GNPTXSTS_NPTQXSAV_Pos) /*!< 0x00010000 */
+#define USB_OTG_GNPTXSTS_NPTQXSAV_1             (0x02U << USB_OTG_GNPTXSTS_NPTQXSAV_Pos) /*!< 0x00020000 */
+#define USB_OTG_GNPTXSTS_NPTQXSAV_2             (0x04U << USB_OTG_GNPTXSTS_NPTQXSAV_Pos) /*!< 0x00040000 */
+#define USB_OTG_GNPTXSTS_NPTQXSAV_3             (0x08U << USB_OTG_GNPTXSTS_NPTQXSAV_Pos) /*!< 0x00080000 */
+#define USB_OTG_GNPTXSTS_NPTQXSAV_4             (0x10U << USB_OTG_GNPTXSTS_NPTQXSAV_Pos) /*!< 0x00100000 */
+#define USB_OTG_GNPTXSTS_NPTQXSAV_5             (0x20U << USB_OTG_GNPTXSTS_NPTQXSAV_Pos) /*!< 0x00200000 */
+#define USB_OTG_GNPTXSTS_NPTQXSAV_6             (0x40U << USB_OTG_GNPTXSTS_NPTQXSAV_Pos) /*!< 0x00400000 */
+#define USB_OTG_GNPTXSTS_NPTQXSAV_7             (0x80U << USB_OTG_GNPTXSTS_NPTQXSAV_Pos) /*!< 0x00800000 */
+
+#define USB_OTG_GNPTXSTS_NPTXQTOP_Pos           (24U)                          
+#define USB_OTG_GNPTXSTS_NPTXQTOP_Msk           (0x7FU << USB_OTG_GNPTXSTS_NPTXQTOP_Pos) /*!< 0x7F000000 */
+#define USB_OTG_GNPTXSTS_NPTXQTOP               USB_OTG_GNPTXSTS_NPTXQTOP_Msk  /*!< Top of the nonperiodic transmit request queue */
+#define USB_OTG_GNPTXSTS_NPTXQTOP_0             (0x01U << USB_OTG_GNPTXSTS_NPTXQTOP_Pos) /*!< 0x01000000 */
+#define USB_OTG_GNPTXSTS_NPTXQTOP_1             (0x02U << USB_OTG_GNPTXSTS_NPTXQTOP_Pos) /*!< 0x02000000 */
+#define USB_OTG_GNPTXSTS_NPTXQTOP_2             (0x04U << USB_OTG_GNPTXSTS_NPTXQTOP_Pos) /*!< 0x04000000 */
+#define USB_OTG_GNPTXSTS_NPTXQTOP_3             (0x08U << USB_OTG_GNPTXSTS_NPTXQTOP_Pos) /*!< 0x08000000 */
+#define USB_OTG_GNPTXSTS_NPTXQTOP_4             (0x10U << USB_OTG_GNPTXSTS_NPTXQTOP_Pos) /*!< 0x10000000 */
+#define USB_OTG_GNPTXSTS_NPTXQTOP_5             (0x20U << USB_OTG_GNPTXSTS_NPTXQTOP_Pos) /*!< 0x20000000 */
+#define USB_OTG_GNPTXSTS_NPTXQTOP_6             (0x40U << USB_OTG_GNPTXSTS_NPTXQTOP_Pos) /*!< 0x40000000 */
+
+/********************  Bit definition forUSB_OTG_DTHRCTL register  *****************/
+#define USB_OTG_DTHRCTL_NONISOTHREN_Pos         (0U)                           
+#define USB_OTG_DTHRCTL_NONISOTHREN_Msk         (0x1U << USB_OTG_DTHRCTL_NONISOTHREN_Pos) /*!< 0x00000001 */
+#define USB_OTG_DTHRCTL_NONISOTHREN             USB_OTG_DTHRCTL_NONISOTHREN_Msk /*!< Nonisochronous IN endpoints threshold enable */
+#define USB_OTG_DTHRCTL_ISOTHREN_Pos            (1U)                           
+#define USB_OTG_DTHRCTL_ISOTHREN_Msk            (0x1U << USB_OTG_DTHRCTL_ISOTHREN_Pos) /*!< 0x00000002 */
+#define USB_OTG_DTHRCTL_ISOTHREN                USB_OTG_DTHRCTL_ISOTHREN_Msk   /*!< ISO IN endpoint threshold enable */
+
+#define USB_OTG_DTHRCTL_TXTHRLEN_Pos            (2U)                           
+#define USB_OTG_DTHRCTL_TXTHRLEN_Msk            (0x1FFU << USB_OTG_DTHRCTL_TXTHRLEN_Pos) /*!< 0x000007FC */
+#define USB_OTG_DTHRCTL_TXTHRLEN                USB_OTG_DTHRCTL_TXTHRLEN_Msk   /*!< Transmit threshold length */
+#define USB_OTG_DTHRCTL_TXTHRLEN_0              (0x001U << USB_OTG_DTHRCTL_TXTHRLEN_Pos) /*!< 0x00000004 */
+#define USB_OTG_DTHRCTL_TXTHRLEN_1              (0x002U << USB_OTG_DTHRCTL_TXTHRLEN_Pos) /*!< 0x00000008 */
+#define USB_OTG_DTHRCTL_TXTHRLEN_2              (0x004U << USB_OTG_DTHRCTL_TXTHRLEN_Pos) /*!< 0x00000010 */
+#define USB_OTG_DTHRCTL_TXTHRLEN_3              (0x008U << USB_OTG_DTHRCTL_TXTHRLEN_Pos) /*!< 0x00000020 */
+#define USB_OTG_DTHRCTL_TXTHRLEN_4              (0x010U << USB_OTG_DTHRCTL_TXTHRLEN_Pos) /*!< 0x00000040 */
+#define USB_OTG_DTHRCTL_TXTHRLEN_5              (0x020U << USB_OTG_DTHRCTL_TXTHRLEN_Pos) /*!< 0x00000080 */
+#define USB_OTG_DTHRCTL_TXTHRLEN_6              (0x040U << USB_OTG_DTHRCTL_TXTHRLEN_Pos) /*!< 0x00000100 */
+#define USB_OTG_DTHRCTL_TXTHRLEN_7              (0x080U << USB_OTG_DTHRCTL_TXTHRLEN_Pos) /*!< 0x00000200 */
+#define USB_OTG_DTHRCTL_TXTHRLEN_8              (0x100U << USB_OTG_DTHRCTL_TXTHRLEN_Pos) /*!< 0x00000400 */
+#define USB_OTG_DTHRCTL_RXTHREN_Pos             (16U)                          
+#define USB_OTG_DTHRCTL_RXTHREN_Msk             (0x1U << USB_OTG_DTHRCTL_RXTHREN_Pos) /*!< 0x00010000 */
+#define USB_OTG_DTHRCTL_RXTHREN                 USB_OTG_DTHRCTL_RXTHREN_Msk    /*!< Receive threshold enable */
+
+#define USB_OTG_DTHRCTL_RXTHRLEN_Pos            (17U)                          
+#define USB_OTG_DTHRCTL_RXTHRLEN_Msk            (0x1FFU << USB_OTG_DTHRCTL_RXTHRLEN_Pos) /*!< 0x03FE0000 */
+#define USB_OTG_DTHRCTL_RXTHRLEN                USB_OTG_DTHRCTL_RXTHRLEN_Msk   /*!< Receive threshold length */
+#define USB_OTG_DTHRCTL_RXTHRLEN_0              (0x001U << USB_OTG_DTHRCTL_RXTHRLEN_Pos) /*!< 0x00020000 */
+#define USB_OTG_DTHRCTL_RXTHRLEN_1              (0x002U << USB_OTG_DTHRCTL_RXTHRLEN_Pos) /*!< 0x00040000 */
+#define USB_OTG_DTHRCTL_RXTHRLEN_2              (0x004U << USB_OTG_DTHRCTL_RXTHRLEN_Pos) /*!< 0x00080000 */
+#define USB_OTG_DTHRCTL_RXTHRLEN_3              (0x008U << USB_OTG_DTHRCTL_RXTHRLEN_Pos) /*!< 0x00100000 */
+#define USB_OTG_DTHRCTL_RXTHRLEN_4              (0x010U << USB_OTG_DTHRCTL_RXTHRLEN_Pos) /*!< 0x00200000 */
+#define USB_OTG_DTHRCTL_RXTHRLEN_5              (0x020U << USB_OTG_DTHRCTL_RXTHRLEN_Pos) /*!< 0x00400000 */
+#define USB_OTG_DTHRCTL_RXTHRLEN_6              (0x040U << USB_OTG_DTHRCTL_RXTHRLEN_Pos) /*!< 0x00800000 */
+#define USB_OTG_DTHRCTL_RXTHRLEN_7              (0x080U << USB_OTG_DTHRCTL_RXTHRLEN_Pos) /*!< 0x01000000 */
+#define USB_OTG_DTHRCTL_RXTHRLEN_8              (0x100U << USB_OTG_DTHRCTL_RXTHRLEN_Pos) /*!< 0x02000000 */
+#define USB_OTG_DTHRCTL_ARPEN_Pos               (27U)                          
+#define USB_OTG_DTHRCTL_ARPEN_Msk               (0x1U << USB_OTG_DTHRCTL_ARPEN_Pos) /*!< 0x08000000 */
+#define USB_OTG_DTHRCTL_ARPEN                   USB_OTG_DTHRCTL_ARPEN_Msk      /*!< Arbiter parking enable */
+
+/********************  Bit definition forUSB_OTG_DIEPEMPMSK register  **************/
+#define USB_OTG_DIEPEMPMSK_INEPTXFEM_Pos        (0U)                           
+#define USB_OTG_DIEPEMPMSK_INEPTXFEM_Msk        (0xFFFFU << USB_OTG_DIEPEMPMSK_INEPTXFEM_Pos) /*!< 0x0000FFFF */
+#define USB_OTG_DIEPEMPMSK_INEPTXFEM            USB_OTG_DIEPEMPMSK_INEPTXFEM_Msk /*!< IN EP Tx FIFO empty interrupt mask bits */
+
+/********************  Bit definition forUSB_OTG_DEACHINT register  ****************/
+#define USB_OTG_DEACHINT_IEP1INT_Pos            (1U)                           
+#define USB_OTG_DEACHINT_IEP1INT_Msk            (0x1U << USB_OTG_DEACHINT_IEP1INT_Pos) /*!< 0x00000002 */
+#define USB_OTG_DEACHINT_IEP1INT                USB_OTG_DEACHINT_IEP1INT_Msk   /*!< IN endpoint 1interrupt bit */
+#define USB_OTG_DEACHINT_OEP1INT_Pos            (17U)                          
+#define USB_OTG_DEACHINT_OEP1INT_Msk            (0x1U << USB_OTG_DEACHINT_OEP1INT_Pos) /*!< 0x00020000 */
+#define USB_OTG_DEACHINT_OEP1INT                USB_OTG_DEACHINT_OEP1INT_Msk   /*!< OUT endpoint 1 interrupt bit */
+
+/********************  Bit definition forUSB_OTG_GCCFG register  *******************/
+#define USB_OTG_GCCFG_PWRDWN_Pos                (16U)                          
+#define USB_OTG_GCCFG_PWRDWN_Msk                (0x1U << USB_OTG_GCCFG_PWRDWN_Pos) /*!< 0x00010000 */
+#define USB_OTG_GCCFG_PWRDWN                    USB_OTG_GCCFG_PWRDWN_Msk       /*!< Power down */
+#define USB_OTG_GCCFG_VBUSASEN_Pos              (18U)                          
+#define USB_OTG_GCCFG_VBUSASEN_Msk              (0x1U << USB_OTG_GCCFG_VBUSASEN_Pos) /*!< 0x00040000 */
+#define USB_OTG_GCCFG_VBUSASEN                  USB_OTG_GCCFG_VBUSASEN_Msk     /*!< Enable the VBUS sensing device */
+#define USB_OTG_GCCFG_VBUSBSEN_Pos              (19U)                          
+#define USB_OTG_GCCFG_VBUSBSEN_Msk              (0x1U << USB_OTG_GCCFG_VBUSBSEN_Pos) /*!< 0x00080000 */
+#define USB_OTG_GCCFG_VBUSBSEN                  USB_OTG_GCCFG_VBUSBSEN_Msk     /*!< Enable the VBUS sensing device */
+#define USB_OTG_GCCFG_SOFOUTEN_Pos              (20U)                          
+#define USB_OTG_GCCFG_SOFOUTEN_Msk              (0x1U << USB_OTG_GCCFG_SOFOUTEN_Pos) /*!< 0x00100000 */
+#define USB_OTG_GCCFG_SOFOUTEN                  USB_OTG_GCCFG_SOFOUTEN_Msk     /*!< SOF output enable */
+
+/********************  Bit definition forUSB_OTG_DEACHINTMSK register  *************/
+#define USB_OTG_DEACHINTMSK_IEP1INTM_Pos        (1U)                           
+#define USB_OTG_DEACHINTMSK_IEP1INTM_Msk        (0x1U << USB_OTG_DEACHINTMSK_IEP1INTM_Pos) /*!< 0x00000002 */
+#define USB_OTG_DEACHINTMSK_IEP1INTM            USB_OTG_DEACHINTMSK_IEP1INTM_Msk /*!< IN Endpoint 1 interrupt mask bit */
+#define USB_OTG_DEACHINTMSK_OEP1INTM_Pos        (17U)                          
+#define USB_OTG_DEACHINTMSK_OEP1INTM_Msk        (0x1U << USB_OTG_DEACHINTMSK_OEP1INTM_Pos) /*!< 0x00020000 */
+#define USB_OTG_DEACHINTMSK_OEP1INTM            USB_OTG_DEACHINTMSK_OEP1INTM_Msk /*!< OUT Endpoint 1 interrupt mask bit */
+
+/********************  Bit definition forUSB_OTG_CID register  *********************/
+#define USB_OTG_CID_PRODUCT_ID_Pos              (0U)                           
+#define USB_OTG_CID_PRODUCT_ID_Msk              (0xFFFFFFFFU << USB_OTG_CID_PRODUCT_ID_Pos) /*!< 0xFFFFFFFF */
+#define USB_OTG_CID_PRODUCT_ID                  USB_OTG_CID_PRODUCT_ID_Msk     /*!< Product ID field */
+
+/********************  Bit definition forUSB_OTG_DIEPEACHMSK1 register  ************/
+#define USB_OTG_DIEPEACHMSK1_XFRCM_Pos          (0U)                           
+#define USB_OTG_DIEPEACHMSK1_XFRCM_Msk          (0x1U << USB_OTG_DIEPEACHMSK1_XFRCM_Pos) /*!< 0x00000001 */
+#define USB_OTG_DIEPEACHMSK1_XFRCM              USB_OTG_DIEPEACHMSK1_XFRCM_Msk /*!< Transfer completed interrupt mask */
+#define USB_OTG_DIEPEACHMSK1_EPDM_Pos           (1U)                           
+#define USB_OTG_DIEPEACHMSK1_EPDM_Msk           (0x1U << USB_OTG_DIEPEACHMSK1_EPDM_Pos) /*!< 0x00000002 */
+#define USB_OTG_DIEPEACHMSK1_EPDM               USB_OTG_DIEPEACHMSK1_EPDM_Msk  /*!< Endpoint disabled interrupt mask */
+#define USB_OTG_DIEPEACHMSK1_TOM_Pos            (3U)                           
+#define USB_OTG_DIEPEACHMSK1_TOM_Msk            (0x1U << USB_OTG_DIEPEACHMSK1_TOM_Pos) /*!< 0x00000008 */
+#define USB_OTG_DIEPEACHMSK1_TOM                USB_OTG_DIEPEACHMSK1_TOM_Msk   /*!< Timeout condition mask (nonisochronous endpoints) */
+#define USB_OTG_DIEPEACHMSK1_ITTXFEMSK_Pos      (4U)                           
+#define USB_OTG_DIEPEACHMSK1_ITTXFEMSK_Msk      (0x1U << USB_OTG_DIEPEACHMSK1_ITTXFEMSK_Pos) /*!< 0x00000010 */
+#define USB_OTG_DIEPEACHMSK1_ITTXFEMSK          USB_OTG_DIEPEACHMSK1_ITTXFEMSK_Msk /*!< IN token received when TxFIFO empty mask */
+#define USB_OTG_DIEPEACHMSK1_INEPNMM_Pos        (5U)                           
+#define USB_OTG_DIEPEACHMSK1_INEPNMM_Msk        (0x1U << USB_OTG_DIEPEACHMSK1_INEPNMM_Pos) /*!< 0x00000020 */
+#define USB_OTG_DIEPEACHMSK1_INEPNMM            USB_OTG_DIEPEACHMSK1_INEPNMM_Msk /*!< IN token received with EP mismatch mask */
+#define USB_OTG_DIEPEACHMSK1_INEPNEM_Pos        (6U)                           
+#define USB_OTG_DIEPEACHMSK1_INEPNEM_Msk        (0x1U << USB_OTG_DIEPEACHMSK1_INEPNEM_Pos) /*!< 0x00000040 */
+#define USB_OTG_DIEPEACHMSK1_INEPNEM            USB_OTG_DIEPEACHMSK1_INEPNEM_Msk /*!< IN endpoint NAK effective mask */
+#define USB_OTG_DIEPEACHMSK1_TXFURM_Pos         (8U)                           
+#define USB_OTG_DIEPEACHMSK1_TXFURM_Msk         (0x1U << USB_OTG_DIEPEACHMSK1_TXFURM_Pos) /*!< 0x00000100 */
+#define USB_OTG_DIEPEACHMSK1_TXFURM             USB_OTG_DIEPEACHMSK1_TXFURM_Msk /*!< FIFO underrun mask */
+#define USB_OTG_DIEPEACHMSK1_BIM_Pos            (9U)                           
+#define USB_OTG_DIEPEACHMSK1_BIM_Msk            (0x1U << USB_OTG_DIEPEACHMSK1_BIM_Pos) /*!< 0x00000200 */
+#define USB_OTG_DIEPEACHMSK1_BIM                USB_OTG_DIEPEACHMSK1_BIM_Msk   /*!< BNA interrupt mask */
+#define USB_OTG_DIEPEACHMSK1_NAKM_Pos           (13U)                          
+#define USB_OTG_DIEPEACHMSK1_NAKM_Msk           (0x1U << USB_OTG_DIEPEACHMSK1_NAKM_Pos) /*!< 0x00002000 */
+#define USB_OTG_DIEPEACHMSK1_NAKM               USB_OTG_DIEPEACHMSK1_NAKM_Msk  /*!< NAK interrupt mask */
+
+/********************  Bit definition forUSB_OTG_HPRT register  ********************/
+#define USB_OTG_HPRT_PCSTS_Pos                  (0U)                           
+#define USB_OTG_HPRT_PCSTS_Msk                  (0x1U << USB_OTG_HPRT_PCSTS_Pos) /*!< 0x00000001 */
+#define USB_OTG_HPRT_PCSTS                      USB_OTG_HPRT_PCSTS_Msk         /*!< Port connect status */
+#define USB_OTG_HPRT_PCDET_Pos                  (1U)                           
+#define USB_OTG_HPRT_PCDET_Msk                  (0x1U << USB_OTG_HPRT_PCDET_Pos) /*!< 0x00000002 */
+#define USB_OTG_HPRT_PCDET                      USB_OTG_HPRT_PCDET_Msk         /*!< Port connect detected */
+#define USB_OTG_HPRT_PENA_Pos                   (2U)                           
+#define USB_OTG_HPRT_PENA_Msk                   (0x1U << USB_OTG_HPRT_PENA_Pos) /*!< 0x00000004 */
+#define USB_OTG_HPRT_PENA                       USB_OTG_HPRT_PENA_Msk          /*!< Port enable */
+#define USB_OTG_HPRT_PENCHNG_Pos                (3U)                           
+#define USB_OTG_HPRT_PENCHNG_Msk                (0x1U << USB_OTG_HPRT_PENCHNG_Pos) /*!< 0x00000008 */
+#define USB_OTG_HPRT_PENCHNG                    USB_OTG_HPRT_PENCHNG_Msk       /*!< Port enable/disable change */
+#define USB_OTG_HPRT_POCA_Pos                   (4U)                           
+#define USB_OTG_HPRT_POCA_Msk                   (0x1U << USB_OTG_HPRT_POCA_Pos) /*!< 0x00000010 */
+#define USB_OTG_HPRT_POCA                       USB_OTG_HPRT_POCA_Msk          /*!< Port overcurrent active */
+#define USB_OTG_HPRT_POCCHNG_Pos                (5U)                           
+#define USB_OTG_HPRT_POCCHNG_Msk                (0x1U << USB_OTG_HPRT_POCCHNG_Pos) /*!< 0x00000020 */
+#define USB_OTG_HPRT_POCCHNG                    USB_OTG_HPRT_POCCHNG_Msk       /*!< Port overcurrent change */
+#define USB_OTG_HPRT_PRES_Pos                   (6U)                           
+#define USB_OTG_HPRT_PRES_Msk                   (0x1U << USB_OTG_HPRT_PRES_Pos) /*!< 0x00000040 */
+#define USB_OTG_HPRT_PRES                       USB_OTG_HPRT_PRES_Msk          /*!< Port resume */
+#define USB_OTG_HPRT_PSUSP_Pos                  (7U)                           
+#define USB_OTG_HPRT_PSUSP_Msk                  (0x1U << USB_OTG_HPRT_PSUSP_Pos) /*!< 0x00000080 */
+#define USB_OTG_HPRT_PSUSP                      USB_OTG_HPRT_PSUSP_Msk         /*!< Port suspend */
+#define USB_OTG_HPRT_PRST_Pos                   (8U)                           
+#define USB_OTG_HPRT_PRST_Msk                   (0x1U << USB_OTG_HPRT_PRST_Pos) /*!< 0x00000100 */
+#define USB_OTG_HPRT_PRST                       USB_OTG_HPRT_PRST_Msk          /*!< Port reset */
+
+#define USB_OTG_HPRT_PLSTS_Pos                  (10U)                          
+#define USB_OTG_HPRT_PLSTS_Msk                  (0x3U << USB_OTG_HPRT_PLSTS_Pos) /*!< 0x00000C00 */
+#define USB_OTG_HPRT_PLSTS                      USB_OTG_HPRT_PLSTS_Msk         /*!< Port line status */
+#define USB_OTG_HPRT_PLSTS_0                    (0x1U << USB_OTG_HPRT_PLSTS_Pos) /*!< 0x00000400 */
+#define USB_OTG_HPRT_PLSTS_1                    (0x2U << USB_OTG_HPRT_PLSTS_Pos) /*!< 0x00000800 */
+#define USB_OTG_HPRT_PPWR_Pos                   (12U)                          
+#define USB_OTG_HPRT_PPWR_Msk                   (0x1U << USB_OTG_HPRT_PPWR_Pos) /*!< 0x00001000 */
+#define USB_OTG_HPRT_PPWR                       USB_OTG_HPRT_PPWR_Msk          /*!< Port power */
+
+#define USB_OTG_HPRT_PTCTL_Pos                  (13U)                          
+#define USB_OTG_HPRT_PTCTL_Msk                  (0xFU << USB_OTG_HPRT_PTCTL_Pos) /*!< 0x0001E000 */
+#define USB_OTG_HPRT_PTCTL                      USB_OTG_HPRT_PTCTL_Msk         /*!< Port test control */
+#define USB_OTG_HPRT_PTCTL_0                    (0x1U << USB_OTG_HPRT_PTCTL_Pos) /*!< 0x00002000 */
+#define USB_OTG_HPRT_PTCTL_1                    (0x2U << USB_OTG_HPRT_PTCTL_Pos) /*!< 0x00004000 */
+#define USB_OTG_HPRT_PTCTL_2                    (0x4U << USB_OTG_HPRT_PTCTL_Pos) /*!< 0x00008000 */
+#define USB_OTG_HPRT_PTCTL_3                    (0x8U << USB_OTG_HPRT_PTCTL_Pos) /*!< 0x00010000 */
+
+#define USB_OTG_HPRT_PSPD_Pos                   (17U)                          
+#define USB_OTG_HPRT_PSPD_Msk                   (0x3U << USB_OTG_HPRT_PSPD_Pos) /*!< 0x00060000 */
+#define USB_OTG_HPRT_PSPD                       USB_OTG_HPRT_PSPD_Msk          /*!< Port speed */
+#define USB_OTG_HPRT_PSPD_0                     (0x1U << USB_OTG_HPRT_PSPD_Pos) /*!< 0x00020000 */
+#define USB_OTG_HPRT_PSPD_1                     (0x2U << USB_OTG_HPRT_PSPD_Pos) /*!< 0x00040000 */
+
+/********************  Bit definition forUSB_OTG_DOEPEACHMSK1 register  ************/
+#define USB_OTG_DOEPEACHMSK1_XFRCM_Pos          (0U)                           
+#define USB_OTG_DOEPEACHMSK1_XFRCM_Msk          (0x1U << USB_OTG_DOEPEACHMSK1_XFRCM_Pos) /*!< 0x00000001 */
+#define USB_OTG_DOEPEACHMSK1_XFRCM              USB_OTG_DOEPEACHMSK1_XFRCM_Msk /*!< Transfer completed interrupt mask */
+#define USB_OTG_DOEPEACHMSK1_EPDM_Pos           (1U)                           
+#define USB_OTG_DOEPEACHMSK1_EPDM_Msk           (0x1U << USB_OTG_DOEPEACHMSK1_EPDM_Pos) /*!< 0x00000002 */
+#define USB_OTG_DOEPEACHMSK1_EPDM               USB_OTG_DOEPEACHMSK1_EPDM_Msk  /*!< Endpoint disabled interrupt mask */
+#define USB_OTG_DOEPEACHMSK1_TOM_Pos            (3U)                           
+#define USB_OTG_DOEPEACHMSK1_TOM_Msk            (0x1U << USB_OTG_DOEPEACHMSK1_TOM_Pos) /*!< 0x00000008 */
+#define USB_OTG_DOEPEACHMSK1_TOM                USB_OTG_DOEPEACHMSK1_TOM_Msk   /*!< Timeout condition mask */
+#define USB_OTG_DOEPEACHMSK1_ITTXFEMSK_Pos      (4U)                           
+#define USB_OTG_DOEPEACHMSK1_ITTXFEMSK_Msk      (0x1U << USB_OTG_DOEPEACHMSK1_ITTXFEMSK_Pos) /*!< 0x00000010 */
+#define USB_OTG_DOEPEACHMSK1_ITTXFEMSK          USB_OTG_DOEPEACHMSK1_ITTXFEMSK_Msk /*!< IN token received when TxFIFO empty mask */
+#define USB_OTG_DOEPEACHMSK1_INEPNMM_Pos        (5U)                           
+#define USB_OTG_DOEPEACHMSK1_INEPNMM_Msk        (0x1U << USB_OTG_DOEPEACHMSK1_INEPNMM_Pos) /*!< 0x00000020 */
+#define USB_OTG_DOEPEACHMSK1_INEPNMM            USB_OTG_DOEPEACHMSK1_INEPNMM_Msk /*!< IN token received with EP mismatch mask */
+#define USB_OTG_DOEPEACHMSK1_INEPNEM_Pos        (6U)                           
+#define USB_OTG_DOEPEACHMSK1_INEPNEM_Msk        (0x1U << USB_OTG_DOEPEACHMSK1_INEPNEM_Pos) /*!< 0x00000040 */
+#define USB_OTG_DOEPEACHMSK1_INEPNEM            USB_OTG_DOEPEACHMSK1_INEPNEM_Msk /*!< IN endpoint NAK effective mask */
+#define USB_OTG_DOEPEACHMSK1_TXFURM_Pos         (8U)                           
+#define USB_OTG_DOEPEACHMSK1_TXFURM_Msk         (0x1U << USB_OTG_DOEPEACHMSK1_TXFURM_Pos) /*!< 0x00000100 */
+#define USB_OTG_DOEPEACHMSK1_TXFURM             USB_OTG_DOEPEACHMSK1_TXFURM_Msk /*!< OUT packet error mask */
+#define USB_OTG_DOEPEACHMSK1_BIM_Pos            (9U)                           
+#define USB_OTG_DOEPEACHMSK1_BIM_Msk            (0x1U << USB_OTG_DOEPEACHMSK1_BIM_Pos) /*!< 0x00000200 */
+#define USB_OTG_DOEPEACHMSK1_BIM                USB_OTG_DOEPEACHMSK1_BIM_Msk   /*!< BNA interrupt mask */
+#define USB_OTG_DOEPEACHMSK1_BERRM_Pos          (12U)                          
+#define USB_OTG_DOEPEACHMSK1_BERRM_Msk          (0x1U << USB_OTG_DOEPEACHMSK1_BERRM_Pos) /*!< 0x00001000 */
+#define USB_OTG_DOEPEACHMSK1_BERRM              USB_OTG_DOEPEACHMSK1_BERRM_Msk /*!< Bubble error interrupt mask */
+#define USB_OTG_DOEPEACHMSK1_NAKM_Pos           (13U)                          
+#define USB_OTG_DOEPEACHMSK1_NAKM_Msk           (0x1U << USB_OTG_DOEPEACHMSK1_NAKM_Pos) /*!< 0x00002000 */
+#define USB_OTG_DOEPEACHMSK1_NAKM               USB_OTG_DOEPEACHMSK1_NAKM_Msk  /*!< NAK interrupt mask */
+#define USB_OTG_DOEPEACHMSK1_NYETM_Pos          (14U)                          
+#define USB_OTG_DOEPEACHMSK1_NYETM_Msk          (0x1U << USB_OTG_DOEPEACHMSK1_NYETM_Pos) /*!< 0x00004000 */
+#define USB_OTG_DOEPEACHMSK1_NYETM              USB_OTG_DOEPEACHMSK1_NYETM_Msk /*!< NYET interrupt mask */
+
+/********************  Bit definition forUSB_OTG_HPTXFSIZ register  ****************/
+#define USB_OTG_HPTXFSIZ_PTXSA_Pos              (0U)                           
+#define USB_OTG_HPTXFSIZ_PTXSA_Msk              (0xFFFFU << USB_OTG_HPTXFSIZ_PTXSA_Pos) /*!< 0x0000FFFF */
+#define USB_OTG_HPTXFSIZ_PTXSA                  USB_OTG_HPTXFSIZ_PTXSA_Msk     /*!< Host periodic TxFIFO start address */
+#define USB_OTG_HPTXFSIZ_PTXFD_Pos              (16U)                          
+#define USB_OTG_HPTXFSIZ_PTXFD_Msk              (0xFFFFU << USB_OTG_HPTXFSIZ_PTXFD_Pos) /*!< 0xFFFF0000 */
+#define USB_OTG_HPTXFSIZ_PTXFD                  USB_OTG_HPTXFSIZ_PTXFD_Msk     /*!< Host periodic TxFIFO depth */
+
+/********************  Bit definition forUSB_OTG_DIEPCTL register  *****************/
+#define USB_OTG_DIEPCTL_MPSIZ_Pos               (0U)                           
+#define USB_OTG_DIEPCTL_MPSIZ_Msk               (0x7FFU << USB_OTG_DIEPCTL_MPSIZ_Pos) /*!< 0x000007FF */
+#define USB_OTG_DIEPCTL_MPSIZ                   USB_OTG_DIEPCTL_MPSIZ_Msk      /*!< Maximum packet size */
+#define USB_OTG_DIEPCTL_USBAEP_Pos              (15U)                          
+#define USB_OTG_DIEPCTL_USBAEP_Msk              (0x1U << USB_OTG_DIEPCTL_USBAEP_Pos) /*!< 0x00008000 */
+#define USB_OTG_DIEPCTL_USBAEP                  USB_OTG_DIEPCTL_USBAEP_Msk     /*!< USB active endpoint */
+#define USB_OTG_DIEPCTL_EONUM_DPID_Pos          (16U)                          
+#define USB_OTG_DIEPCTL_EONUM_DPID_Msk          (0x1U << USB_OTG_DIEPCTL_EONUM_DPID_Pos) /*!< 0x00010000 */
+#define USB_OTG_DIEPCTL_EONUM_DPID              USB_OTG_DIEPCTL_EONUM_DPID_Msk /*!< Even/odd frame */
+#define USB_OTG_DIEPCTL_NAKSTS_Pos              (17U)                          
+#define USB_OTG_DIEPCTL_NAKSTS_Msk              (0x1U << USB_OTG_DIEPCTL_NAKSTS_Pos) /*!< 0x00020000 */
+#define USB_OTG_DIEPCTL_NAKSTS                  USB_OTG_DIEPCTL_NAKSTS_Msk     /*!< NAK status */
+
+#define USB_OTG_DIEPCTL_EPTYP_Pos               (18U)                          
+#define USB_OTG_DIEPCTL_EPTYP_Msk               (0x3U << USB_OTG_DIEPCTL_EPTYP_Pos) /*!< 0x000C0000 */
+#define USB_OTG_DIEPCTL_EPTYP                   USB_OTG_DIEPCTL_EPTYP_Msk      /*!< Endpoint type */
+#define USB_OTG_DIEPCTL_EPTYP_0                 (0x1U << USB_OTG_DIEPCTL_EPTYP_Pos) /*!< 0x00040000 */
+#define USB_OTG_DIEPCTL_EPTYP_1                 (0x2U << USB_OTG_DIEPCTL_EPTYP_Pos) /*!< 0x00080000 */
+#define USB_OTG_DIEPCTL_STALL_Pos               (21U)                          
+#define USB_OTG_DIEPCTL_STALL_Msk               (0x1U << USB_OTG_DIEPCTL_STALL_Pos) /*!< 0x00200000 */
+#define USB_OTG_DIEPCTL_STALL                   USB_OTG_DIEPCTL_STALL_Msk      /*!< STALL handshake */
+
+#define USB_OTG_DIEPCTL_TXFNUM_Pos              (22U)                          
+#define USB_OTG_DIEPCTL_TXFNUM_Msk              (0xFU << USB_OTG_DIEPCTL_TXFNUM_Pos) /*!< 0x03C00000 */
+#define USB_OTG_DIEPCTL_TXFNUM                  USB_OTG_DIEPCTL_TXFNUM_Msk     /*!< TxFIFO number */
+#define USB_OTG_DIEPCTL_TXFNUM_0                (0x1U << USB_OTG_DIEPCTL_TXFNUM_Pos) /*!< 0x00400000 */
+#define USB_OTG_DIEPCTL_TXFNUM_1                (0x2U << USB_OTG_DIEPCTL_TXFNUM_Pos) /*!< 0x00800000 */
+#define USB_OTG_DIEPCTL_TXFNUM_2                (0x4U << USB_OTG_DIEPCTL_TXFNUM_Pos) /*!< 0x01000000 */
+#define USB_OTG_DIEPCTL_TXFNUM_3                (0x8U << USB_OTG_DIEPCTL_TXFNUM_Pos) /*!< 0x02000000 */
+#define USB_OTG_DIEPCTL_CNAK_Pos                (26U)                          
+#define USB_OTG_DIEPCTL_CNAK_Msk                (0x1U << USB_OTG_DIEPCTL_CNAK_Pos) /*!< 0x04000000 */
+#define USB_OTG_DIEPCTL_CNAK                    USB_OTG_DIEPCTL_CNAK_Msk       /*!< Clear NAK */
+#define USB_OTG_DIEPCTL_SNAK_Pos                (27U)                          
+#define USB_OTG_DIEPCTL_SNAK_Msk                (0x1U << USB_OTG_DIEPCTL_SNAK_Pos) /*!< 0x08000000 */
+#define USB_OTG_DIEPCTL_SNAK                    USB_OTG_DIEPCTL_SNAK_Msk       /*!< Set NAK */
+#define USB_OTG_DIEPCTL_SD0PID_SEVNFRM_Pos      (28U)                          
+#define USB_OTG_DIEPCTL_SD0PID_SEVNFRM_Msk      (0x1U << USB_OTG_DIEPCTL_SD0PID_SEVNFRM_Pos) /*!< 0x10000000 */
+#define USB_OTG_DIEPCTL_SD0PID_SEVNFRM          USB_OTG_DIEPCTL_SD0PID_SEVNFRM_Msk /*!< Set DATA0 PID */
+#define USB_OTG_DIEPCTL_SODDFRM_Pos             (29U)                          
+#define USB_OTG_DIEPCTL_SODDFRM_Msk             (0x1U << USB_OTG_DIEPCTL_SODDFRM_Pos) /*!< 0x20000000 */
+#define USB_OTG_DIEPCTL_SODDFRM                 USB_OTG_DIEPCTL_SODDFRM_Msk    /*!< Set odd frame */
+#define USB_OTG_DIEPCTL_EPDIS_Pos               (30U)                          
+#define USB_OTG_DIEPCTL_EPDIS_Msk               (0x1U << USB_OTG_DIEPCTL_EPDIS_Pos) /*!< 0x40000000 */
+#define USB_OTG_DIEPCTL_EPDIS                   USB_OTG_DIEPCTL_EPDIS_Msk      /*!< Endpoint disable */
+#define USB_OTG_DIEPCTL_EPENA_Pos               (31U)                          
+#define USB_OTG_DIEPCTL_EPENA_Msk               (0x1U << USB_OTG_DIEPCTL_EPENA_Pos) /*!< 0x80000000 */
+#define USB_OTG_DIEPCTL_EPENA                   USB_OTG_DIEPCTL_EPENA_Msk      /*!< Endpoint enable */
+
+/********************  Bit definition forUSB_OTG_HCCHAR register  ******************/
+#define USB_OTG_HCCHAR_MPSIZ_Pos                (0U)                           
+#define USB_OTG_HCCHAR_MPSIZ_Msk                (0x7FFU << USB_OTG_HCCHAR_MPSIZ_Pos) /*!< 0x000007FF */
+#define USB_OTG_HCCHAR_MPSIZ                    USB_OTG_HCCHAR_MPSIZ_Msk       /*!< Maximum packet size */
+
+#define USB_OTG_HCCHAR_EPNUM_Pos                (11U)                          
+#define USB_OTG_HCCHAR_EPNUM_Msk                (0xFU << USB_OTG_HCCHAR_EPNUM_Pos) /*!< 0x00007800 */
+#define USB_OTG_HCCHAR_EPNUM                    USB_OTG_HCCHAR_EPNUM_Msk       /*!< Endpoint number */
+#define USB_OTG_HCCHAR_EPNUM_0                  (0x1U << USB_OTG_HCCHAR_EPNUM_Pos) /*!< 0x00000800 */
+#define USB_OTG_HCCHAR_EPNUM_1                  (0x2U << USB_OTG_HCCHAR_EPNUM_Pos) /*!< 0x00001000 */
+#define USB_OTG_HCCHAR_EPNUM_2                  (0x4U << USB_OTG_HCCHAR_EPNUM_Pos) /*!< 0x00002000 */
+#define USB_OTG_HCCHAR_EPNUM_3                  (0x8U << USB_OTG_HCCHAR_EPNUM_Pos) /*!< 0x00004000 */
+#define USB_OTG_HCCHAR_EPDIR_Pos                (15U)                          
+#define USB_OTG_HCCHAR_EPDIR_Msk                (0x1U << USB_OTG_HCCHAR_EPDIR_Pos) /*!< 0x00008000 */
+#define USB_OTG_HCCHAR_EPDIR                    USB_OTG_HCCHAR_EPDIR_Msk       /*!< Endpoint direction */
+#define USB_OTG_HCCHAR_LSDEV_Pos                (17U)                          
+#define USB_OTG_HCCHAR_LSDEV_Msk                (0x1U << USB_OTG_HCCHAR_LSDEV_Pos) /*!< 0x00020000 */
+#define USB_OTG_HCCHAR_LSDEV                    USB_OTG_HCCHAR_LSDEV_Msk       /*!< Low-speed device */
+
+#define USB_OTG_HCCHAR_EPTYP_Pos                (18U)                          
+#define USB_OTG_HCCHAR_EPTYP_Msk                (0x3U << USB_OTG_HCCHAR_EPTYP_Pos) /*!< 0x000C0000 */
+#define USB_OTG_HCCHAR_EPTYP                    USB_OTG_HCCHAR_EPTYP_Msk       /*!< Endpoint type */
+#define USB_OTG_HCCHAR_EPTYP_0                  (0x1U << USB_OTG_HCCHAR_EPTYP_Pos) /*!< 0x00040000 */
+#define USB_OTG_HCCHAR_EPTYP_1                  (0x2U << USB_OTG_HCCHAR_EPTYP_Pos) /*!< 0x00080000 */
+                                      
+#define USB_OTG_HCCHAR_MC_Pos                   (20U)                          
+#define USB_OTG_HCCHAR_MC_Msk                   (0x3U << USB_OTG_HCCHAR_MC_Pos) /*!< 0x00300000 */
+#define USB_OTG_HCCHAR_MC                       USB_OTG_HCCHAR_MC_Msk          /*!< Multi Count (MC) / Error Count (EC) */
+#define USB_OTG_HCCHAR_MC_0                     (0x1U << USB_OTG_HCCHAR_MC_Pos) /*!< 0x00100000 */
+#define USB_OTG_HCCHAR_MC_1                     (0x2U << USB_OTG_HCCHAR_MC_Pos) /*!< 0x00200000 */
+
+#define USB_OTG_HCCHAR_DAD_Pos                  (22U)                          
+#define USB_OTG_HCCHAR_DAD_Msk                  (0x7FU << USB_OTG_HCCHAR_DAD_Pos) /*!< 0x1FC00000 */
+#define USB_OTG_HCCHAR_DAD                      USB_OTG_HCCHAR_DAD_Msk         /*!< Device address */
+#define USB_OTG_HCCHAR_DAD_0                    (0x01U << USB_OTG_HCCHAR_DAD_Pos) /*!< 0x00400000 */
+#define USB_OTG_HCCHAR_DAD_1                    (0x02U << USB_OTG_HCCHAR_DAD_Pos) /*!< 0x00800000 */
+#define USB_OTG_HCCHAR_DAD_2                    (0x04U << USB_OTG_HCCHAR_DAD_Pos) /*!< 0x01000000 */
+#define USB_OTG_HCCHAR_DAD_3                    (0x08U << USB_OTG_HCCHAR_DAD_Pos) /*!< 0x02000000 */
+#define USB_OTG_HCCHAR_DAD_4                    (0x10U << USB_OTG_HCCHAR_DAD_Pos) /*!< 0x04000000 */
+#define USB_OTG_HCCHAR_DAD_5                    (0x20U << USB_OTG_HCCHAR_DAD_Pos) /*!< 0x08000000 */
+#define USB_OTG_HCCHAR_DAD_6                    (0x40U << USB_OTG_HCCHAR_DAD_Pos) /*!< 0x10000000 */
+#define USB_OTG_HCCHAR_ODDFRM_Pos               (29U)                          
+#define USB_OTG_HCCHAR_ODDFRM_Msk               (0x1U << USB_OTG_HCCHAR_ODDFRM_Pos) /*!< 0x20000000 */
+#define USB_OTG_HCCHAR_ODDFRM                   USB_OTG_HCCHAR_ODDFRM_Msk      /*!< Odd frame */
+#define USB_OTG_HCCHAR_CHDIS_Pos                (30U)                          
+#define USB_OTG_HCCHAR_CHDIS_Msk                (0x1U << USB_OTG_HCCHAR_CHDIS_Pos) /*!< 0x40000000 */
+#define USB_OTG_HCCHAR_CHDIS                    USB_OTG_HCCHAR_CHDIS_Msk       /*!< Channel disable */
+#define USB_OTG_HCCHAR_CHENA_Pos                (31U)                          
+#define USB_OTG_HCCHAR_CHENA_Msk                (0x1U << USB_OTG_HCCHAR_CHENA_Pos) /*!< 0x80000000 */
+#define USB_OTG_HCCHAR_CHENA                    USB_OTG_HCCHAR_CHENA_Msk       /*!< Channel enable */
+
+/********************  Bit definition forUSB_OTG_HCSPLT register  ******************/
+
+#define USB_OTG_HCSPLT_PRTADDR_Pos              (0U)                           
+#define USB_OTG_HCSPLT_PRTADDR_Msk              (0x7FU << USB_OTG_HCSPLT_PRTADDR_Pos) /*!< 0x0000007F */
+#define USB_OTG_HCSPLT_PRTADDR                  USB_OTG_HCSPLT_PRTADDR_Msk     /*!< Port address */
+#define USB_OTG_HCSPLT_PRTADDR_0                (0x01U << USB_OTG_HCSPLT_PRTADDR_Pos) /*!< 0x00000001 */
+#define USB_OTG_HCSPLT_PRTADDR_1                (0x02U << USB_OTG_HCSPLT_PRTADDR_Pos) /*!< 0x00000002 */
+#define USB_OTG_HCSPLT_PRTADDR_2                (0x04U << USB_OTG_HCSPLT_PRTADDR_Pos) /*!< 0x00000004 */
+#define USB_OTG_HCSPLT_PRTADDR_3                (0x08U << USB_OTG_HCSPLT_PRTADDR_Pos) /*!< 0x00000008 */
+#define USB_OTG_HCSPLT_PRTADDR_4                (0x10U << USB_OTG_HCSPLT_PRTADDR_Pos) /*!< 0x00000010 */
+#define USB_OTG_HCSPLT_PRTADDR_5                (0x20U << USB_OTG_HCSPLT_PRTADDR_Pos) /*!< 0x00000020 */
+#define USB_OTG_HCSPLT_PRTADDR_6                (0x40U << USB_OTG_HCSPLT_PRTADDR_Pos) /*!< 0x00000040 */
+
+#define USB_OTG_HCSPLT_HUBADDR_Pos              (7U)                           
+#define USB_OTG_HCSPLT_HUBADDR_Msk              (0x7FU << USB_OTG_HCSPLT_HUBADDR_Pos) /*!< 0x00003F80 */
+#define USB_OTG_HCSPLT_HUBADDR                  USB_OTG_HCSPLT_HUBADDR_Msk     /*!< Hub address */
+#define USB_OTG_HCSPLT_HUBADDR_0                (0x01U << USB_OTG_HCSPLT_HUBADDR_Pos) /*!< 0x00000080 */
+#define USB_OTG_HCSPLT_HUBADDR_1                (0x02U << USB_OTG_HCSPLT_HUBADDR_Pos) /*!< 0x00000100 */
+#define USB_OTG_HCSPLT_HUBADDR_2                (0x04U << USB_OTG_HCSPLT_HUBADDR_Pos) /*!< 0x00000200 */
+#define USB_OTG_HCSPLT_HUBADDR_3                (0x08U << USB_OTG_HCSPLT_HUBADDR_Pos) /*!< 0x00000400 */
+#define USB_OTG_HCSPLT_HUBADDR_4                (0x10U << USB_OTG_HCSPLT_HUBADDR_Pos) /*!< 0x00000800 */
+#define USB_OTG_HCSPLT_HUBADDR_5                (0x20U << USB_OTG_HCSPLT_HUBADDR_Pos) /*!< 0x00001000 */
+#define USB_OTG_HCSPLT_HUBADDR_6                (0x40U << USB_OTG_HCSPLT_HUBADDR_Pos) /*!< 0x00002000 */
+
+#define USB_OTG_HCSPLT_XACTPOS_Pos              (14U)                          
+#define USB_OTG_HCSPLT_XACTPOS_Msk              (0x3U << USB_OTG_HCSPLT_XACTPOS_Pos) /*!< 0x0000C000 */
+#define USB_OTG_HCSPLT_XACTPOS                  USB_OTG_HCSPLT_XACTPOS_Msk     /*!< XACTPOS */
+#define USB_OTG_HCSPLT_XACTPOS_0                (0x1U << USB_OTG_HCSPLT_XACTPOS_Pos) /*!< 0x00004000 */
+#define USB_OTG_HCSPLT_XACTPOS_1                (0x2U << USB_OTG_HCSPLT_XACTPOS_Pos) /*!< 0x00008000 */
+#define USB_OTG_HCSPLT_COMPLSPLT_Pos            (16U)                          
+#define USB_OTG_HCSPLT_COMPLSPLT_Msk            (0x1U << USB_OTG_HCSPLT_COMPLSPLT_Pos) /*!< 0x00010000 */
+#define USB_OTG_HCSPLT_COMPLSPLT                USB_OTG_HCSPLT_COMPLSPLT_Msk   /*!< Do complete split */
+#define USB_OTG_HCSPLT_SPLITEN_Pos              (31U)                          
+#define USB_OTG_HCSPLT_SPLITEN_Msk              (0x1U << USB_OTG_HCSPLT_SPLITEN_Pos) /*!< 0x80000000 */
+#define USB_OTG_HCSPLT_SPLITEN                  USB_OTG_HCSPLT_SPLITEN_Msk     /*!< Split enable */
+
+/********************  Bit definition forUSB_OTG_HCINT register  *******************/
+#define USB_OTG_HCINT_XFRC_Pos                  (0U)                           
+#define USB_OTG_HCINT_XFRC_Msk                  (0x1U << USB_OTG_HCINT_XFRC_Pos) /*!< 0x00000001 */
+#define USB_OTG_HCINT_XFRC                      USB_OTG_HCINT_XFRC_Msk         /*!< Transfer completed */
+#define USB_OTG_HCINT_CHH_Pos                   (1U)                           
+#define USB_OTG_HCINT_CHH_Msk                   (0x1U << USB_OTG_HCINT_CHH_Pos) /*!< 0x00000002 */
+#define USB_OTG_HCINT_CHH                       USB_OTG_HCINT_CHH_Msk          /*!< Channel halted */
+#define USB_OTG_HCINT_AHBERR_Pos                (2U)                           
+#define USB_OTG_HCINT_AHBERR_Msk                (0x1U << USB_OTG_HCINT_AHBERR_Pos) /*!< 0x00000004 */
+#define USB_OTG_HCINT_AHBERR                    USB_OTG_HCINT_AHBERR_Msk       /*!< AHB error */
+#define USB_OTG_HCINT_STALL_Pos                 (3U)                           
+#define USB_OTG_HCINT_STALL_Msk                 (0x1U << USB_OTG_HCINT_STALL_Pos) /*!< 0x00000008 */
+#define USB_OTG_HCINT_STALL                     USB_OTG_HCINT_STALL_Msk        /*!< STALL response received interrupt */
+#define USB_OTG_HCINT_NAK_Pos                   (4U)                           
+#define USB_OTG_HCINT_NAK_Msk                   (0x1U << USB_OTG_HCINT_NAK_Pos) /*!< 0x00000010 */
+#define USB_OTG_HCINT_NAK                       USB_OTG_HCINT_NAK_Msk          /*!< NAK response received interrupt */
+#define USB_OTG_HCINT_ACK_Pos                   (5U)                           
+#define USB_OTG_HCINT_ACK_Msk                   (0x1U << USB_OTG_HCINT_ACK_Pos) /*!< 0x00000020 */
+#define USB_OTG_HCINT_ACK                       USB_OTG_HCINT_ACK_Msk          /*!< ACK response received/transmitted interrupt */
+#define USB_OTG_HCINT_NYET_Pos                  (6U)                           
+#define USB_OTG_HCINT_NYET_Msk                  (0x1U << USB_OTG_HCINT_NYET_Pos) /*!< 0x00000040 */
+#define USB_OTG_HCINT_NYET                      USB_OTG_HCINT_NYET_Msk         /*!< Response received interrupt */
+#define USB_OTG_HCINT_TXERR_Pos                 (7U)                           
+#define USB_OTG_HCINT_TXERR_Msk                 (0x1U << USB_OTG_HCINT_TXERR_Pos) /*!< 0x00000080 */
+#define USB_OTG_HCINT_TXERR                     USB_OTG_HCINT_TXERR_Msk        /*!< Transaction error */
+#define USB_OTG_HCINT_BBERR_Pos                 (8U)                           
+#define USB_OTG_HCINT_BBERR_Msk                 (0x1U << USB_OTG_HCINT_BBERR_Pos) /*!< 0x00000100 */
+#define USB_OTG_HCINT_BBERR                     USB_OTG_HCINT_BBERR_Msk        /*!< Babble error */
+#define USB_OTG_HCINT_FRMOR_Pos                 (9U)                           
+#define USB_OTG_HCINT_FRMOR_Msk                 (0x1U << USB_OTG_HCINT_FRMOR_Pos) /*!< 0x00000200 */
+#define USB_OTG_HCINT_FRMOR                     USB_OTG_HCINT_FRMOR_Msk        /*!< Frame overrun */
+#define USB_OTG_HCINT_DTERR_Pos                 (10U)                          
+#define USB_OTG_HCINT_DTERR_Msk                 (0x1U << USB_OTG_HCINT_DTERR_Pos) /*!< 0x00000400 */
+#define USB_OTG_HCINT_DTERR                     USB_OTG_HCINT_DTERR_Msk        /*!< Data toggle error */
+
+/********************  Bit definition forUSB_OTG_DIEPINT register  *****************/
+#define USB_OTG_DIEPINT_XFRC_Pos                (0U)                           
+#define USB_OTG_DIEPINT_XFRC_Msk                (0x1U << USB_OTG_DIEPINT_XFRC_Pos) /*!< 0x00000001 */
+#define USB_OTG_DIEPINT_XFRC                    USB_OTG_DIEPINT_XFRC_Msk       /*!< Transfer completed interrupt */
+#define USB_OTG_DIEPINT_EPDISD_Pos              (1U)                           
+#define USB_OTG_DIEPINT_EPDISD_Msk              (0x1U << USB_OTG_DIEPINT_EPDISD_Pos) /*!< 0x00000002 */
+#define USB_OTG_DIEPINT_EPDISD                  USB_OTG_DIEPINT_EPDISD_Msk     /*!< Endpoint disabled interrupt */
+#define USB_OTG_DIEPINT_TOC_Pos                 (3U)                           
+#define USB_OTG_DIEPINT_TOC_Msk                 (0x1U << USB_OTG_DIEPINT_TOC_Pos) /*!< 0x00000008 */
+#define USB_OTG_DIEPINT_TOC                     USB_OTG_DIEPINT_TOC_Msk        /*!< Timeout condition */
+#define USB_OTG_DIEPINT_ITTXFE_Pos              (4U)                           
+#define USB_OTG_DIEPINT_ITTXFE_Msk              (0x1U << USB_OTG_DIEPINT_ITTXFE_Pos) /*!< 0x00000010 */
+#define USB_OTG_DIEPINT_ITTXFE                  USB_OTG_DIEPINT_ITTXFE_Msk     /*!< IN token received when TxFIFO is empty */
+#define USB_OTG_DIEPINT_INEPNE_Pos              (6U)                           
+#define USB_OTG_DIEPINT_INEPNE_Msk              (0x1U << USB_OTG_DIEPINT_INEPNE_Pos) /*!< 0x00000040 */
+#define USB_OTG_DIEPINT_INEPNE                  USB_OTG_DIEPINT_INEPNE_Msk     /*!< IN endpoint NAK effective */
+#define USB_OTG_DIEPINT_TXFE_Pos                (7U)                           
+#define USB_OTG_DIEPINT_TXFE_Msk                (0x1U << USB_OTG_DIEPINT_TXFE_Pos) /*!< 0x00000080 */
+#define USB_OTG_DIEPINT_TXFE                    USB_OTG_DIEPINT_TXFE_Msk       /*!< Transmit FIFO empty */
+#define USB_OTG_DIEPINT_TXFIFOUDRN_Pos          (8U)                           
+#define USB_OTG_DIEPINT_TXFIFOUDRN_Msk          (0x1U << USB_OTG_DIEPINT_TXFIFOUDRN_Pos) /*!< 0x00000100 */
+#define USB_OTG_DIEPINT_TXFIFOUDRN              USB_OTG_DIEPINT_TXFIFOUDRN_Msk /*!< Transmit Fifo Underrun */
+#define USB_OTG_DIEPINT_BNA_Pos                 (9U)                           
+#define USB_OTG_DIEPINT_BNA_Msk                 (0x1U << USB_OTG_DIEPINT_BNA_Pos) /*!< 0x00000200 */
+#define USB_OTG_DIEPINT_BNA                     USB_OTG_DIEPINT_BNA_Msk        /*!< Buffer not available interrupt */
+#define USB_OTG_DIEPINT_PKTDRPSTS_Pos           (11U)                          
+#define USB_OTG_DIEPINT_PKTDRPSTS_Msk           (0x1U << USB_OTG_DIEPINT_PKTDRPSTS_Pos) /*!< 0x00000800 */
+#define USB_OTG_DIEPINT_PKTDRPSTS               USB_OTG_DIEPINT_PKTDRPSTS_Msk  /*!< Packet dropped status */
+#define USB_OTG_DIEPINT_BERR_Pos                (12U)                          
+#define USB_OTG_DIEPINT_BERR_Msk                (0x1U << USB_OTG_DIEPINT_BERR_Pos) /*!< 0x00001000 */
+#define USB_OTG_DIEPINT_BERR                    USB_OTG_DIEPINT_BERR_Msk       /*!< Babble error interrupt */
+#define USB_OTG_DIEPINT_NAK_Pos                 (13U)                          
+#define USB_OTG_DIEPINT_NAK_Msk                 (0x1U << USB_OTG_DIEPINT_NAK_Pos) /*!< 0x00002000 */
+#define USB_OTG_DIEPINT_NAK                     USB_OTG_DIEPINT_NAK_Msk        /*!< NAK interrupt */
+
+/********************  Bit definition forUSB_OTG_HCINTMSK register  ****************/
+#define USB_OTG_HCINTMSK_XFRCM_Pos              (0U)                           
+#define USB_OTG_HCINTMSK_XFRCM_Msk              (0x1U << USB_OTG_HCINTMSK_XFRCM_Pos) /*!< 0x00000001 */
+#define USB_OTG_HCINTMSK_XFRCM                  USB_OTG_HCINTMSK_XFRCM_Msk     /*!< Transfer completed mask */
+#define USB_OTG_HCINTMSK_CHHM_Pos               (1U)                           
+#define USB_OTG_HCINTMSK_CHHM_Msk               (0x1U << USB_OTG_HCINTMSK_CHHM_Pos) /*!< 0x00000002 */
+#define USB_OTG_HCINTMSK_CHHM                   USB_OTG_HCINTMSK_CHHM_Msk      /*!< Channel halted mask */
+#define USB_OTG_HCINTMSK_AHBERR_Pos             (2U)                           
+#define USB_OTG_HCINTMSK_AHBERR_Msk             (0x1U << USB_OTG_HCINTMSK_AHBERR_Pos) /*!< 0x00000004 */
+#define USB_OTG_HCINTMSK_AHBERR                 USB_OTG_HCINTMSK_AHBERR_Msk    /*!< AHB error */
+#define USB_OTG_HCINTMSK_STALLM_Pos             (3U)                           
+#define USB_OTG_HCINTMSK_STALLM_Msk             (0x1U << USB_OTG_HCINTMSK_STALLM_Pos) /*!< 0x00000008 */
+#define USB_OTG_HCINTMSK_STALLM                 USB_OTG_HCINTMSK_STALLM_Msk    /*!< STALL response received interrupt mask */
+#define USB_OTG_HCINTMSK_NAKM_Pos               (4U)                           
+#define USB_OTG_HCINTMSK_NAKM_Msk               (0x1U << USB_OTG_HCINTMSK_NAKM_Pos) /*!< 0x00000010 */
+#define USB_OTG_HCINTMSK_NAKM                   USB_OTG_HCINTMSK_NAKM_Msk      /*!< NAK response received interrupt mask */
+#define USB_OTG_HCINTMSK_ACKM_Pos               (5U)                           
+#define USB_OTG_HCINTMSK_ACKM_Msk               (0x1U << USB_OTG_HCINTMSK_ACKM_Pos) /*!< 0x00000020 */
+#define USB_OTG_HCINTMSK_ACKM                   USB_OTG_HCINTMSK_ACKM_Msk      /*!< ACK response received/transmitted interrupt mask */
+#define USB_OTG_HCINTMSK_NYET_Pos               (6U)                           
+#define USB_OTG_HCINTMSK_NYET_Msk               (0x1U << USB_OTG_HCINTMSK_NYET_Pos) /*!< 0x00000040 */
+#define USB_OTG_HCINTMSK_NYET                   USB_OTG_HCINTMSK_NYET_Msk      /*!< response received interrupt mask */
+#define USB_OTG_HCINTMSK_TXERRM_Pos             (7U)                           
+#define USB_OTG_HCINTMSK_TXERRM_Msk             (0x1U << USB_OTG_HCINTMSK_TXERRM_Pos) /*!< 0x00000080 */
+#define USB_OTG_HCINTMSK_TXERRM                 USB_OTG_HCINTMSK_TXERRM_Msk    /*!< Transaction error mask */
+#define USB_OTG_HCINTMSK_BBERRM_Pos             (8U)                           
+#define USB_OTG_HCINTMSK_BBERRM_Msk             (0x1U << USB_OTG_HCINTMSK_BBERRM_Pos) /*!< 0x00000100 */
+#define USB_OTG_HCINTMSK_BBERRM                 USB_OTG_HCINTMSK_BBERRM_Msk    /*!< Babble error mask */
+#define USB_OTG_HCINTMSK_FRMORM_Pos             (9U)                           
+#define USB_OTG_HCINTMSK_FRMORM_Msk             (0x1U << USB_OTG_HCINTMSK_FRMORM_Pos) /*!< 0x00000200 */
+#define USB_OTG_HCINTMSK_FRMORM                 USB_OTG_HCINTMSK_FRMORM_Msk    /*!< Frame overrun mask */
+#define USB_OTG_HCINTMSK_DTERRM_Pos             (10U)                          
+#define USB_OTG_HCINTMSK_DTERRM_Msk             (0x1U << USB_OTG_HCINTMSK_DTERRM_Pos) /*!< 0x00000400 */
+#define USB_OTG_HCINTMSK_DTERRM                 USB_OTG_HCINTMSK_DTERRM_Msk    /*!< Data toggle error mask */
+
+/********************  Bit definition for USB_OTG_DIEPTSIZ register  ***************/
+#define USB_OTG_DIEPTSIZ_XFRSIZ_Pos             (0U)                           
+#define USB_OTG_DIEPTSIZ_XFRSIZ_Msk             (0x7FFFFU << USB_OTG_DIEPTSIZ_XFRSIZ_Pos) /*!< 0x0007FFFF */
+#define USB_OTG_DIEPTSIZ_XFRSIZ                 USB_OTG_DIEPTSIZ_XFRSIZ_Msk    /*!< Transfer size */
+#define USB_OTG_DIEPTSIZ_PKTCNT_Pos             (19U)                          
+#define USB_OTG_DIEPTSIZ_PKTCNT_Msk             (0x3FFU << USB_OTG_DIEPTSIZ_PKTCNT_Pos) /*!< 0x1FF80000 */
+#define USB_OTG_DIEPTSIZ_PKTCNT                 USB_OTG_DIEPTSIZ_PKTCNT_Msk    /*!< Packet count */
+#define USB_OTG_DIEPTSIZ_MULCNT_Pos             (29U)                          
+#define USB_OTG_DIEPTSIZ_MULCNT_Msk             (0x3U << USB_OTG_DIEPTSIZ_MULCNT_Pos) /*!< 0x60000000 */
+#define USB_OTG_DIEPTSIZ_MULCNT                 USB_OTG_DIEPTSIZ_MULCNT_Msk    /*!< Packet count */
+
+/********************  Bit definition forUSB_OTG_HCTSIZ register  ******************/
+#define USB_OTG_HCTSIZ_XFRSIZ_Pos               (0U)                           
+#define USB_OTG_HCTSIZ_XFRSIZ_Msk               (0x7FFFFU << USB_OTG_HCTSIZ_XFRSIZ_Pos) /*!< 0x0007FFFF */
+#define USB_OTG_HCTSIZ_XFRSIZ                   USB_OTG_HCTSIZ_XFRSIZ_Msk      /*!< Transfer size */
+#define USB_OTG_HCTSIZ_PKTCNT_Pos               (19U)                          
+#define USB_OTG_HCTSIZ_PKTCNT_Msk               (0x3FFU << USB_OTG_HCTSIZ_PKTCNT_Pos) /*!< 0x1FF80000 */
+#define USB_OTG_HCTSIZ_PKTCNT                   USB_OTG_HCTSIZ_PKTCNT_Msk      /*!< Packet count */
+#define USB_OTG_HCTSIZ_DOPING_Pos               (31U)                          
+#define USB_OTG_HCTSIZ_DOPING_Msk               (0x1U << USB_OTG_HCTSIZ_DOPING_Pos) /*!< 0x80000000 */
+#define USB_OTG_HCTSIZ_DOPING                   USB_OTG_HCTSIZ_DOPING_Msk      /*!< Do PING */
+#define USB_OTG_HCTSIZ_DPID_Pos                 (29U)                          
+#define USB_OTG_HCTSIZ_DPID_Msk                 (0x3U << USB_OTG_HCTSIZ_DPID_Pos) /*!< 0x60000000 */
+#define USB_OTG_HCTSIZ_DPID                     USB_OTG_HCTSIZ_DPID_Msk        /*!< Data PID */
+#define USB_OTG_HCTSIZ_DPID_0                   (0x1U << USB_OTG_HCTSIZ_DPID_Pos) /*!< 0x20000000 */
+#define USB_OTG_HCTSIZ_DPID_1                   (0x2U << USB_OTG_HCTSIZ_DPID_Pos) /*!< 0x40000000 */
+
+/********************  Bit definition forUSB_OTG_DIEPDMA register  *****************/
+#define USB_OTG_DIEPDMA_DMAADDR_Pos             (0U)                           
+#define USB_OTG_DIEPDMA_DMAADDR_Msk             (0xFFFFFFFFU << USB_OTG_DIEPDMA_DMAADDR_Pos) /*!< 0xFFFFFFFF */
+#define USB_OTG_DIEPDMA_DMAADDR                 USB_OTG_DIEPDMA_DMAADDR_Msk    /*!< DMA address */
+
+/********************  Bit definition forUSB_OTG_HCDMA register  *******************/
+#define USB_OTG_HCDMA_DMAADDR_Pos               (0U)                           
+#define USB_OTG_HCDMA_DMAADDR_Msk               (0xFFFFFFFFU << USB_OTG_HCDMA_DMAADDR_Pos) /*!< 0xFFFFFFFF */
+#define USB_OTG_HCDMA_DMAADDR                   USB_OTG_HCDMA_DMAADDR_Msk      /*!< DMA address */
+
+/********************  Bit definition forUSB_OTG_DTXFSTS register  *****************/
+#define USB_OTG_DTXFSTS_INEPTFSAV_Pos           (0U)                           
+#define USB_OTG_DTXFSTS_INEPTFSAV_Msk           (0xFFFFU << USB_OTG_DTXFSTS_INEPTFSAV_Pos) /*!< 0x0000FFFF */
+#define USB_OTG_DTXFSTS_INEPTFSAV               USB_OTG_DTXFSTS_INEPTFSAV_Msk  /*!< IN endpoint TxFIFO space avail */
+
+/********************  Bit definition forUSB_OTG_DIEPTXF register  *****************/
+#define USB_OTG_DIEPTXF_INEPTXSA_Pos            (0U)                           
+#define USB_OTG_DIEPTXF_INEPTXSA_Msk            (0xFFFFU << USB_OTG_DIEPTXF_INEPTXSA_Pos) /*!< 0x0000FFFF */
+#define USB_OTG_DIEPTXF_INEPTXSA                USB_OTG_DIEPTXF_INEPTXSA_Msk   /*!< IN endpoint FIFOx transmit RAM start address */
+#define USB_OTG_DIEPTXF_INEPTXFD_Pos            (16U)                          
+#define USB_OTG_DIEPTXF_INEPTXFD_Msk            (0xFFFFU << USB_OTG_DIEPTXF_INEPTXFD_Pos) /*!< 0xFFFF0000 */
+#define USB_OTG_DIEPTXF_INEPTXFD                USB_OTG_DIEPTXF_INEPTXFD_Msk   /*!< IN endpoint TxFIFO depth */
+
+/********************  Bit definition forUSB_OTG_DOEPCTL register  *****************/
+#define USB_OTG_DOEPCTL_MPSIZ_Pos               (0U)                           
+#define USB_OTG_DOEPCTL_MPSIZ_Msk               (0x7FFU << USB_OTG_DOEPCTL_MPSIZ_Pos) /*!< 0x000007FF */
+#define USB_OTG_DOEPCTL_MPSIZ                   USB_OTG_DOEPCTL_MPSIZ_Msk      /*!< Maximum packet size */
+#define USB_OTG_DOEPCTL_USBAEP_Pos              (15U)                          
+#define USB_OTG_DOEPCTL_USBAEP_Msk              (0x1U << USB_OTG_DOEPCTL_USBAEP_Pos) /*!< 0x00008000 */
+#define USB_OTG_DOEPCTL_USBAEP                  USB_OTG_DOEPCTL_USBAEP_Msk     /*!< USB active endpoint */
+#define USB_OTG_DOEPCTL_NAKSTS_Pos              (17U)                          
+#define USB_OTG_DOEPCTL_NAKSTS_Msk              (0x1U << USB_OTG_DOEPCTL_NAKSTS_Pos) /*!< 0x00020000 */
+#define USB_OTG_DOEPCTL_NAKSTS                  USB_OTG_DOEPCTL_NAKSTS_Msk     /*!< NAK status */
+#define USB_OTG_DOEPCTL_SD0PID_SEVNFRM_Pos      (28U)                          
+#define USB_OTG_DOEPCTL_SD0PID_SEVNFRM_Msk      (0x1U << USB_OTG_DOEPCTL_SD0PID_SEVNFRM_Pos) /*!< 0x10000000 */
+#define USB_OTG_DOEPCTL_SD0PID_SEVNFRM          USB_OTG_DOEPCTL_SD0PID_SEVNFRM_Msk /*!< Set DATA0 PID */
+#define USB_OTG_DOEPCTL_SODDFRM_Pos             (29U)                          
+#define USB_OTG_DOEPCTL_SODDFRM_Msk             (0x1U << USB_OTG_DOEPCTL_SODDFRM_Pos) /*!< 0x20000000 */
+#define USB_OTG_DOEPCTL_SODDFRM                 USB_OTG_DOEPCTL_SODDFRM_Msk    /*!< Set odd frame */
+#define USB_OTG_DOEPCTL_EPTYP_Pos               (18U)                          
+#define USB_OTG_DOEPCTL_EPTYP_Msk               (0x3U << USB_OTG_DOEPCTL_EPTYP_Pos) /*!< 0x000C0000 */
+#define USB_OTG_DOEPCTL_EPTYP                   USB_OTG_DOEPCTL_EPTYP_Msk      /*!< Endpoint type */
+#define USB_OTG_DOEPCTL_EPTYP_0                 (0x1U << USB_OTG_DOEPCTL_EPTYP_Pos) /*!< 0x00040000 */
+#define USB_OTG_DOEPCTL_EPTYP_1                 (0x2U << USB_OTG_DOEPCTL_EPTYP_Pos) /*!< 0x00080000 */
+#define USB_OTG_DOEPCTL_SNPM_Pos                (20U)                          
+#define USB_OTG_DOEPCTL_SNPM_Msk                (0x1U << USB_OTG_DOEPCTL_SNPM_Pos) /*!< 0x00100000 */
+#define USB_OTG_DOEPCTL_SNPM                    USB_OTG_DOEPCTL_SNPM_Msk       /*!< Snoop mode */
+#define USB_OTG_DOEPCTL_STALL_Pos               (21U)                          
+#define USB_OTG_DOEPCTL_STALL_Msk               (0x1U << USB_OTG_DOEPCTL_STALL_Pos) /*!< 0x00200000 */
+#define USB_OTG_DOEPCTL_STALL                   USB_OTG_DOEPCTL_STALL_Msk      /*!< STALL handshake */
+#define USB_OTG_DOEPCTL_CNAK_Pos                (26U)                          
+#define USB_OTG_DOEPCTL_CNAK_Msk                (0x1U << USB_OTG_DOEPCTL_CNAK_Pos) /*!< 0x04000000 */
+#define USB_OTG_DOEPCTL_CNAK                    USB_OTG_DOEPCTL_CNAK_Msk       /*!< Clear NAK */
+#define USB_OTG_DOEPCTL_SNAK_Pos                (27U)                          
+#define USB_OTG_DOEPCTL_SNAK_Msk                (0x1U << USB_OTG_DOEPCTL_SNAK_Pos) /*!< 0x08000000 */
+#define USB_OTG_DOEPCTL_SNAK                    USB_OTG_DOEPCTL_SNAK_Msk       /*!< Set NAK */
+#define USB_OTG_DOEPCTL_EPDIS_Pos               (30U)                          
+#define USB_OTG_DOEPCTL_EPDIS_Msk               (0x1U << USB_OTG_DOEPCTL_EPDIS_Pos) /*!< 0x40000000 */
+#define USB_OTG_DOEPCTL_EPDIS                   USB_OTG_DOEPCTL_EPDIS_Msk      /*!< Endpoint disable */
+#define USB_OTG_DOEPCTL_EPENA_Pos               (31U)                          
+#define USB_OTG_DOEPCTL_EPENA_Msk               (0x1U << USB_OTG_DOEPCTL_EPENA_Pos) /*!< 0x80000000 */
+#define USB_OTG_DOEPCTL_EPENA                   USB_OTG_DOEPCTL_EPENA_Msk      /*!< Endpoint enable */
+
+/********************  Bit definition forUSB_OTG_DOEPINT register  *****************/
+#define USB_OTG_DOEPINT_XFRC_Pos                (0U)                           
+#define USB_OTG_DOEPINT_XFRC_Msk                (0x1U << USB_OTG_DOEPINT_XFRC_Pos) /*!< 0x00000001 */
+#define USB_OTG_DOEPINT_XFRC                    USB_OTG_DOEPINT_XFRC_Msk       /*!< Transfer completed interrupt */
+#define USB_OTG_DOEPINT_EPDISD_Pos              (1U)                           
+#define USB_OTG_DOEPINT_EPDISD_Msk              (0x1U << USB_OTG_DOEPINT_EPDISD_Pos) /*!< 0x00000002 */
+#define USB_OTG_DOEPINT_EPDISD                  USB_OTG_DOEPINT_EPDISD_Msk     /*!< Endpoint disabled interrupt */
+#define USB_OTG_DOEPINT_STUP_Pos                (3U)                           
+#define USB_OTG_DOEPINT_STUP_Msk                (0x1U << USB_OTG_DOEPINT_STUP_Pos) /*!< 0x00000008 */
+#define USB_OTG_DOEPINT_STUP                    USB_OTG_DOEPINT_STUP_Msk       /*!< SETUP phase done */
+#define USB_OTG_DOEPINT_OTEPDIS_Pos             (4U)                           
+#define USB_OTG_DOEPINT_OTEPDIS_Msk             (0x1U << USB_OTG_DOEPINT_OTEPDIS_Pos) /*!< 0x00000010 */
+#define USB_OTG_DOEPINT_OTEPDIS                 USB_OTG_DOEPINT_OTEPDIS_Msk    /*!< OUT token received when endpoint disabled */
+#define USB_OTG_DOEPINT_B2BSTUP_Pos             (6U)                           
+#define USB_OTG_DOEPINT_B2BSTUP_Msk             (0x1U << USB_OTG_DOEPINT_B2BSTUP_Pos) /*!< 0x00000040 */
+#define USB_OTG_DOEPINT_B2BSTUP                 USB_OTG_DOEPINT_B2BSTUP_Msk    /*!< Back-to-back SETUP packets received */
+#define USB_OTG_DOEPINT_NYET_Pos                (14U)                          
+#define USB_OTG_DOEPINT_NYET_Msk                (0x1U << USB_OTG_DOEPINT_NYET_Pos) /*!< 0x00004000 */
+#define USB_OTG_DOEPINT_NYET                    USB_OTG_DOEPINT_NYET_Msk       /*!< NYET interrupt */
+
+/********************  Bit definition forUSB_OTG_DOEPTSIZ register  ****************/
+#define USB_OTG_DOEPTSIZ_XFRSIZ_Pos             (0U)                           
+#define USB_OTG_DOEPTSIZ_XFRSIZ_Msk             (0x7FFFFU << USB_OTG_DOEPTSIZ_XFRSIZ_Pos) /*!< 0x0007FFFF */
+#define USB_OTG_DOEPTSIZ_XFRSIZ                 USB_OTG_DOEPTSIZ_XFRSIZ_Msk    /*!< Transfer size */
+#define USB_OTG_DOEPTSIZ_PKTCNT_Pos             (19U)                          
+#define USB_OTG_DOEPTSIZ_PKTCNT_Msk             (0x3FFU << USB_OTG_DOEPTSIZ_PKTCNT_Pos) /*!< 0x1FF80000 */
+#define USB_OTG_DOEPTSIZ_PKTCNT                 USB_OTG_DOEPTSIZ_PKTCNT_Msk    /*!< Packet count */
+
+#define USB_OTG_DOEPTSIZ_STUPCNT_Pos            (29U)                          
+#define USB_OTG_DOEPTSIZ_STUPCNT_Msk            (0x3U << USB_OTG_DOEPTSIZ_STUPCNT_Pos) /*!< 0x60000000 */
+#define USB_OTG_DOEPTSIZ_STUPCNT                USB_OTG_DOEPTSIZ_STUPCNT_Msk   /*!< SETUP packet count */
+#define USB_OTG_DOEPTSIZ_STUPCNT_0              (0x1U << USB_OTG_DOEPTSIZ_STUPCNT_Pos) /*!< 0x20000000 */
+#define USB_OTG_DOEPTSIZ_STUPCNT_1              (0x2U << USB_OTG_DOEPTSIZ_STUPCNT_Pos) /*!< 0x40000000 */
+
+/********************  Bit definition for PCGCCTL register  ************************/
+#define USB_OTG_PCGCCTL_STOPCLK_Pos             (0U)                           
+#define USB_OTG_PCGCCTL_STOPCLK_Msk             (0x1U << USB_OTG_PCGCCTL_STOPCLK_Pos) /*!< 0x00000001 */
+#define USB_OTG_PCGCCTL_STOPCLK                 USB_OTG_PCGCCTL_STOPCLK_Msk    /*!< SETUP packet count */
+#define USB_OTG_PCGCCTL_GATECLK_Pos             (1U)                           
+#define USB_OTG_PCGCCTL_GATECLK_Msk             (0x1U << USB_OTG_PCGCCTL_GATECLK_Pos) /*!< 0x00000002 */
+#define USB_OTG_PCGCCTL_GATECLK                 USB_OTG_PCGCCTL_GATECLK_Msk    /*!<Bit 0 */
+#define USB_OTG_PCGCCTL_PHYSUSP_Pos             (4U)                           
+#define USB_OTG_PCGCCTL_PHYSUSP_Msk             (0x1U << USB_OTG_PCGCCTL_PHYSUSP_Pos) /*!< 0x00000010 */
+#define USB_OTG_PCGCCTL_PHYSUSP                 USB_OTG_PCGCCTL_PHYSUSP_Msk    /*!<Bit 1 */
 
 /**
   * @}
@@ -10295,13 +14343,15 @@ typedef struct
 
 #define IS_ADC_DMA_CAPABILITY_INSTANCE(INSTANCE) ((INSTANCE) == ADC1)
 
-/****************************** CAN Instances *********************************/    
-#define IS_CAN_ALL_INSTANCE(INSTANCE) ((INSTANCE) == CAN1)
+/****************************** CAN Instances *********************************/   
+#define IS_CAN_ALL_INSTANCE(INSTANCE) (((INSTANCE) == CAN1) || \
+                                       ((INSTANCE) == CAN2))
 
 /****************************** CRC Instances *********************************/
 #define IS_CRC_ALL_INSTANCE(INSTANCE) ((INSTANCE) == CRC)
 
 /****************************** DAC Instances *********************************/
+#define IS_DAC_ALL_INSTANCE(INSTANCE) ((INSTANCE) == DAC1)
 
 /****************************** DMA Instances *********************************/
 #define IS_DMA_ALL_INSTANCE(INSTANCE) (((INSTANCE) == DMA1_Channel1) || \
@@ -10310,7 +14360,12 @@ typedef struct
                                        ((INSTANCE) == DMA1_Channel4) || \
                                        ((INSTANCE) == DMA1_Channel5) || \
                                        ((INSTANCE) == DMA1_Channel6) || \
-                                       ((INSTANCE) == DMA1_Channel7))
+                                       ((INSTANCE) == DMA1_Channel7) || \
+                                       ((INSTANCE) == DMA2_Channel1) || \
+                                       ((INSTANCE) == DMA2_Channel2) || \
+                                       ((INSTANCE) == DMA2_Channel3) || \
+                                       ((INSTANCE) == DMA2_Channel4) || \
+                                       ((INSTANCE) == DMA2_Channel5))
   
 /******************************* GPIO Instances *******************************/
 #define IS_GPIO_ALL_INSTANCE(INSTANCE) (((INSTANCE) == GPIOA) || \
@@ -10332,12 +14387,17 @@ typedef struct
 /******************************* SMBUS Instances ******************************/
 #define IS_SMBUS_ALL_INSTANCE         IS_I2C_ALL_INSTANCE
 
+/******************************** I2S Instances *******************************/
+#define IS_I2S_ALL_INSTANCE(INSTANCE) (((INSTANCE) == SPI2) || \
+                                       ((INSTANCE) == SPI3))
+
 /****************************** IWDG Instances ********************************/
 #define IS_IWDG_ALL_INSTANCE(INSTANCE)  ((INSTANCE) == IWDG)
 
 /******************************** SPI Instances *******************************/
 #define IS_SPI_ALL_INSTANCE(INSTANCE) (((INSTANCE) == SPI1) || \
-                                       ((INSTANCE) == SPI2))
+                                       ((INSTANCE) == SPI2) || \
+                                       ((INSTANCE) == SPI3))
 
 /****************************** START TIM Instances ***************************/
 /****************************** TIM Instances *********************************/
@@ -10345,93 +14405,112 @@ typedef struct
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5)    || \
+   ((INSTANCE) == TIM6)    || \
+   ((INSTANCE) == TIM7))
 
-#define IS_TIM_ADVANCED_INSTANCE(INSTANCE) ((INSTANCE) == TIM1)
+#define IS_TIM_ADVANCED_INSTANCE(INSTANCE)  ((INSTANCE) == TIM1)
 
 #define IS_TIM_CC1_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5))
 
 #define IS_TIM_CC2_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5))
 
 #define IS_TIM_CC3_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5))
 
 #define IS_TIM_CC4_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5))
 
 #define IS_TIM_CLOCKSOURCE_ETRMODE1_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5))
 
 #define IS_TIM_CLOCKSOURCE_ETRMODE2_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5))
 
 #define IS_TIM_CLOCKSOURCE_TIX_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5))
 
 #define IS_TIM_CLOCKSOURCE_ITRX_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5))
 
 #define IS_TIM_OCXREF_CLEAR_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5))
 
 #define IS_TIM_ENCODER_INTERFACE_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5))
 
 #define IS_TIM_XOR_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5))
 
 #define IS_TIM_MASTER_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5)    || \
+   ((INSTANCE) == TIM6)    || \
+   ((INSTANCE) == TIM7))
 
 #define IS_TIM_SLAVE_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5))
 
 #define IS_TIM_DMABURST_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5))
 
 #define IS_TIM_BREAK_INSTANCE(INSTANCE)\
   ((INSTANCE) == TIM1)
@@ -10459,6 +14538,12 @@ typedef struct
      (((CHANNEL) == TIM_CHANNEL_1) ||          \
       ((CHANNEL) == TIM_CHANNEL_2) ||          \
       ((CHANNEL) == TIM_CHANNEL_3) ||          \
+      ((CHANNEL) == TIM_CHANNEL_4)))           \
+    ||                                         \
+    (((INSTANCE) == TIM5) &&                   \
+     (((CHANNEL) == TIM_CHANNEL_1) ||          \
+      ((CHANNEL) == TIM_CHANNEL_2) ||          \
+      ((CHANNEL) == TIM_CHANNEL_3) ||          \
       ((CHANNEL) == TIM_CHANNEL_4))))
 
 #define IS_TIM_CCXN_INSTANCE(INSTANCE, CHANNEL) \
@@ -10471,7 +14556,8 @@ typedef struct
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5))
 
 #define IS_TIM_REPETITION_COUNTER_INSTANCE(INSTANCE)\
   ((INSTANCE) == TIM1)
@@ -10480,19 +14566,24 @@ typedef struct
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5))
 
 #define IS_TIM_DMA_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5)    || \
+   ((INSTANCE) == TIM6)    || \
+   ((INSTANCE) == TIM7))
     
 #define IS_TIM_DMA_CC_INSTANCE(INSTANCE)\
   (((INSTANCE) == TIM1)    || \
    ((INSTANCE) == TIM2)    || \
    ((INSTANCE) == TIM3)    || \
-   ((INSTANCE) == TIM4))
+   ((INSTANCE) == TIM4)    || \
+   ((INSTANCE) == TIM5))
     
 #define IS_TIM_COMMUTATION_EVENT_INSTANCE(INSTANCE)\
   ((INSTANCE) == TIM1)
@@ -10500,12 +14591,14 @@ typedef struct
 #define IS_TIM_ETR_INSTANCE(INSTANCE)  (((INSTANCE) == TIM1)    || \
                                         ((INSTANCE) == TIM2)    || \
                                         ((INSTANCE) == TIM3)    || \
-                                        ((INSTANCE) == TIM4))
+                                        ((INSTANCE) == TIM4)    || \
+                                        ((INSTANCE) == TIM5))
 
 #define IS_TIM_HALL_SENSOR_INTERFACE_INSTANCE(INSTANCE) (((INSTANCE) == TIM1)    || \
                                                          ((INSTANCE) == TIM2)    || \
                                                          ((INSTANCE) == TIM3)    || \
-                                                         ((INSTANCE) == TIM4))
+                                                         ((INSTANCE) == TIM4)    || \
+                                                         ((INSTANCE) == TIM5))
 
 #define IS_TIM_32B_COUNTER_INSTANCE(INSTANCE)           0U
 
@@ -10520,17 +14613,23 @@ typedef struct
 /******************** UART Instances : Asynchronous mode **********************/
 #define IS_UART_INSTANCE(INSTANCE) (((INSTANCE) == USART1) || \
                                     ((INSTANCE) == USART2) || \
-                                    ((INSTANCE) == USART3))
+                                    ((INSTANCE) == USART3) || \
+                                    ((INSTANCE) == UART4)  || \
+                                    ((INSTANCE) == UART5))
 
 /******************** UART Instances : Half-Duplex mode **********************/
 #define IS_UART_HALFDUPLEX_INSTANCE(INSTANCE) (((INSTANCE) == USART1) || \
                                                ((INSTANCE) == USART2) || \
-                                               ((INSTANCE) == USART3))
+                                               ((INSTANCE) == USART3) || \
+                                               ((INSTANCE) == UART4)  || \
+                                               ((INSTANCE) == UART5))
 
 /******************** UART Instances : LIN mode **********************/
 #define IS_UART_LIN_INSTANCE(INSTANCE) (((INSTANCE) == USART1) || \
                                         ((INSTANCE) == USART2) || \
-                                        ((INSTANCE) == USART3))
+                                        ((INSTANCE) == USART3) || \
+                                        ((INSTANCE) == UART4)  || \
+                                        ((INSTANCE) == UART5))
 
 /****************** UART Instances : Hardware Flow control ********************/                                    
 #define IS_UART_HWFLOW_INSTANCE(INSTANCE) (((INSTANCE) == USART1) || \
@@ -10545,17 +14644,22 @@ typedef struct
 /*********************** UART Instances : IRDA mode ***************************/
 #define IS_IRDA_INSTANCE(INSTANCE) (((INSTANCE) == USART1) || \
                                     ((INSTANCE) == USART2) || \
-                                    ((INSTANCE) == USART3))
+                                    ((INSTANCE) == USART3) || \
+                                    ((INSTANCE) == UART4)  || \
+                                    ((INSTANCE) == UART5))
 
 /***************** UART Instances : Multi-Processor mode **********************/
 #define IS_UART_MULTIPROCESSOR_INSTANCE(INSTANCE) (((INSTANCE) == USART1) || \
                                                    ((INSTANCE) == USART2) || \
-                                                   ((INSTANCE) == USART3))
+                                                   ((INSTANCE) == USART3) || \
+                                                   ((INSTANCE) == UART4)  || \
+                                                   ((INSTANCE) == UART5))
 
 /***************** UART Instances : DMA mode available **********************/
 #define IS_UART_DMA_INSTANCE(INSTANCE) (((INSTANCE) == USART1) || \
                                         ((INSTANCE) == USART2) || \
-                                        ((INSTANCE) == USART3))
+                                        ((INSTANCE) == USART3) || \
+                                        ((INSTANCE) == UART4))
 
 /****************************** RTC Instances *********************************/
 #define IS_RTC_ALL_INSTANCE(INSTANCE)  ((INSTANCE) == RTC)
@@ -10563,13 +14667,13 @@ typedef struct
 /**************************** WWDG Instances *****************************/
 #define IS_WWDG_ALL_INSTANCE(INSTANCE)  ((INSTANCE) == WWDG)
 
+
 /****************************** USB Instances ********************************/
-#define IS_USB_ALL_INSTANCE(INSTANCE)   ((INSTANCE) == USB)
+#define IS_USB_ALL_INSTANCE(INSTANCE) ((INSTANCE) == USB_OTG_FS)
 
 
-
-#define RCC_HSE_MIN         4000000U
-#define RCC_HSE_MAX        16000000U
+#define RCC_HSE_MIN         3000000U
+#define RCC_HSE_MAX        25000000U
 
 #define RCC_MAX_FREQUENCY  72000000U
 
@@ -10586,41 +14690,44 @@ typedef struct
 
 /* Aliases for __IRQn */
 #define ADC1_IRQn               ADC1_2_IRQn
-#define TIM9_IRQn               TIM1_BRK_IRQn
+#define USB_LP_CAN1_RX0_IRQn    CAN1_RX0_IRQn
+#define USB_LP_IRQn             CAN1_RX0_IRQn
+#define USB_HP_CAN1_TX_IRQn     CAN1_TX_IRQn
+#define USB_HP_IRQn             CAN1_TX_IRQn
+#define DMA2_Channel4_5_IRQn    DMA2_Channel4_IRQn
+#define USBWakeUp_IRQn          OTG_FS_WKUP_IRQn
+#define CEC_IRQn                OTG_FS_WKUP_IRQn
 #define TIM1_BRK_TIM9_IRQn      TIM1_BRK_IRQn
 #define TIM1_BRK_TIM15_IRQn     TIM1_BRK_IRQn
-#define TIM1_TRG_COM_TIM17_IRQn TIM1_TRG_COM_IRQn
-#define TIM1_TRG_COM_TIM11_IRQn TIM1_TRG_COM_IRQn
+#define TIM9_IRQn               TIM1_BRK_IRQn
 #define TIM11_IRQn              TIM1_TRG_COM_IRQn
-#define TIM1_UP_TIM10_IRQn      TIM1_UP_IRQn
-#define TIM1_UP_TIM16_IRQn      TIM1_UP_IRQn
+#define TIM1_TRG_COM_TIM11_IRQn TIM1_TRG_COM_IRQn
+#define TIM1_TRG_COM_TIM17_IRQn TIM1_TRG_COM_IRQn
 #define TIM10_IRQn              TIM1_UP_IRQn
-#define OTG_FS_WKUP_IRQn        USBWakeUp_IRQn
-#define CEC_IRQn                USBWakeUp_IRQn
-#define USB_HP_IRQn             USB_HP_CAN1_TX_IRQn
-#define CAN1_TX_IRQn            USB_HP_CAN1_TX_IRQn
-#define CAN1_RX0_IRQn           USB_LP_CAN1_RX0_IRQn
-#define USB_LP_IRQn             USB_LP_CAN1_RX0_IRQn
+#define TIM1_UP_TIM16_IRQn      TIM1_UP_IRQn
+#define TIM1_UP_TIM10_IRQn      TIM1_UP_IRQn
+#define TIM6_DAC_IRQn           TIM6_IRQn
 
 
 /* Aliases for __IRQHandler */
 #define ADC1_IRQHandler               ADC1_2_IRQHandler
-#define TIM9_IRQHandler               TIM1_BRK_IRQHandler
+#define USB_LP_CAN1_RX0_IRQHandler    CAN1_RX0_IRQHandler
+#define USB_LP_IRQHandler             CAN1_RX0_IRQHandler
+#define USB_HP_CAN1_TX_IRQHandler     CAN1_TX_IRQHandler
+#define USB_HP_IRQHandler             CAN1_TX_IRQHandler
+#define DMA2_Channel4_5_IRQHandler    DMA2_Channel4_IRQHandler
+#define USBWakeUp_IRQHandler          OTG_FS_WKUP_IRQHandler
+#define CEC_IRQHandler                OTG_FS_WKUP_IRQHandler
 #define TIM1_BRK_TIM9_IRQHandler      TIM1_BRK_IRQHandler
 #define TIM1_BRK_TIM15_IRQHandler     TIM1_BRK_IRQHandler
-#define TIM1_TRG_COM_TIM17_IRQHandler TIM1_TRG_COM_IRQHandler
-#define TIM1_TRG_COM_TIM11_IRQHandler TIM1_TRG_COM_IRQHandler
+#define TIM9_IRQHandler               TIM1_BRK_IRQHandler
 #define TIM11_IRQHandler              TIM1_TRG_COM_IRQHandler
-#define TIM1_UP_TIM10_IRQHandler      TIM1_UP_IRQHandler
-#define TIM1_UP_TIM16_IRQHandler      TIM1_UP_IRQHandler
+#define TIM1_TRG_COM_TIM11_IRQHandler TIM1_TRG_COM_IRQHandler
+#define TIM1_TRG_COM_TIM17_IRQHandler TIM1_TRG_COM_IRQHandler
 #define TIM10_IRQHandler              TIM1_UP_IRQHandler
-#define OTG_FS_WKUP_IRQHandler        USBWakeUp_IRQHandler
-#define CEC_IRQHandler                USBWakeUp_IRQHandler
-#define USB_HP_IRQHandler             USB_HP_CAN1_TX_IRQHandler
-#define CAN1_TX_IRQHandler            USB_HP_CAN1_TX_IRQHandler
-#define CAN1_RX0_IRQHandler           USB_LP_CAN1_RX0_IRQHandler
-#define USB_LP_IRQHandler             USB_LP_CAN1_RX0_IRQHandler
-
+#define TIM1_UP_TIM16_IRQHandler      TIM1_UP_IRQHandler
+#define TIM1_UP_TIM10_IRQHandler      TIM1_UP_IRQHandler
+#define TIM6_DAC_IRQHandler           TIM6_IRQHandler
 
 /**
   * @}
@@ -10635,7 +14742,7 @@ typedef struct
   }
 #endif /* __cplusplus */
   
-#endif /* __STM32F103xB_H */
+#endif /* __STM32F105xC_H */
   
   
   

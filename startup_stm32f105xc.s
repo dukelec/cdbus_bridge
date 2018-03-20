@@ -1,10 +1,10 @@
 /**
   *************** (C) COPYRIGHT 2017 STMicroelectronics ************************
-  * @file      startup_stm32f103xb.s
+  * @file      startup_stm32f105xc.s
   * @author    MCD Application Team
   * @version   V4.2.0
   * @date      31-March-2017
-  * @brief     STM32F103xB Devices vector table for Atollic toolchain.
+  * @brief     STM32F105xC Devices vector table for Atollic toolchain.
   *            This module performs:
   *                - Set the initial SP
   *                - Set the initial PC == Reset_Handler,
@@ -63,7 +63,7 @@ defined in linker script */
 /* end address for the .bss section. defined in linker script */
 .word _ebss
 
-.equ  BootRAM, 0xF108F85F
+.equ  BootRAM, 0xF1E0F85F
 /**
  * @brief  This is the code that gets called when the processor first
  *          starts execution following a reset event. Only the absolutely
@@ -96,6 +96,7 @@ LoopCopyDataInit:
   bcc CopyDataInit
   ldr r2, =_sbss
   b LoopFillZerobss
+
 /* Zero fill the bss segment. */
 FillZerobss:
   movs r3, #0
@@ -105,11 +106,8 @@ LoopFillZerobss:
   ldr r3, = _ebss
   cmp r2, r3
   bcc FillZerobss
-
 /* Call the clock system intitialization function.*/
     bl  SystemInit
-/* Call static constructors */
-    bl __libc_init_array
 /* Call the application's entry point.*/
   bl main
   bx lr
@@ -119,9 +117,8 @@ LoopFillZerobss:
  * @brief  This is the code that gets called when the processor receives an
  *         unexpected interrupt.  This simply enters an infinite loop, preserving
  *         the system state for examination by a debugger.
- *
  * @param  None
- * @retval : None
+ * @retval None
 */
     .section .text.Default_Handler,"ax",%progbits
 Default_Handler:
@@ -177,9 +174,9 @@ g_pfnVectors:
   .word DMA1_Channel6_IRQHandler
   .word DMA1_Channel7_IRQHandler
   .word ADC1_2_IRQHandler
-  .word USB_HP_CAN1_TX_IRQHandler
-  .word USB_LP_CAN1_RX0_IRQHandler
-  .word CAN1_RX1_IRQHandler
+  .word CAN1_TX_IRQHandler
+  .word CAN1_RX0_IRQHandler
+   .word CAN1_RX1_IRQHandler
   .word CAN1_SCE_IRQHandler
   .word EXTI9_5_IRQHandler
   .word TIM1_BRK_IRQHandler
@@ -200,7 +197,7 @@ g_pfnVectors:
   .word USART3_IRQHandler
   .word EXTI15_10_IRQHandler
   .word RTC_Alarm_IRQHandler
-  .word USBWakeUp_IRQHandler
+  .word OTG_FS_WKUP_IRQHandler
   .word 0
   .word 0
   .word 0
@@ -208,8 +205,62 @@ g_pfnVectors:
   .word 0
   .word 0
   .word 0
-  .word BootRAM          /* @0x108. This is for boot in RAM mode for
-                            STM32F10x Medium Density devices. */
+  .word TIM5_IRQHandler
+  .word SPI3_IRQHandler
+  .word UART4_IRQHandler
+  .word UART5_IRQHandler
+  .word TIM6_IRQHandler
+  .word TIM7_IRQHandler
+  .word DMA2_Channel1_IRQHandler
+  .word DMA2_Channel2_IRQHandler
+  .word DMA2_Channel3_IRQHandler
+  .word DMA2_Channel4_IRQHandler
+  .word DMA2_Channel5_IRQHandler
+  .word 0
+  .word 0
+  .word CAN2_TX_IRQHandler
+  .word CAN2_RX0_IRQHandler
+  .word CAN2_RX1_IRQHandler
+  .word CAN2_SCE_IRQHandler
+  .word OTG_FS_IRQHandler
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word 0
+  .word BootRAM     /* @0x1E0. This is for boot in RAM mode for
+                         STM32F10x Connectivity line Devices. */
 
 /*******************************************************************************
 *
@@ -218,7 +269,6 @@ g_pfnVectors:
 * this definition.
 *
 *******************************************************************************/
-
   .weak NMI_Handler
   .thumb_set NMI_Handler,Default_Handler
 
@@ -303,11 +353,11 @@ g_pfnVectors:
   .weak ADC1_2_IRQHandler
   .thumb_set ADC1_2_IRQHandler,Default_Handler
 
-  .weak USB_HP_CAN1_TX_IRQHandler
-  .thumb_set USB_HP_CAN1_TX_IRQHandler,Default_Handler
+  .weak CAN1_TX_IRQHandler
+  .thumb_set CAN1_TX_IRQHandler,Default_Handler
 
-  .weak USB_LP_CAN1_RX0_IRQHandler
-  .thumb_set USB_LP_CAN1_RX0_IRQHandler,Default_Handler
+  .weak CAN1_RX0_IRQHandler
+  .thumb_set CAN1_RX0_IRQHandler,Default_Handler
 
   .weak CAN1_RX1_IRQHandler
   .thumb_set CAN1_RX1_IRQHandler,Default_Handler
@@ -372,8 +422,55 @@ g_pfnVectors:
   .weak RTC_Alarm_IRQHandler
   .thumb_set RTC_Alarm_IRQHandler,Default_Handler
 
-  .weak USBWakeUp_IRQHandler
-  .thumb_set USBWakeUp_IRQHandler,Default_Handler
+  .weak OTG_FS_WKUP_IRQHandler
+  .thumb_set OTG_FS_WKUP_IRQHandler,Default_Handler
+
+  .weak TIM5_IRQHandler
+  .thumb_set TIM5_IRQHandler,Default_Handler
+
+  .weak SPI3_IRQHandler
+  .thumb_set SPI3_IRQHandler,Default_Handler
+
+  .weak UART4_IRQHandler
+  .thumb_set UART4_IRQHandler,Default_Handler
+
+  .weak UART5_IRQHandler
+  .thumb_set UART5_IRQHandler,Default_Handler
+
+  .weak TIM6_IRQHandler
+  .thumb_set TIM6_IRQHandler,Default_Handler
+
+  .weak TIM7_IRQHandler
+  .thumb_set TIM7_IRQHandler,Default_Handler
+
+  .weak DMA2_Channel1_IRQHandler
+  .thumb_set DMA2_Channel1_IRQHandler,Default_Handler
+
+  .weak DMA2_Channel2_IRQHandler
+  .thumb_set DMA2_Channel2_IRQHandler,Default_Handler
+
+  .weak DMA2_Channel3_IRQHandler
+  .thumb_set DMA2_Channel3_IRQHandler,Default_Handler
+
+  .weak DMA2_Channel4_IRQHandler
+  .thumb_set DMA2_Channel4_IRQHandler,Default_Handler
+
+  .weak DMA2_Channel5_IRQHandler
+  .thumb_set DMA2_Channel5_IRQHandler,Default_Handler
+
+  .weak CAN2_TX_IRQHandler
+  .thumb_set CAN2_TX_IRQHandler,Default_Handler
+
+  .weak CAN2_RX0_IRQHandler
+  .thumb_set CAN2_RX0_IRQHandler,Default_Handler
+
+  .weak CAN2_RX1_IRQHandler
+  .thumb_set CAN2_RX1_IRQHandler,Default_Handler
+
+  .weak CAN2_SCE_IRQHandler
+  .thumb_set CAN2_SCE_IRQHandler,Default_Handler
+
+  .weak OTG_FS_IRQHandler
+  .thumb_set OTG_FS_IRQHandler ,Default_Handler
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-

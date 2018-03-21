@@ -51,7 +51,10 @@
 #include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN INCLUDE */
+#include "app_main.h"
 
+extern int usb_rx_cnt;
+extern int usb_tx_cnt;
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -93,8 +96,7 @@
 /* USER CODE BEGIN PRIVATE_DEFINES */
 /* Define size for the receive and transmit buffer over CDC */
 /* It's up to user to redefine and/or remove those define */
-#define APP_RX_DATA_SIZE  512
-#define APP_TX_DATA_SIZE  512
+
 /* USER CODE END PRIVATE_DEFINES */
 
 /**
@@ -121,10 +123,10 @@
 /* Create buffer for reception and transmission           */
 /* It's up to user to redefine and/or remove those define */
 /** Received data over USB are stored in this buffer      */
-uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
+// uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 
 /** Data to send over USB CDC are stored in this buffer   */
-uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
+// uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
 
@@ -183,9 +185,14 @@ USBD_CDC_ItfTypeDef USBD_Interface_fops_FS =
 static int8_t CDC_Init_FS(void)
 {
   /* USER CODE BEGIN 3 */
+  if (!cdc_rx_buf) {
+      printf("CDC_Init_FS: error\n");
+      while (true);
+  }
+
   /* Set Application Buffers */
-  USBD_CDC_SetTxBuffer(&hUsbDeviceFS, UserTxBufferFS, 0);
-  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, UserRxBufferFS);
+  USBD_CDC_SetTxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat, 0);
+  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat);
   return (USBD_OK);
   /* USER CODE END 3 */
 }
@@ -291,7 +298,26 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
-  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
+  //d_debug("CDC_Receive_FS: len: %d, [%02x ...]\n", *Len, Buf[0]);
+
+  if (!cdc_rx_buf) {
+      printf("CDC_Receive_FS: !cdc_rx_buf\n");
+      while (true);
+  }
+  cdc_rx_buf->len = *Len;
+  if (!cdc_rx_buf->len) {
+      printf("CDC_Receive_FS: !len\n");
+      while (true);
+  }
+  usb_rx_cnt++;
+  list_put_it(&cdc_rx_head, &cdc_rx_buf->node);
+
+  cdc_rx_buf = list_get_entry_it(&cdc_rx_free_head, cdc_buf_t);
+  if (!cdc_rx_buf) {
+      d_verbose("CDC_Receive_FS: no free buf\n");
+      return USBD_OK;
+  }
+  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
   return (USBD_OK);
   /* USER CODE END 6 */
@@ -316,6 +342,7 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
   if (hcdc->TxState != 0){
     return USBD_BUSY;
   }
+  usb_tx_cnt++;
   USBD_CDC_SetTxBuffer(&hUsbDeviceFS, Buf, Len);
   result = USBD_CDC_TransmitPacket(&hUsbDeviceFS);
   /* USER CODE END 7 */

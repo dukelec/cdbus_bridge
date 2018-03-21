@@ -7,14 +7,14 @@
  * Author: Duke Fong <duke@dukelec.com>
  */
 
-#ifndef __CDNET_CONFIG_H__
-#define __CDNET_CONFIG_H__
+#ifndef __COMMON_PREPEND_H__
+#define __COMMON_PREPEND_H__
 
 #define ARCH_SPI
 
 #define DEBUG
 //#define VERBOSE
-#define DBG_LEN             40
+#define DBG_LEN             100
 #define DBG_TX_IT
 //#define LIST_DEBUG
 

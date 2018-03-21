@@ -52,6 +52,7 @@
 #include "usb_device.h"
 
 /* USER CODE BEGIN Includes */
+#include "common.h"
 
 /* USER CODE END Includes */
 
@@ -128,6 +129,8 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
+  void app_main(void);
+  app_main();
 
   /* USER CODE END 2 */
 
@@ -383,7 +386,7 @@ static void MX_GPIO_Init(void)
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 1, 0);
-  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+  //HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
 }
 

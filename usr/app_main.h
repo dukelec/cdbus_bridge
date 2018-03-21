@@ -14,12 +14,6 @@
 #include "cdnet.h"
 
 typedef enum {
-    LED_POWERON = 0,
-    LED_WARN,
-    LED_ERROR
-} led_state_t;
-
-typedef enum {
     APP_PASS_THRU = 0,
     APP_RAW
 } app_mode_t;

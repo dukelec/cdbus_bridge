@@ -17,17 +17,19 @@
 
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
-extern UART_HandleTypeDef huart3;
+extern UART_HandleTypeDef huart4;
 extern SPI_HandleTypeDef hspi1;
-extern TIM_HandleTypeDef htim1;
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
-gpio_t led1 = { .group = LED1_GPIO_Port, .num = LED1_Pin };
-gpio_t led2 = { .group = LED2_GPIO_Port, .num = LED2_Pin };
+static  gpio_t led_r = { .group = LED_R_GPIO_Port, .num = LED_R_Pin };
+static  gpio_t led_g = { .group = LED_G_GPIO_Port, .num = LED_G_Pin };
+static  gpio_t led_b = { .group = LED_B_GPIO_Port, .num = LED_B_Pin };
+static  gpio_t led_tx = { .group = LED_TX_GPIO_Port, .num = LED_TX_Pin };
+static  gpio_t led_rx = { .group = LED_RX_GPIO_Port, .num = LED_RX_Pin };
 
-uart_t debug_uart = { .huart = &huart3 };
+uart_t debug_uart = { .huart = &huart4 };
 static uart_t ttl_uart = { .huart = &huart1 };
-static uart_t rs232_uart; // = { .huart = &huart2 };
+static uart_t rs232_uart = { .huart = &huart2 };
 uart_t *hw_uart = NULL;
 
 static gpio_t r_rst_n = { .group = CDCTL_RST_N_GPIO_Port, .num = CDCTL_RST_N_Pin };
@@ -35,8 +37,8 @@ static gpio_t r_int_n = { .group = CDCTL_INT_N_GPIO_Port, .num = CDCTL_INT_N_Pin
 static gpio_t r_ns = { .group = CDCTL_NS_GPIO_Port, .num = CDCTL_NS_Pin };
 static spi_t r_spi = { .hspi = &hspi1, .ns_pin = &r_ns };
 
-#define CDC_RX_MAX 3
-#define CDC_TX_MAX 3
+#define CDC_RX_MAX 6
+#define CDC_TX_MAX 6
 static cdc_buf_t cdc_rx_alloc[CDC_RX_MAX];
 static cdc_buf_t cdc_tx_alloc[CDC_TX_MAX];
 list_head_t cdc_rx_free_head = {0};
@@ -109,7 +111,53 @@ static void device_init(void)
 
 void set_led_state(led_state_t state)
 {
+    static bool is_err = false;
+    if (is_err)
+        return;
 
+    switch (state) {
+    case LED_POWERON:
+        gpio_set_value(&led_r, 1);
+        gpio_set_value(&led_g, 1);
+        gpio_set_value(&led_b, 0);
+        break;
+    case LED_WARN:
+        gpio_set_value(&led_r, 0);
+        gpio_set_value(&led_g, 0);
+        gpio_set_value(&led_b, 1);
+        break;
+    default:
+    case LED_ERROR:
+        is_err = true;
+        gpio_set_value(&led_r, 0);
+        gpio_set_value(&led_g, 1);
+        gpio_set_value(&led_b, 1);
+        break;
+    }
+}
+
+static void data_led_task(void)
+{
+    static uint32_t tx_t_last = 0;
+    static uint32_t rx_t_last = 0;
+    static uint32_t tx_cnt_last = 0;
+    static uint32_t rx_cnt_last = 0;
+
+    if (rx_cnt_last != r_intf.rx_cnt) {
+        rx_cnt_last = r_intf.rx_cnt;
+        rx_t_last = get_systick();
+        gpio_set_value(&led_rx, 0);
+    }
+    if (tx_cnt_last != r_intf.tx_cnt) {
+        tx_cnt_last = r_intf.tx_cnt;
+        tx_t_last = get_systick();
+        gpio_set_value(&led_tx, 0);
+    }
+
+    if (gpio_get_value(&led_rx) == 0 && get_systick() - rx_t_last > 10)
+        gpio_set_value(&led_rx, 1);
+    if (gpio_get_value(&led_tx) == 0 && get_systick() - tx_t_last > 10)
+        gpio_set_value(&led_tx, 1);
 }
 
 // alloc from n_intf.free_head, send through n_intf.tx_head
@@ -214,15 +262,18 @@ void app_main(void)
 {
     debug_init();
     device_init();
-    local_irq_enable();
+    HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
     d_debug("start app_main...\n");
     *(uint32_t *)(&end) = 0xababcdcd;
+    set_led_state(LED_POWERON);
 
     if (app_conf.intf_idx != INTF_USB)
         HAL_UART_Receive_DMA(hw_uart->huart, circ_buf, CIRC_BUF_SZ);
 
 
     while (true) {
+        data_led_task();
+
         if (*(uint32_t *)(&end) != 0xababcdcd) {
             printf("stack overflow: %08lx\n", *(uint32_t *)(&end));
             while (true);
@@ -464,7 +515,9 @@ send_list:
             cdc_buf_t *bf = list_entry(cdc_tx_head.first, cdc_buf_t);
             if (bf->len != 0) {
                 if (app_conf.intf_idx == INTF_USB) {
+                    local_irq_disable();
                     CDC_Transmit_FS(bf->dat, bf->len);
+                    local_irq_enable();
                 } else { // hw_uart
                     //d_verbose("hw_uart dma tx...\n");
                     HAL_UART_Transmit_DMA(hw_uart->huart, bf->dat, bf->len);

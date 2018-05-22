@@ -59,12 +59,6 @@
 
 /* Private define ------------------------------------------------------------*/
 
-#define LED_B_Pin GPIO_PIN_13
-#define LED_B_GPIO_Port GPIOC
-#define LED_G_Pin GPIO_PIN_14
-#define LED_G_GPIO_Port GPIOC
-#define LED_R_Pin GPIO_PIN_15
-#define LED_R_GPIO_Port GPIOC
 #define LED_RX_Pin GPIO_PIN_0
 #define LED_RX_GPIO_Port GPIOC
 #define LED_TX_Pin GPIO_PIN_1
@@ -78,6 +72,12 @@
 #define CDCTL_INT_N_Pin GPIO_PIN_5
 #define CDCTL_INT_N_GPIO_Port GPIOC
 #define CDCTL_INT_N_EXTI_IRQn EXTI9_5_IRQn
+#define LED_R_Pin GPIO_PIN_6
+#define LED_R_GPIO_Port GPIOC
+#define LED_B_Pin GPIO_PIN_7
+#define LED_B_GPIO_Port GPIOC
+#define LED_G_Pin GPIO_PIN_8
+#define LED_G_GPIO_Port GPIOC
 
 /* ########################## Assert Selection ############################## */
 /**

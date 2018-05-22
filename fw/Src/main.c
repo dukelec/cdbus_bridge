@@ -340,22 +340,22 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct;
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, LED_B_Pin|LED_G_Pin|LED_R_Pin|LED_RX_Pin 
-                          |LED_TX_Pin|CDCTL_RST_N_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOC, LED_RX_Pin|LED_TX_Pin|CDCTL_RST_N_Pin|LED_R_Pin 
+                          |LED_B_Pin|LED_G_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(CDCTL_NS_GPIO_Port, CDCTL_NS_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : LED_B_Pin LED_G_Pin LED_R_Pin LED_RX_Pin 
-                           LED_TX_Pin */
-  GPIO_InitStruct.Pin = LED_B_Pin|LED_G_Pin|LED_R_Pin|LED_RX_Pin 
-                          |LED_TX_Pin;
+  /*Configure GPIO pins : LED_RX_Pin LED_TX_Pin LED_R_Pin LED_B_Pin 
+                           LED_G_Pin */
+  GPIO_InitStruct.Pin = LED_RX_Pin|LED_TX_Pin|LED_R_Pin|LED_B_Pin 
+                          |LED_G_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);

@@ -14,7 +14,7 @@
 #include "cdnet.h"
 
 typedef enum {
-    APP_PASS_THRU = 0,
+    APP_BRIDGE = 0,
     APP_RAW
 } app_mode_t;
 

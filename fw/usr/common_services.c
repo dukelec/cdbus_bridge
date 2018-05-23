@@ -58,7 +58,7 @@ void p2_service(cdnet_packet_t *pkt)
 // device addr
 void p3_service(cdnet_packet_t *pkt)
 {
-    if (app_conf.mode == APP_PASS_THRU) {
+    if (app_conf.mode == APP_BRIDGE) {
         if (pkt->len < 2 || pkt->dat[0] != 0x08 || pkt->dat[1] != INTF_RS485)
             goto err_free;
         // check mac

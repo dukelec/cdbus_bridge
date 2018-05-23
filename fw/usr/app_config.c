@@ -13,7 +13,7 @@ app_conf_t app_conf = {
         .magic_code = 0xcdcd,
         .stay_in_bl = false,
 
-        .mode = APP_PASS_THRU,
+        .mode = APP_BRIDGE,
         .intf_idx = INTF_TTL,
 
         .rs485_addr = { .net = 0, .mac = 254 },

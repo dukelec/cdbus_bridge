@@ -62,7 +62,7 @@ cdnet_intf_t n_intf = {0};   // CDNET
 // for raw mode only
 static list_head_t raw2u_head = {0};
 
-// dummy interface for UART, for pass-thru mode only
+// dummy interface for UART, for bridge mode only
 static cduart_intf_t d_intf = {0};
 static cd_frame_t *d_conv_frame = NULL;
 
@@ -95,7 +95,7 @@ static void device_init(void)
     d_intf.local_filter[1] = 0x56;
     d_intf.local_filter_len = 2;
 
-    if (app_conf.mode == APP_PASS_THRU) {
+    if (app_conf.mode == APP_BRIDGE) {
         cdnet_addr_t addr = { .net = 0, .mac = 0x55 };
         cdnet_intf_init(&n_intf, &packet_free_head, &d_intf.cd_intf, &addr);
     } else {
@@ -223,7 +223,7 @@ static void app_raw_from_u(const uint8_t *buf, int size,
 
 
 // alloc from r_intf.free_head, send through r_intf.tx_head or d_rx_head
-static void app_pass_thru_from_u(const uint8_t *buf, int size,
+static void app_bridge_from_u(const uint8_t *buf, int size,
         const uint8_t *wr, const uint8_t *rd)
 {
     list_node_t *pre, *cur;
@@ -381,9 +381,9 @@ void app_main(void)
                 rd = bf->dat;
             }
 
-            if (app_conf.mode == APP_PASS_THRU) {
+            if (app_conf.mode == APP_BRIDGE) {
                 if (bf)
-                    app_pass_thru_from_u(bf->dat, size, wr, rd);
+                    app_bridge_from_u(bf->dat, size, wr, rd);
             } else {
                 if (bf)
                     app_raw_from_u(bf->dat, size, wr, rd);
@@ -403,8 +403,8 @@ void app_main(void)
                 local_irq_restore(flags);
             }
         } else { // hw_uart
-            if (app_conf.mode == APP_PASS_THRU)
-                app_pass_thru_from_u(circ_buf, CIRC_BUF_SZ, circ_buf + wd_pos, circ_buf + rd_pos);
+            if (app_conf.mode == APP_BRIDGE)
+                app_bridge_from_u(circ_buf, CIRC_BUF_SZ, circ_buf + wd_pos, circ_buf + rd_pos);
             else
                 app_raw_from_u(circ_buf, CIRC_BUF_SZ, circ_buf + wd_pos, circ_buf + rd_pos);
         }
@@ -423,7 +423,7 @@ void app_main(void)
             bf = list_entry(cdc_tx_head.last, cdc_buf_t);
         }
 
-        if (app_conf.mode == APP_PASS_THRU) {
+        if (app_conf.mode == APP_BRIDGE) {
             if (d_intf.tx_head.first) {
                 // send to u: d_intf.tx_head
                 cd_frame_t *frm = list_entry(d_intf.tx_head.first, cd_frame_t);
@@ -438,7 +438,7 @@ void app_main(void)
                     list_put(&cdc_tx_head, &bf->node);
                 }
 
-                d_verbose("pass_thru -> u: 55, dat len %d\n", frm->dat[2]);
+                d_verbose("bridge -> u: 55, dat len %d\n", frm->dat[2]);
                 cduart_fill_crc(frm->dat);
                 memcpy(bf->dat + bf->len, frm->dat, frm->dat[2] + 5);
                 bf->len += frm->dat[2] + 5;

@@ -1,6 +1,7 @@
 ## CDBUS Bridge
 
 <img alt="cdbus_bridge" src="doc/img/cdbus_bridge.jpg">
+<img alt="cdbus_bridge_pcb" src="doc/img/cdbus_bridge_pcb.jpg">
 
 
 CDBUS Bridge has two types of communication ports, which are 3 serial ports and 2 RS485 ports:

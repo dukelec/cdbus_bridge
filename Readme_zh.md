@@ -1,6 +1,7 @@
 ## CDBUS Bridge
 
 <img alt="cdbus_bridge" src="doc/img/cdbus_bridge.jpg">
+<img alt="cdbus_bridge_pcb" src="doc/img/cdbus_bridge_pcb.jpg">
 
 
 CDBUS Bridge 有兩類通訊端口，分別爲 3 個串口和 2 個 RS485 口：

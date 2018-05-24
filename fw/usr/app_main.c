@@ -251,12 +251,34 @@ static void app_bridge_from_u(const uint8_t *buf, int size,
 }
 
 
+extern uint32_t end; // end of bss
+#define STACK_CHECK_SKIP (5 * 1024)
+#define STACK_CHECK_SIZE (64 + STACK_CHECK_SKIP)
+
+static void stack_check_init(void)
+{
+    int i;
+    d_debug("stack_check_init: skip: %p ~ %p, to %p\n",
+            &end, &end + STACK_CHECK_SKIP, &end + STACK_CHECK_SIZE);
+    for (i = STACK_CHECK_SKIP; i < STACK_CHECK_SIZE; i+=4)
+        *(uint32_t *)(&end + i) = 0xababcdcd;
+}
+
+static void stack_check(void)
+{
+    int i;
+    for (i = STACK_CHECK_SKIP; i < STACK_CHECK_SIZE; i+=4) {
+        if (*(uint32_t *)(&end + i) != 0xababcdcd) {
+            printf("stack overflow %p (skip: %p ~ %p): %08lx\n",
+                    &end + i, &end, &end + STACK_CHECK_SKIP, *(uint32_t *)(&end + i));
+            while (true);
+        }
+    }
+}
+
 #define CIRC_BUF_SZ 1024
 static uint8_t circ_buf[CIRC_BUF_SZ];
 static uint32_t rd_pos = 0;
-
-extern uint32_t end; // end of bss
-
 
 void app_main(void)
 {
@@ -264,20 +286,15 @@ void app_main(void)
     device_init();
     HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
     d_debug("start app_main...\n");
-    *(uint32_t *)(&end) = 0xababcdcd;
+    stack_check_init();
     set_led_state(LED_POWERON);
 
     if (app_conf.intf_idx != INTF_USB)
         HAL_UART_Receive_DMA(hw_uart->huart, circ_buf, CIRC_BUF_SZ);
 
-
     while (true) {
         data_led_task();
-
-        if (*(uint32_t *)(&end) != 0xababcdcd) {
-            printf("stack overflow: %08lx\n", *(uint32_t *)(&end));
-            while (true);
-        }
+        stack_check();
 
         if (app_conf.intf_idx != INTF_USB &&
                 hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
@@ -288,7 +305,7 @@ void app_main(void)
 
         {
             static int t_l = 0;
-            if (get_systick() - t_l > 2000) {
+            if (get_systick() - t_l > 8000) {
                 USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
                 t_l = get_systick();
                 d_debug("bx: state: %d, tx_l: %d, rx_l: %d, p %d\n",
@@ -324,6 +341,9 @@ void app_main(void)
                     break;
                 case 3:
                     p3_service(pkt);
+                    break;
+                case 10:
+                    p10_service(pkt);
                     break;
 
                 case RAW_SER_PORT:

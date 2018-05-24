@@ -69,5 +69,6 @@ extern cdc_buf_t *cdc_rx_buf;
 void p1_service(cdnet_packet_t *pkt);
 void p2_service(cdnet_packet_t *pkt);
 void p3_service(cdnet_packet_t *pkt);
+void p10_service(cdnet_packet_t *pkt);
 
 #endif

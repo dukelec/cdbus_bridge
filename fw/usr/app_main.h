@@ -27,7 +27,7 @@ typedef enum {
 
 typedef struct {
     uint16_t        magic_code; // 0xcdcd
-    bool            stay_in_bl; // stay in bootloader
+    uint8_t         bl_wait; // run app after timeout (unit 0.1s), 0xff: never
 
     app_mode_t      mode;
     intf_idx_t      intf_idx;
@@ -47,7 +47,7 @@ typedef struct {
     uint8_t         rpt_mac;
     cdnet_addr_t    rpt_addr;
 
-} app_conf_t;
+} __attribute__((packed)) app_conf_t;
 
 typedef struct {
     list_node_t node;
@@ -55,9 +55,9 @@ typedef struct {
     uint8_t     dat[512]; // CDC_DATA_HS_MAX_PACKET_SIZE
 } cdc_buf_t;
 
-#define FLASH_PORT          10 // save to flash
+
+#define APP_CONF_ADDR       0x0801F800 // last page
 #define RAW_SER_PORT        20
-#define RAW_CONF_PORT       21
 
 extern app_conf_t app_conf;
 extern cdnet_intf_t n_intf;
@@ -69,6 +69,9 @@ extern cdc_buf_t *cdc_rx_buf;
 void p1_service(cdnet_packet_t *pkt);
 void p2_service(cdnet_packet_t *pkt);
 void p3_service(cdnet_packet_t *pkt);
-void p10_service(cdnet_packet_t *pkt);
+void p11_service(cdnet_packet_t *pkt);
+
+void load_conf(void);
+void init_info_str(void);
 
 #endif

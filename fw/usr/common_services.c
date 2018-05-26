@@ -11,6 +11,8 @@
 #include "app_main.h"
 
 extern cdctl_intf_t r_intf;
+static char cpu_id[25];
+static char info_str[100];
 
 static void get_uid(char *buf)
 {
@@ -25,28 +27,45 @@ static void get_uid(char *buf)
     buf[24] = '\0';
 }
 
+void init_info_str(void)
+{
+    // M: model; S: serial string; HW: hardware version; SW: software version
+    get_uid(cpu_id);
+    sprintf(info_str, "M: cdbus_bridge; S: %s; SW: %s", cpu_id, SW_VER);
+}
+
 // make sure local mac != 255 before call any service
 
 // device info
 void p1_service(cdnet_packet_t *pkt)
 {
-    char cpu_id[25];
-    char info_str[100];
+    uint16_t max_time = 0;
+    uint8_t mac_start = 0;
+    uint8_t mac_end = 255;
+    char string[100] = "";
 
-    // M: model; S: serial string; HW: hardware version; SW: software version
-    get_uid(cpu_id);
-    sprintf(info_str, "M: cdbus_bridge; S: %s; SW: %s", cpu_id, SW_VER);
-
-    // filter string by input data
-    if (pkt->len != 0 && strstr(info_str, (char *)pkt->dat) == NULL) {
-        list_put(n_intf.free_head, &pkt->node);
-        return;
+    if (pkt->len >= 4) {
+        max_time = *(uint16_t *)pkt->dat;
+        mac_start = pkt->dat[2];
+        mac_end = pkt->dat[3];
+        strncpy(string, (char *)pkt->dat + 4, pkt->len - 4);
     }
 
-    strcpy((char *)pkt->dat, info_str);
-    pkt->len = strlen(info_str);
-    cdnet_exchg_src_dst(&n_intf, pkt);
-    list_put(&n_intf.tx_head, &pkt->node);
+    d_debug("dev_info: wait %d, [%d, %d], str: %s\n",
+            max_time, mac_start, mac_end, string);
+
+    if (clip(n_intf.addr.mac, mac_start, mac_end) == n_intf.addr.mac &&
+            strstr(info_str, string) != NULL) {
+        uint32_t t_last = get_systick();
+        while (get_systick() - t_last < max_time * 1000 / SYSTICK_US_DIV);
+        strcpy((char *)pkt->dat, info_str);
+        pkt->len = strlen(info_str);
+        cdnet_exchg_src_dst(&n_intf, pkt);
+        list_put(&n_intf.tx_head, &pkt->node);
+        return;
+    }
+    d_debug("p1 ser: ignore\n");
+    list_put(n_intf.free_head, &pkt->node);
 }
 
 // device baud rate
@@ -58,38 +77,45 @@ void p2_service(cdnet_packet_t *pkt)
 // device addr
 void p3_service(cdnet_packet_t *pkt)
 {
+    char string[100] = "";
+
     if (app_conf.mode == APP_BRIDGE) {
         if (pkt->len < 2 || pkt->dat[0] != 0x08 || pkt->dat[1] != INTF_RS485)
-            goto err_free;
+            goto ignore;
         // check mac
         if (pkt->len == 2) {
             pkt->len = 1;
             pkt->dat[0] = r_intf.cd_intf.get_filter(&r_intf.cd_intf);
-            goto out_send;
+            goto out_send_exchg;
         }
         // set mac
         if (pkt->len == 3) {
             r_intf.cd_intf.set_filter(&r_intf.cd_intf, pkt->dat[2]);
             pkt->len = 0;
             d_debug("set filter: %d...\n", pkt->dat[2]);
-            goto out_send;
+            goto out_send_exchg;
         }
-        goto err_free;
+        goto ignore;
     }
     // else APP_RAW
 
     // set mac
-    if (pkt->len == 2 && pkt->dat[0] == 0x00) {
+    if (pkt->len >= 2 && pkt->dat[0] == 0x00) {
+        strncpy(string, (char *)pkt->dat + 2, pkt->len - 2);
+        if (strstr(info_str, string) == NULL)
+            goto ignore;
+        pkt->len = 0;
+        cdnet_exchg_src_dst(&n_intf, pkt);
         r_intf.cd_intf.set_filter(&r_intf.cd_intf, pkt->dat[1]);
         n_intf.addr.mac = pkt->dat[1];
-        pkt->len = 0;
         d_debug("set filter: %d...\n", n_intf.addr.mac);
         goto out_send;
     }
     // set net
     if (pkt->len == 2 && pkt->dat[0] == 0x01) {
-        n_intf.addr.net = pkt->dat[1];
         pkt->len = 0;
+        cdnet_exchg_src_dst(&n_intf, pkt);
+        n_intf.addr.net = pkt->dat[1];
         d_debug("set net: %d...\n", n_intf.addr.net);
         goto out_send;
     }
@@ -97,22 +123,24 @@ void p3_service(cdnet_packet_t *pkt)
     if (pkt->len == 1 && pkt->dat[0] == 0x01) {
         pkt->len = 1;
         pkt->dat[0] = n_intf.addr.net;
-        goto out_send;
+        goto out_send_exchg;
     }
-    goto err_free; // TODO: add mac address auto allocation
+    goto ignore;
 
-out_send:
+out_send_exchg:
     cdnet_exchg_src_dst(&n_intf, pkt);
+out_send:
     list_put(&n_intf.tx_head, &pkt->node);
     return;
 
-err_free:
+ignore:
+    d_debug("p3 ser: ignore\n");
     list_put(n_intf.free_head, &pkt->node);
 }
 
 
 // flash memory manipulation
-void p10_service(cdnet_packet_t *pkt)
+void p11_service(cdnet_packet_t *pkt)
 {
     // erase: 0xff, addr_32, len_32  | return [] on success
     // read:  0x00, addr_32, len_8   | return [data]

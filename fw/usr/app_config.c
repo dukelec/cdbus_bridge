@@ -9,9 +9,12 @@
 
 #include "app_main.h"
 
+static  gpio_t sw = { .group = SW_MODE_GPIO_Port, .num = SW_MODE_Pin };
+
+
 app_conf_t app_conf = {
         .magic_code = 0xcdcd,
-        .stay_in_bl = false,
+        .bl_wait = 30, // wait 3 sec
 
         .mode = APP_BRIDGE,
         .intf_idx = INTF_TTL,
@@ -27,29 +30,58 @@ app_conf_t app_conf = {
         .rpt_pkt_level = CDNET_L1,
         .rpt_seq = true,
         .rpt_multi = CDNET_MULTI_NONE,
-        .rpt_mac = 0
+        .rpt_mac = 0,
+        .rpt_addr = { 0 }
 };
 
 
 void load_conf(void)
 {
-
-}
-
-void save_conf(void)
-{
-
-}
-
-void save_to_flash_service(cdnet_packet_t *pkt)
-{
-    if (pkt->len != 0) {
-        list_put(n_intf.free_head, &pkt->node);
-        return;
+    app_conf_t app_tmp;
+    memcpy(&app_tmp, (void *)APP_CONF_ADDR, sizeof(app_conf_t));
+    if (app_tmp.magic_code == 0xcdcd) {
+        d_info("conf: load from flash\n");
+        memcpy(&app_conf, &app_tmp, sizeof(app_conf_t));
+    } else {
+        d_info("conf: use default\n");
     }
 
-    save_conf();
-    pkt->len = 0;
-    cdnet_exchg_src_dst(&n_intf, pkt);
-    list_put(&n_intf.tx_head, &pkt->node);
+    app_conf.mode = gpio_get_value(&sw);
+    d_info("conf: mode: %s\n", app_conf.mode == APP_BRIDGE ? "bridge" : "raw");
 }
+
+#if 0
+void save_conf(void)
+{
+    uint8_t ret;
+    uint32_t err_page = 0;
+    FLASH_EraseInitTypeDef f;
+
+    f.TypeErase = FLASH_TYPEERASE_PAGES;
+    f.PageAddress = APP_CONF_ADDR;
+    f.NbPages = 1;
+
+    ret = HAL_FLASH_Unlock();
+    if (ret == HAL_OK)
+        ret = HAL_FLASHEx_Erase(&f, &err_page);
+
+    if (ret != HAL_OK)
+        d_info("conf: failed to erase flash\n");
+
+    uint32_t *dst_dat = (uint32_t *)APP_CONF_ADDR;
+    uint32_t *src_dat = (uint32_t *)&app_conf;
+    uint8_t cnt = (sizeof(app_conf_t) + 3) / 4;
+    uint8_t i;
+
+    for (i = 0; ret == HAL_OK && i < cnt; i++)
+        ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD,
+                (uint32_t)(dst_dat + i), *(src_dat + i));
+
+    ret |= HAL_FLASH_Lock();
+
+    if (ret == HAL_OK)
+        d_info("conf: save to flash successed\n");
+    else
+        d_error("conf: save to flash error\n");
+}
+#endif

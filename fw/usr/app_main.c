@@ -287,6 +287,8 @@ void app_main(void)
     HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
     d_debug("start app_main...\n");
     stack_check_init();
+    load_conf();
+    init_info_str();
     set_led_state(LED_POWERON);
 
     if (app_conf.intf_idx != INTF_USB)
@@ -343,37 +345,17 @@ void app_main(void)
                     p3_service(pkt);
                     break;
                 case 10:
-                    p10_service(pkt);
+                    NVIC_SystemReset();
+                    break;
+                case 11:
+                    p11_service(pkt);
                     break;
 
-                case RAW_SER_PORT:
+                case RAW_SER_PORT: // receive raw data
                     if (app_conf.mode == APP_RAW)
                         list_put(&raw2u_head, &pkt->node);
                     else
                         list_put(n_intf.free_head, &pkt->node);
-                    break;
-
-                case RAW_CONF_PORT:
-                    if (pkt->len == 4) {
-                        app_conf.rpt_en = !!(pkt->dat[0] & 0x80);
-                        app_conf.rpt_multi = pkt->dat[0] & 0x30;
-                        app_conf.rpt_seq = pkt->dat[0] & 0x08;
-                        app_conf.rpt_pkt_level = pkt->dat[0] & 0x03;
-                        app_conf.rpt_mac = pkt->dat[1];
-                        app_conf.rpt_addr.net = pkt->dat[2];
-                        app_conf.rpt_addr.mac = pkt->dat[3];
-
-                        pkt->len = 0;
-                        cdnet_exchg_src_dst(&n_intf, pkt);
-                        list_put(&n_intf.tx_head, &pkt->node);
-                        d_debug("raw_conf: en: %d, mac: %d, lev: %d\n",
-                                app_conf.rpt_en, app_conf.rpt_mac,
-                                app_conf.rpt_pkt_level);
-                    } else {
-                        // TODO: report setting
-                        list_put(n_intf.free_head, &pkt->node);
-                        d_warn("raw_conf: wrong len: %d\n", pkt->len);
-                    }
                     break;
 
                 default:

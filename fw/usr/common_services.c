@@ -40,24 +40,26 @@ void init_info_str(void)
 void p1_service(cdnet_packet_t *pkt)
 {
     uint16_t max_time = 0;
+    uint16_t wait_time = 0;
     uint8_t mac_start = 0;
     uint8_t mac_end = 255;
     char string[100] = "";
 
     if (pkt->len >= 4) {
         max_time = *(uint16_t *)pkt->dat;
+        wait_time = rand() / (RAND_MAX / max_time);
         mac_start = pkt->dat[2];
         mac_end = pkt->dat[3];
         strncpy(string, (char *)pkt->dat + 4, pkt->len - 4);
     }
 
-    d_debug("dev_info: wait %d, [%d, %d], str: %s\n",
-            max_time, mac_start, mac_end, string);
+    d_debug("dev_info: wait %d (%d), [%d, %d], str: %s\n",
+            wait_time, max_time, mac_start, mac_end, string);
 
     if (clip(n_intf.addr.mac, mac_start, mac_end) == n_intf.addr.mac &&
             strstr(info_str, string) != NULL) {
         uint32_t t_last = get_systick();
-        while (get_systick() - t_last < max_time * 1000 / SYSTICK_US_DIV);
+        while (get_systick() - t_last < wait_time * 1000 / SYSTICK_US_DIV);
         strcpy((char *)pkt->dat, info_str);
         pkt->len = strlen(info_str);
         cdnet_exchg_src_dst(&n_intf, pkt);

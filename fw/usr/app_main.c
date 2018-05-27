@@ -9,6 +9,7 @@
 
 #include "app_main.h"
 
+extern ADC_HandleTypeDef hadc1;
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart4;
@@ -183,6 +184,17 @@ static void dump_hw_status(void)
     }
 }
 
+static void init_rand(void)
+{
+    int i;
+    for (i = 0; i < 50; i++) {
+        HAL_ADC_Start(&hadc1);
+        HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+        srand(rand() + HAL_ADC_GetValue(&hadc1));
+    }
+    d_debug("rand(): %d\n", rand());
+}
+
 
 void app_main(void)
 {
@@ -191,6 +203,7 @@ void app_main(void)
     load_conf();
     init_info_str();
     device_init();
+    init_rand();
     HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
     d_debug("start app_main...\n");
     set_led_state(LED_POWERON);

@@ -13,7 +13,11 @@
 ######################################
 # target
 ######################################
+ifeq ($(BOOTLOADER), 1)
+TARGET = cdbus_bridge_bl
+else
 TARGET = cdbus_bridge
+endif
 GIT_VERSION := $(shell git describe --dirty --always --tags)
 
 
@@ -183,6 +187,9 @@ CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
 endif
+ifeq ($(BOOTLOADER), 1)
+CFLAGS += -DBOOTLOADER
+endif
 
 
 # Generate dependency information
@@ -193,7 +200,11 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
+ifeq ($(BOOTLOADER), 1)
+LDSCRIPT = STM32F105RBTx_FLASH_bl.ld
+else
 LDSCRIPT = STM32F105RBTx_FLASH.ld
+endif
 
 # libraries
 LIBS = -lc -lm -lnosys 

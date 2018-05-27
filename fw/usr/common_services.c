@@ -31,7 +31,11 @@ void init_info_str(void)
 {
     // M: model; S: serial string; HW: hardware version; SW: software version
     get_uid(cpu_id);
-    sprintf(info_str, "M: cdbus_bridge; S: %s; SW: %s", cpu_id, SW_VER);
+#ifdef BOOTLOADER
+    sprintf(info_str, "M: cdbus bridge (bl); S: %s; SW: %s", cpu_id, SW_VER);
+#else
+    sprintf(info_str, "M: cdbus bridge; S: %s; SW: %s", cpu_id, SW_VER);
+#endif
 }
 
 // make sure local mac != 255 before call any service
@@ -140,6 +144,12 @@ void p10_service(cdnet_packet_t *pkt)
         pkt->len = 0;
         cdnet_exchg_src_dst(&n_intf, pkt);
         list_put(&n_intf.tx_head, &pkt->node);
+    } else if (pkt->len == 1 && pkt->dat[0] == 2) {
+       d_debug("p10 ser: stay in bootloader\n");
+       app_conf.bl_wait = 0xff;
+       pkt->len = 0;
+       cdnet_exchg_src_dst(&n_intf, pkt);
+       list_put(&n_intf.tx_head, &pkt->node);
     }
     d_debug("p10 ser: ignore\n");
     list_put(n_intf.free_head, &pkt->node);

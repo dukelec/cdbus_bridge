@@ -195,6 +195,19 @@ static void init_rand(void)
     d_debug("rand(): %d\n", rand());
 }
 
+#ifdef BOOTLOADER
+#define APP_ADDR 0x08010000 // offset: 64KB
+
+static void jump_to_app(void)
+{
+    uint32_t stack = *(uint32_t*)APP_ADDR;
+    uint32_t func = *(uint32_t*)(APP_ADDR + 4);
+    printf("jump to app (bl_wait: %d)...\n", app_conf.bl_wait);
+    __set_MSP(stack); // init stack pointer
+    ((void(*)()) func)();
+}
+#endif
+
 
 void app_main(void)
 {
@@ -205,7 +218,11 @@ void app_main(void)
     device_init();
     init_rand();
     HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+#ifdef BOOTLOADER
+    d_debug("start app_main (bl_wait: %d)...\n", app_conf.bl_wait);
+#else
     d_debug("start app_main...\n");
+#endif
     set_led_state(LED_POWERON);
 
     if (app_conf.mode == APP_BRIDGE)
@@ -216,11 +233,20 @@ void app_main(void)
     if (app_conf.ser_idx != SER_USB)
         HAL_UART_Receive_DMA(hw_uart->huart, circ_buf, CIRC_BUF_SZ);
 
+#ifdef BOOTLOADER
+    uint32_t boot_time = get_systick();
+#endif
+
     while (true) {
         data_led_task();
         stack_check();
         dump_hw_status();
 
+#ifdef BOOTLOADER
+        if (app_conf.bl_wait != 0xff &&
+                get_systick() - boot_time > app_conf.bl_wait * 100000 / SYSTICK_US_DIV)
+            jump_to_app();
+#endif
         if (app_conf.ser_idx != SER_USB &&
                 hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
             d_info("usb connected\n");

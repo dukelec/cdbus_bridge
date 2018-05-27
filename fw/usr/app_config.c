@@ -17,7 +17,7 @@ app_conf_t app_conf = {
         .bl_wait = 30, // wait 3 sec
 
         .mode = APP_BRIDGE,
-        .intf_idx = INTF_TTL,
+        .ser_idx = SER_TTL,
 
         .rs485_addr = { .net = 0, .mac = 254 },
         .rs485_baudrate_low = 115200,

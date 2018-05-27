@@ -102,9 +102,9 @@ static void device_init(void)
         cdnet_intf_init(&n_intf, &packet_free_head, &r_intf.cd_intf, &app_conf.rs485_addr);
     }
 
-    if (app_conf.intf_idx == INTF_TTL) {
+    if (app_conf.ser_idx == SER_TTL) {
         hw_uart = &ttl_uart;
-    } else if (app_conf.intf_idx == INTF_RS232) {
+    } else if (app_conf.ser_idx == SER_RS232) {
         hw_uart = &rs232_uart;
     }
 }
@@ -291,17 +291,17 @@ void app_main(void)
     init_info_str();
     set_led_state(LED_POWERON);
 
-    if (app_conf.intf_idx != INTF_USB)
+    if (app_conf.ser_idx != SER_USB)
         HAL_UART_Receive_DMA(hw_uart->huart, circ_buf, CIRC_BUF_SZ);
 
     while (true) {
         data_led_task();
         stack_check();
 
-        if (app_conf.intf_idx != INTF_USB &&
+        if (app_conf.ser_idx != SER_USB &&
                 hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
             d_info("usb connected\n");
-            app_conf.intf_idx = INTF_USB;
+            app_conf.ser_idx = SER_USB;
             HAL_UART_DMAStop(hw_uart->huart);
         }
 
@@ -373,7 +373,7 @@ void app_main(void)
         USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
         uint32_t wd_pos = CIRC_BUF_SZ - hw_uart->huart->hdmarx->Instance->CNDTR;
 
-        if (app_conf.intf_idx == INTF_USB) {
+        if (app_conf.ser_idx == SER_USB) {
             int size;
             uint8_t *wr, *rd;
             cdc_buf_t *bf = list_get_entry_it(&cdc_rx_head, cdc_buf_t);
@@ -499,7 +499,7 @@ void app_main(void)
 
 send_list:
         if (cdc_tx_buf) {
-            if (app_conf.intf_idx == INTF_USB) {
+            if (app_conf.ser_idx == SER_USB) {
                 if (hcdc->TxState == 0) {
                     list_put(&cdc_tx_free_head, &cdc_tx_buf->node);
                     cdc_tx_buf = NULL;
@@ -516,7 +516,7 @@ send_list:
         if (!cdc_tx_buf && cdc_tx_head.first) {
             cdc_buf_t *bf = list_entry(cdc_tx_head.first, cdc_buf_t);
             if (bf->len != 0) {
-                if (app_conf.intf_idx == INTF_USB) {
+                if (app_conf.ser_idx == SER_USB) {
                     local_irq_disable();
                     CDC_Transmit_FS(bf->dat, bf->len);
                     local_irq_enable();

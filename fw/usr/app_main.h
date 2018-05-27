@@ -20,17 +20,21 @@ typedef enum {
 
 typedef enum {
     INTF_RS485 = 0,
-    INTF_USB,
-    INTF_TTL,
-    INTF_RS232
+    INTF_SER
 } intf_idx_t;
+
+typedef enum {
+    SER_USB = 0,
+    SER_TTL,
+    SER_RS232
+} ser_idx_t;
 
 typedef struct {
     uint16_t        magic_code; // 0xcdcd
     uint8_t         bl_wait; // run app after timeout (unit 0.1s), 0xff: never
 
     app_mode_t      mode;
-    intf_idx_t      intf_idx;
+    ser_idx_t       ser_idx;
 
     cdnet_addr_t    rs485_addr;
     uint32_t        rs485_baudrate_low;

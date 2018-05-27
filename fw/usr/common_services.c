@@ -95,47 +95,45 @@ void p3_service(cdnet_packet_t *pkt)
             d_debug("set filter: %d...\n", pkt->dat[2]);
             goto out_send_exchg;
         }
-        goto ignore;
-    }
-    // else APP_RAW
+    } else { // else APP_RAW
 
-    // set mac
-    if (pkt->len >= 2 && pkt->dat[0] == 0x00) {
-        strncpy(string, (char *)pkt->dat + 2, pkt->len - 2);
-        if (strstr(info_str, string) == NULL)
-            goto ignore;
-        pkt->len = 0;
-        cdnet_exchg_src_dst(&n_intf, pkt);
-        r_intf.cd_intf.set_filter(&r_intf.cd_intf, pkt->dat[1]);
-        n_intf.addr.mac = pkt->dat[1];
-        d_debug("set filter: %d...\n", n_intf.addr.mac);
-        goto out_send;
+        // set mac
+        if (pkt->len >= 2 && pkt->dat[0] == 0x00) {
+            strncpy(string, (char *)pkt->dat + 2, pkt->len - 2);
+            if (strstr(info_str, string) == NULL)
+                goto ignore;
+            pkt->len = 0;
+            cdnet_exchg_src_dst(&n_intf, pkt);
+            r_intf.cd_intf.set_filter(&r_intf.cd_intf, pkt->dat[1]);
+            n_intf.addr.mac = pkt->dat[1];
+            d_debug("set filter: %d...\n", n_intf.addr.mac);
+            goto out_send;
+        }
+        // set net
+        if (pkt->len == 2 && pkt->dat[0] == 0x01) {
+            pkt->len = 0;
+            cdnet_exchg_src_dst(&n_intf, pkt);
+            n_intf.addr.net = pkt->dat[1];
+            d_debug("set net: %d...\n", n_intf.addr.net);
+            goto out_send;
+        }
+        // check net id
+        if (pkt->len == 1 && pkt->dat[0] == 0x01) {
+            pkt->len = 1;
+            pkt->dat[0] = n_intf.addr.net;
+            goto out_send_exchg;
+        }
     }
-    // set net
-    if (pkt->len == 2 && pkt->dat[0] == 0x01) {
-        pkt->len = 0;
-        cdnet_exchg_src_dst(&n_intf, pkt);
-        n_intf.addr.net = pkt->dat[1];
-        d_debug("set net: %d...\n", n_intf.addr.net);
-        goto out_send;
-    }
-    // check net id
-    if (pkt->len == 1 && pkt->dat[0] == 0x01) {
-        pkt->len = 1;
-        pkt->dat[0] = n_intf.addr.net;
-        goto out_send_exchg;
-    }
-    goto ignore;
+
+ignore:
+    d_debug("p3 ser: ignore\n");
+    list_put(n_intf.free_head, &pkt->node);
+    return;
 
 out_send_exchg:
     cdnet_exchg_src_dst(&n_intf, pkt);
 out_send:
     list_put(&n_intf.tx_head, &pkt->node);
-    return;
-
-ignore:
-    d_debug("p3 ser: ignore\n");
-    list_put(n_intf.free_head, &pkt->node);
 }
 
 

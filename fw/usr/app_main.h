@@ -103,6 +103,8 @@ void p3_service_for_bridge(cdnet_packet_t *pkt);
 void p10_service(cdnet_packet_t *pkt);
 void p11_service(cdnet_packet_t *pkt);
 
+void app_main(void);
+void load_conf_early(void);
 void load_conf(void);
 void save_conf(void);
 void init_info_str(void);

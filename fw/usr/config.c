@@ -35,6 +35,14 @@ app_conf_t app_conf = {
 };
 
 
+void load_conf_early(void)
+{
+    app_conf_t app_tmp;
+    memcpy(&app_tmp, (void *)APP_CONF_ADDR, sizeof(app_conf_t));
+    if (app_tmp.magic_code == 0xcdcd)
+        memcpy(&app_conf, &app_tmp, sizeof(app_conf_t));
+}
+
 void load_conf(void)
 {
     app_conf_t app_tmp;

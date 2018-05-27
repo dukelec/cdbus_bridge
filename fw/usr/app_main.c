@@ -141,7 +141,7 @@ static void data_led_task(void)
 
 
 extern uint32_t end; // end of bss
-#define STACK_CHECK_SKIP (5 * 1024)
+#define STACK_CHECK_SKIP 0x200
 #define STACK_CHECK_SIZE (64 + STACK_CHECK_SKIP)
 
 static void stack_check_init(void)
@@ -171,16 +171,16 @@ static void dump_hw_status(void)
     if (get_systick() - t_l > 8000) {
         USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
         t_l = get_systick();
-        d_debug("bx: state: %d, tx_l: %d, rx_l: %d, p %d\n",
+        d_debug("ctl: state %d, t_len %d, r_len %d, irq %d\n",
                 r_intf.state, r_intf.tx_head.len, r_intf.rx_head.len,
-                gpio_get_value(r_intf.int_n));
-        d_debug("bx: cnt: rx: %d %d (%d %d), tx: %d %d (%d)\n",
-                r_intf.rx_lost_cnt, r_intf.rx_error_cnt,
-                r_intf.rx_cnt, r_intf.rx_no_free_node_cnt,
-                r_intf.tx_cd_cnt, r_intf.tx_error_cnt, r_intf.tx_cnt);
-        d_debug("usb: rx: %d, tx: %d, tx_buf: %p, tx_l: %d, t_s: %x\n",
+                !gpio_get_value(r_intf.int_n));
+        d_debug("  r_cnt %d (lost %d, err %d, no-free %d), t_cnt %d (cd %d, err %d)\n",
+                r_intf.rx_cnt, r_intf.rx_lost_cnt, r_intf.rx_error_cnt,
+                r_intf.rx_no_free_node_cnt,
+                r_intf.tx_cnt, r_intf.tx_cd_cnt, r_intf.tx_error_cnt);
+        d_debug("usb: r_cnt %d, t_cnt %d, t_buf %p, t_len %d, t_state %x\n",
                 usb_rx_cnt, usb_tx_cnt, cdc_tx_buf, cdc_tx_head.len, hcdc->TxState);
-        d_debug("net: tx_l: %d\n", n_intf.tx_head.len);
+        d_debug("net: r_len %d, t_len %d\n", n_intf.rx_head.len, n_intf.tx_head.len);
     }
 }
 
@@ -202,7 +202,7 @@ static void jump_to_app(void)
 {
     uint32_t stack = *(uint32_t*)APP_ADDR;
     uint32_t func = *(uint32_t*)(APP_ADDR + 4);
-    printf("jump to app (bl_wait: %d)...\n", app_conf.bl_wait);
+    printf("jump to app...\n");
     __set_MSP(stack); // init stack pointer
     ((void(*)()) func)();
 }
@@ -211,6 +211,11 @@ static void jump_to_app(void)
 
 void app_main(void)
 {
+#ifdef BOOTLOADER
+    printf("\nstart app_main (bl_wait: %d)...\n", app_conf.bl_wait);
+#else
+    printf("\nstart app_main...\n");
+#endif
     debug_init();
     stack_check_init();
     load_conf();
@@ -218,11 +223,6 @@ void app_main(void)
     device_init();
     init_rand();
     HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
-#ifdef BOOTLOADER
-    d_debug("start app_main (bl_wait: %d)...\n", app_conf.bl_wait);
-#else
-    d_debug("start app_main...\n");
-#endif
     set_led_state(LED_POWERON);
 
     if (app_conf.mode == APP_BRIDGE)

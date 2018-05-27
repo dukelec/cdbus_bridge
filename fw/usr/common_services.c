@@ -36,6 +36,7 @@ void init_info_str(void)
 #else
     sprintf(info_str, "M: cdbus bridge; S: %s; SW: %s", cpu_id, SW_VER);
 #endif
+    d_info("info: %s\n", info_str);
 }
 
 // make sure local mac != 255 before call any service

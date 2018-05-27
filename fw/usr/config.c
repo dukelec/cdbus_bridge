@@ -50,7 +50,6 @@ void load_conf(void)
     d_info("conf: mode: %s\n", app_conf.mode == APP_BRIDGE ? "bridge" : "raw");
 }
 
-#if 0
 void save_conf(void)
 {
     uint8_t ret;
@@ -84,4 +83,3 @@ void save_conf(void)
     else
         d_error("conf: save to flash error\n");
 }
-#endif

@@ -68,74 +68,80 @@ void p1_service(cdnet_packet_t *pkt)
     list_put(n_intf.free_head, &pkt->node);
 }
 
-// device baud rate
-void p2_service(cdnet_packet_t *pkt)
+// device addr
+void p3_service_for_bridge(cdnet_packet_t *pkt)
 {
-    list_put(n_intf.free_head, &pkt->node);
+    if (pkt->len == 2 && pkt->dat[0] == 0x08 && pkt->dat[1] == INTF_RS485) {
+        // check mac
+        pkt->len = 1;
+        pkt->dat[0] = r_intf.cd_intf.get_filter(&r_intf.cd_intf);
+        cdnet_exchg_src_dst(&n_intf, pkt);
+        list_put(&n_intf.tx_head, &pkt->node);
+
+    } else if (pkt->len == 3 && pkt->dat[0] == 0x08 && pkt->dat[1] == INTF_RS485) {
+        // set mac
+        r_intf.cd_intf.set_filter(&r_intf.cd_intf, pkt->dat[2]);
+        pkt->len = 0;
+        d_debug("set filter: %d...\n", pkt->dat[2]);
+        cdnet_exchg_src_dst(&n_intf, pkt);
+        list_put(&n_intf.tx_head, &pkt->node);
+
+    } else {
+        d_debug("p3 ser: ignore\n");
+        list_put(n_intf.free_head, &pkt->node);
+    }
 }
 
-// device addr
-void p3_service(cdnet_packet_t *pkt)
+void p3_service_for_raw(cdnet_packet_t *pkt)
 {
     char string[100] = "";
 
-    if (app_conf.mode == APP_BRIDGE) {
-        if (pkt->len < 2 || pkt->dat[0] != 0x08 || pkt->dat[1] != INTF_RS485)
-            goto ignore;
-        // check mac
-        if (pkt->len == 2) {
-            pkt->len = 1;
-            pkt->dat[0] = r_intf.cd_intf.get_filter(&r_intf.cd_intf);
-            goto out_send_exchg;
-        }
-        // set mac
-        if (pkt->len == 3) {
-            r_intf.cd_intf.set_filter(&r_intf.cd_intf, pkt->dat[2]);
-            pkt->len = 0;
-            d_debug("set filter: %d...\n", pkt->dat[2]);
-            goto out_send_exchg;
-        }
-    } else { // else APP_RAW
-
-        // set mac
-        if (pkt->len >= 2 && pkt->dat[0] == 0x00) {
-            strncpy(string, (char *)pkt->dat + 2, pkt->len - 2);
-            if (strstr(info_str, string) == NULL)
-                goto ignore;
+    if (pkt->len >= 2 && pkt->dat[0] == 0x00) { // set mac
+        strncpy(string, (char *)pkt->dat + 2, pkt->len - 2);
+        if (strstr(info_str, string) == NULL) {
+            d_debug("p3 ser: ignore by filter\n");
+            list_put(n_intf.free_head, &pkt->node);
+        } else {
             pkt->len = 0;
             cdnet_exchg_src_dst(&n_intf, pkt);
             r_intf.cd_intf.set_filter(&r_intf.cd_intf, pkt->dat[1]);
             n_intf.addr.mac = pkt->dat[1];
             d_debug("set filter: %d...\n", n_intf.addr.mac);
-            goto out_send;
+            list_put(&n_intf.tx_head, &pkt->node);
         }
-        // set net
-        if (pkt->len == 2 && pkt->dat[0] == 0x01) {
-            pkt->len = 0;
-            cdnet_exchg_src_dst(&n_intf, pkt);
-            n_intf.addr.net = pkt->dat[1];
-            d_debug("set net: %d...\n", n_intf.addr.net);
-            goto out_send;
-        }
-        // check net id
-        if (pkt->len == 1 && pkt->dat[0] == 0x01) {
-            pkt->len = 1;
-            pkt->dat[0] = n_intf.addr.net;
-            goto out_send_exchg;
-        }
+    } else if (pkt->len == 2 && pkt->dat[0] == 0x01) { // set net
+        pkt->len = 0;
+        cdnet_exchg_src_dst(&n_intf, pkt);
+        n_intf.addr.net = pkt->dat[1];
+        d_debug("set net: %d...\n", n_intf.addr.net);
+        list_put(&n_intf.tx_head, &pkt->node);
+    } else if (pkt->len == 1 && pkt->dat[0] == 0x01) { // check net id
+        pkt->len = 1;
+        pkt->dat[0] = n_intf.addr.net;
+        cdnet_exchg_src_dst(&n_intf, pkt);
+        list_put(&n_intf.tx_head, &pkt->node);
+    } else {
+        d_debug("p3 ser: ignore\n");
+        list_put(n_intf.free_head, &pkt->node);
     }
-
-ignore:
-    d_debug("p3 ser: ignore\n");
-    list_put(n_intf.free_head, &pkt->node);
-    return;
-
-out_send_exchg:
-    cdnet_exchg_src_dst(&n_intf, pkt);
-out_send:
-    list_put(&n_intf.tx_head, &pkt->node);
 }
 
+
+// device control
+void p10_service(cdnet_packet_t *pkt)
+{
+    if (pkt->len == 1 && pkt->dat[0] == 0) {
+        NVIC_SystemReset(); // nerver return
+    } else if (pkt->len == 1 && pkt->dat[0] == 1) {
+        d_debug("p10 ser: save config to flash\n");
+        save_conf();
+        pkt->len = 0;
+        cdnet_exchg_src_dst(&n_intf, pkt);
+        list_put(&n_intf.tx_head, &pkt->node);
+    }
+    d_debug("p10 ser: ignore\n");
+    list_put(n_intf.free_head, &pkt->node);
+}
 
 // flash memory manipulation
 void p11_service(cdnet_packet_t *pkt)

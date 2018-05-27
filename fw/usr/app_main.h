@@ -12,6 +12,12 @@
 
 #include "common.h"
 #include "cdnet.h"
+#include "cdbus_uart.h"
+#include "cdctl_bx_it.h"
+#include "usb_device.h"
+#include "usbd_cdc_if.h"
+#include "modbus_crc.h"
+#include "main.h"
 
 typedef enum {
     APP_BRIDGE = 0,
@@ -63,19 +69,42 @@ typedef struct {
 #define APP_CONF_ADDR       0x0801F800 // last page
 #define RAW_SER_PORT        20
 
-extern app_conf_t app_conf;
-extern cdnet_intf_t n_intf;
+
+extern USBD_HandleTypeDef hUsbDeviceFS;
+extern uart_t *hw_uart;
 
 extern list_head_t cdc_rx_free_head;
+extern list_head_t cdc_tx_free_head;
 extern list_head_t cdc_rx_head;
+extern list_head_t cdc_tx_head;
 extern cdc_buf_t *cdc_rx_buf;
+extern cdc_buf_t *cdc_tx_buf;
+
+extern list_head_t frame_free_head;
+extern list_head_t packet_free_head;
+
+extern cdctl_intf_t r_intf;   // RS485
+extern cdnet_intf_t n_intf;   // CDNET
+
+#define CIRC_BUF_SZ 1024
+extern uint8_t circ_buf[];
+extern uint32_t rd_pos;
+
+extern app_conf_t app_conf;
+
+void app_raw_init(void);
+void app_raw(void);
+void app_bridge_init(void);
+void app_bridge(void);
 
 void p1_service(cdnet_packet_t *pkt);
-void p2_service(cdnet_packet_t *pkt);
-void p3_service(cdnet_packet_t *pkt);
+void p3_service_for_raw(cdnet_packet_t *pkt);
+void p3_service_for_bridge(cdnet_packet_t *pkt);
+void p10_service(cdnet_packet_t *pkt);
 void p11_service(cdnet_packet_t *pkt);
 
 void load_conf(void);
+void save_conf(void);
 void init_info_str(void);
 
 #endif

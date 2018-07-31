@@ -1,3 +1,6 @@
 [submodule "cdnet"]
 	path = fw/cdnet
 	url = ../cdnet
+[submodule "cdbus_tools"]
+	path = sw/cdbus_tools
+	url = ../cdbus_tools

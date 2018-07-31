@@ -1,0 +1,4 @@
+# flash command
+
+st-flash --reset write build/cdbus_bridge.bin 0x08010000
+

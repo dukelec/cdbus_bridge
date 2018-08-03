@@ -1,5 +1,5 @@
 /*
- * Software License Agreement (BSD License)
+ * Software License Agreement (MIT License)
  *
  * Copyright (c) 2017, DUKELEC, Inc.
  * All rights reserved.
@@ -7,8 +7,8 @@
  * Author: Duke Fong <duke@dukelec.com>
  */
 
-#ifndef __COMMON_APPEND_H__
-#define __COMMON_APPEND_H__
+#ifndef __DEBUG_CONFIG_H__
+#define __DEBUG_CONFIG_H__
 
 typedef enum {
     LED_POWERON = 0,
@@ -18,12 +18,6 @@ typedef enum {
 
 void set_led_state(led_state_t state);
 
-
-#undef d_warn
-#undef d_error
-#undef dd_warn
-#undef dd_error
-
 #define d_warn(fmt, ...) do {               \
         set_led_state(LED_WARN);            \
         dprintf("W: " fmt, ## __VA_ARGS__); \
@@ -32,16 +26,6 @@ void set_led_state(led_state_t state);
 #define d_error(fmt, ...) do {              \
         set_led_state(LED_ERROR);           \
         dprintf("E: " fmt, ## __VA_ARGS__); \
-    } while (0)
-
-#define dd_warn(name, fmt, ...) do {                    \
-        set_led_state(LED_WARN);                        \
-        dprintf("W: %s: " fmt, name, ## __VA_ARGS__);   \
-    } while (0)
-
-#define dd_error(name, fmt, ...) do {                   \
-        set_led_state(LED_ERROR);                        \
-        dprintf("E: %s: " fmt, name, ## __VA_ARGS__);   \
     } while (0)
 
 

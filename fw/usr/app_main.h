@@ -1,5 +1,5 @@
 /*
- * Software License Agreement (BSD License)
+ * Software License Agreement (MIT License)
  *
  * Copyright (c) 2017, DUKELEC, Inc.
  * All rights reserved.
@@ -10,7 +10,7 @@
 #ifndef __APP_MAIN_H__
 #define __APP_MAIN_H__
 
-#include "common.h"
+#include "cd_utils.h"
 #include "cdnet.h"
 #include "cdbus_uart.h"
 #include "cdctl_bx_it.h"

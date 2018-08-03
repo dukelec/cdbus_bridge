@@ -36,7 +36,7 @@
 #include "stm32f1xx_it.h"
 
 /* USER CODE BEGIN 0 */
-#include "common.h"
+#include "cd_utils.h"
 
 void debugHardfault(uint32_t *sp)
 {

@@ -16,8 +16,6 @@ extern UART_HandleTypeDef huart4;
 extern SPI_HandleTypeDef hspi1;
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
-extern list_head_t raw2u_head; // raw mode only
-
 static  gpio_t led_r = { .group = LED_R_GPIO_Port, .num = LED_R_Pin };
 static  gpio_t led_g = { .group = LED_G_GPIO_Port, .num = LED_G_Pin };
 static  gpio_t led_b = { .group = LED_B_GPIO_Port, .num = LED_B_Pin };
@@ -51,10 +49,9 @@ list_head_t frame_free_head = {0};
 
 #define PACKET_MAX 10
 static cdnet_packet_t packet_alloc[PACKET_MAX];
-list_head_t packet_free_head = {0};
 
-cdctl_intf_t r_intf = {0};   // RS485
-cdnet_intf_t n_intf = {0};   // CDNET
+cdctl_dev_t r_dev = {0}; // RS485
+cdnet_intf_t n_intf = {0}; // CDNET
 
 int usb_rx_cnt = 0;
 int usb_tx_cnt = 0;
@@ -73,11 +70,11 @@ static void device_init(void)
     for (i = 0; i < FRAME_MAX; i++)
         list_put(&frame_free_head, &frame_alloc[i].node);
     for (i = 0; i < PACKET_MAX; i++)
-        list_put(&packet_free_head, &packet_alloc[i].node);
+        list_put(&cdnet_free_pkts, &packet_alloc[i].node);
 
     cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
 
-    cdctl_intf_init(&r_intf, &frame_free_head, app_conf.rs485_addr.mac,
+    cdctl_dev_init(&r_dev, &frame_free_head, app_conf.rs485_mac,
             app_conf.rs485_baudrate_low, app_conf.rs485_baudrate_high,
             &r_spi, &r_rst_n, &r_int_n);
 
@@ -122,13 +119,13 @@ static void data_led_task(void)
     static uint32_t tx_cnt_last = 0;
     static uint32_t rx_cnt_last = 0;
 
-    if (rx_cnt_last != r_intf.rx_cnt) {
-        rx_cnt_last = r_intf.rx_cnt;
+    if (rx_cnt_last != r_dev.rx_cnt) {
+        rx_cnt_last = r_dev.rx_cnt;
         rx_t_last = get_systick();
         gpio_set_value(&led_rx, 0);
     }
-    if (tx_cnt_last != r_intf.tx_cnt) {
-        tx_cnt_last = r_intf.tx_cnt;
+    if (tx_cnt_last != r_dev.tx_cnt) {
+        tx_cnt_last = r_dev.tx_cnt;
         tx_t_last = get_systick();
         gpio_set_value(&led_tx, 0);
     }
@@ -172,15 +169,14 @@ static void dump_hw_status(void)
         USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
         t_l = get_systick();
         d_debug("ctl: state %d, t_len %d, r_len %d, irq %d\n",
-                r_intf.state, r_intf.tx_head.len, r_intf.rx_head.len,
-                !gpio_get_value(r_intf.int_n));
+                r_dev.state, r_dev.tx_head.len, r_dev.rx_head.len,
+                !gpio_get_value(r_dev.int_n));
         d_debug("  r_cnt %d (lost %d, err %d, no-free %d), t_cnt %d (cd %d, err %d)\n",
-                r_intf.rx_cnt, r_intf.rx_lost_cnt, r_intf.rx_error_cnt,
-                r_intf.rx_no_free_node_cnt,
-                r_intf.tx_cnt, r_intf.tx_cd_cnt, r_intf.tx_error_cnt);
+                r_dev.rx_cnt, r_dev.rx_lost_cnt, r_dev.rx_error_cnt,
+                r_dev.rx_no_free_node_cnt,
+                r_dev.tx_cnt, r_dev.tx_cd_cnt, r_dev.tx_error_cnt);
         d_debug("usb: r_cnt %d, t_cnt %d, t_buf %p, t_len %d, t_state %x\n",
                 usb_rx_cnt, usb_tx_cnt, cdc_tx_buf, cdc_tx_head.len, hcdc->TxState);
-        d_debug("net: r_len %d, t_len %d\n", n_intf.rx_head.len, n_intf.tx_head.len);
     }
 }
 
@@ -219,10 +215,9 @@ void app_main(void)
     debug_init();
     stack_check_init();
     load_conf();
-    init_info_str();
     device_init();
     init_rand();
-    HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+    common_service_init();
     set_led_state(LED_POWERON);
 
     if (app_conf.mode == APP_BRIDGE)
@@ -254,45 +249,8 @@ void app_main(void)
             HAL_UART_DMAStop(hw_uart->huart);
         }
 
-        // handle cdnet
-        cdnet_rx(&n_intf);
-        cdnet_packet_t *pkt = cdnet_packet_get(&n_intf.rx_head);
-        if (pkt) {
-            if (pkt->level == CDNET_L2 || pkt->src_port < CDNET_DEF_PORT ||
-                    pkt->dst_port >= CDNET_DEF_PORT) {
-                d_warn("unexpected pkg port\n");
-                list_put(n_intf.free_head, &pkt->node);
-            } else {
-                switch (pkt->dst_port) {
-                case 1: // device info
-                    p1_service(pkt);
-                    break;
-                case 3: // address config
-                    if (app_conf.mode == APP_BRIDGE)
-                        p3_service_for_bridge(pkt);
-                    else
-                        p3_service_for_raw(pkt);
-                    break;
-                case 10: // reboot; save config ...
-                    p10_service(pkt);
-                    break;
-                case 11: // flash read, write and erase
-                    p11_service(pkt);
-                    break;
-                case RAW_SER_PORT: // receive raw data
-                    if (app_conf.mode == APP_RAW) {
-                        list_put(&raw2u_head, &pkt->node);
-                        break;
-                    }
-                    // no break;
-                default:
-                    d_warn("unknown pkg\n");
-                    list_put(n_intf.free_head, &pkt->node);
-                }
-            }
-
-        }
-        cdnet_tx(&n_intf);
+        cdnet_intf_routine(); // handle cdnet
+        common_service_routine();
 
         if (app_conf.mode == APP_BRIDGE)
             app_bridge();
@@ -339,21 +297,21 @@ void app_main(void)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if (GPIO_Pin == r_int_n.num) {
-        cdctl_int_isr(&r_intf);
+        cdctl_int_isr(&r_dev);
     }
 }
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    cdctl_spi_isr(&r_intf);
+    cdctl_spi_isr(&r_dev);
 }
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    cdctl_spi_isr(&r_intf);
+    cdctl_spi_isr(&r_dev);
 }
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    cdctl_spi_isr(&r_intf);
+    cdctl_spi_isr(&r_dev);
 }
 void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
 {

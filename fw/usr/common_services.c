@@ -7,12 +7,16 @@
  * Author: Duke Fong <duke@dukelec.com>
  */
 
-#include "cdctl_bx_it.h"
 #include "app_main.h"
 
-extern cdctl_intf_t r_intf;
 static char cpu_id[25];
 static char info_str[100];
+
+static cdnet_socket_t sock1 = { .port = 1 };
+static cdnet_socket_t sock3 = { .port = 3 };
+static cdnet_socket_t sock10 = { .port = 10 };
+static cdnet_socket_t sock11 = { .port = 11 };
+
 
 static void get_uid(char *buf)
 {
@@ -42,7 +46,7 @@ void init_info_str(void)
 // make sure local mac != 255 before call any service
 
 // device info
-void p1_service(cdnet_packet_t *pkt)
+static void p1_service_routine(void)
 {
     uint16_t max_time = 0;
     uint16_t wait_time = 0;
@@ -50,120 +54,152 @@ void p1_service(cdnet_packet_t *pkt)
     uint8_t mac_end = 255;
     char string[100] = "";
 
-    if (pkt->len >= 4) {
-        max_time = *(uint16_t *)pkt->dat;
-        wait_time = rand() / (RAND_MAX / max_time);
-        mac_start = pkt->dat[2];
-        mac_end = pkt->dat[3];
-        strncpy(string, (char *)pkt->dat + 4, pkt->len - 4);
-    }
-
-    d_debug("dev_info: wait %d (%d), [%d, %d], str: %s\n",
-            wait_time, max_time, mac_start, mac_end, string);
-
-    if (clip(n_intf.addr.mac, mac_start, mac_end) == n_intf.addr.mac &&
-            strstr(info_str, string) != NULL) {
-        uint32_t t_last = get_systick();
-        while (get_systick() - t_last < wait_time * 1000 / SYSTICK_US_DIV);
-        strcpy((char *)pkt->dat, info_str);
-        pkt->len = strlen(info_str);
-        cdnet_exchg_src_dst(&n_intf, pkt);
-        list_put(&n_intf.tx_head, &pkt->node);
+    cdnet_packet_t *pkt = cdnet_socket_recvfrom(&sock1);
+    if (!pkt)
         return;
+
+    if (pkt->len && (pkt->dat[0] == 0x40 || pkt->dat[0] == 0x41)) {
+        if (pkt->dat[0] == 0x41) {
+            max_time = *(uint16_t *)(pkt->dat + 1);
+            wait_time = rand() / (RAND_MAX / max_time);
+            mac_start = pkt->dat[3];
+            mac_end = pkt->dat[4];
+            strncpy(string, (char *)pkt->dat + 5, pkt->len - 5);
+        }
+
+        d_debug("dev_info: wait %d (%d), [%d, %d], str: %s\n",
+                wait_time, max_time, mac_start, mac_end, string);
+
+        cdnet_intf_t *intf = cdnet_route_search(&pkt->src.addr, NULL);
+        uint8_t intf_mac = intf->mac;
+
+        if (clip(intf_mac, mac_start, mac_end) == intf_mac &&
+                strstr(info_str, string) != NULL) {
+            uint32_t t_last = get_systick();
+            while (get_systick() - t_last < wait_time * 1000 / SYSTICK_US_DIV);
+            pkt->dat[0] = 0x80;
+            strcpy((char *)pkt->dat + 1, info_str);
+            pkt->len = strlen(info_str) + 1;
+            pkt->dst = pkt->src;
+            cdnet_socket_sendto(&sock1, pkt);
+            return;
+        }
     }
     d_debug("p1 ser: ignore\n");
-    list_put(n_intf.free_head, &pkt->node);
+    list_put(&cdnet_free_pkts, &pkt->node);
 }
 
 // device addr
-void p3_service_for_bridge(cdnet_packet_t *pkt)
+static void p3_service_for_bridge(void)
 {
-    if (pkt->len == 2 && pkt->dat[0] == 0x08 && pkt->dat[1] == INTF_RS485) {
-        // check mac
-        pkt->len = 1;
-        pkt->dat[0] = r_intf.cd_intf.get_filter(&r_intf.cd_intf);
-        cdnet_exchg_src_dst(&n_intf, pkt);
-        list_put(&n_intf.tx_head, &pkt->node);
+    cdnet_packet_t *pkt = cdnet_socket_recvfrom(&sock3);
+    if (!pkt)
+        return;
 
-    } else if (pkt->len == 3 && pkt->dat[0] == 0x08 && pkt->dat[1] == INTF_RS485) {
+    if (pkt->len == 2 && pkt->dat[0] == 0x48 && pkt->dat[1] == INTF_RS485) {
+        // check mac
+        pkt->len = 2;
+        pkt->dat[0] = 0x80;
+        pkt->dat[1] = cdctl_read_reg(&r_dev, REG_FILTER);
+        pkt->dst = pkt->src;
+        cdnet_socket_sendto(&sock3, pkt);
+
+    } else if (pkt->len == 3 && pkt->dat[0] == 0x68 && pkt->dat[1] == INTF_RS485) {
         // set mac
-        r_intf.cd_intf.set_filter(&r_intf.cd_intf, pkt->dat[2]);
-        pkt->len = 0;
         d_debug("set filter: %d...\n", pkt->dat[2]);
-        cdnet_exchg_src_dst(&n_intf, pkt);
-        list_put(&n_intf.tx_head, &pkt->node);
+        cdctl_write_reg(&r_dev, REG_FILTER, pkt->dat[2]);
+        pkt->len = 1;
+        pkt->dat[0] = 0x80;
+        pkt->dst = pkt->src;
+        cdnet_socket_sendto(&sock3, pkt);
 
     } else {
         d_debug("p3 ser: ignore\n");
-        list_put(n_intf.free_head, &pkt->node);
+        list_put(&cdnet_free_pkts, &pkt->node);
     }
 }
 
-void p3_service_for_raw(cdnet_packet_t *pkt)
+static void p3_service_for_raw(void)
 {
+    cdnet_packet_t *pkt = cdnet_socket_recvfrom(&sock3);
+    if (!pkt)
+        return;
+
     char string[100] = "";
 
-    if (pkt->len >= 2 && pkt->dat[0] == 0x00) { // set mac
+    if (pkt->len >= 2 && pkt->dat[0] == 0x60) { // set mac
         strncpy(string, (char *)pkt->dat + 2, pkt->len - 2);
         if (strstr(info_str, string) == NULL) {
             d_debug("p3 ser: ignore by filter\n");
-            list_put(n_intf.free_head, &pkt->node);
+            list_put(&cdnet_free_pkts, &pkt->node);
         } else {
-            pkt->len = 0;
-            cdnet_exchg_src_dst(&n_intf, pkt);
-            r_intf.cd_intf.set_filter(&r_intf.cd_intf, pkt->dat[1]);
-            n_intf.addr.mac = pkt->dat[1];
-            d_debug("set filter: %d...\n", n_intf.addr.mac);
-            list_put(&n_intf.tx_head, &pkt->node);
+            pkt->len = 1;
+            pkt->dat[0] = 0x80;
+            pkt->dst = pkt->src;
+            cdnet_socket_sendto(&sock3, pkt);
+            d_debug("set filter: %d...\n", pkt->dat[1]);
+            cdctl_write_reg(&r_dev, REG_FILTER, pkt->dat[1]);
+            n_intf.mac = pkt->dat[1];
         }
-    } else if (pkt->len == 2 && pkt->dat[0] == 0x01) { // set net
-        pkt->len = 0;
-        cdnet_exchg_src_dst(&n_intf, pkt);
-        n_intf.addr.net = pkt->dat[1];
-        d_debug("set net: %d...\n", n_intf.addr.net);
-        list_put(&n_intf.tx_head, &pkt->node);
-    } else if (pkt->len == 1 && pkt->dat[0] == 0x01) { // check net id
+    } else if (pkt->len == 2 && pkt->dat[0] == 0x61) { // set net
         pkt->len = 1;
-        pkt->dat[0] = n_intf.addr.net;
-        cdnet_exchg_src_dst(&n_intf, pkt);
-        list_put(&n_intf.tx_head, &pkt->node);
+        pkt->dat[0] = 0x80;
+        pkt->dst = pkt->src;
+        cdnet_socket_sendto(&sock3, pkt);
+        d_debug("set net: %d...\n", n_intf.net);
+        n_intf.net = pkt->dat[1];
+    } else if (pkt->len == 1 && pkt->dat[0] == 0x41) { // check net id
+        pkt->len = 2;
+        pkt->dat[0] = 0x80;
+        pkt->dat[1] = n_intf.net;
+        pkt->dst = pkt->src;
+        cdnet_socket_sendto(&sock3, pkt);
     } else {
         d_debug("p3 ser: ignore\n");
-        list_put(n_intf.free_head, &pkt->node);
+        list_put(&cdnet_free_pkts, &pkt->node);
     }
 }
 
-
 // device control
-void p10_service(cdnet_packet_t *pkt)
+static void p10_service_routine(void)
 {
-    if (pkt->len == 1 && pkt->dat[0] == 0) {
-        NVIC_SystemReset(); // nerver return
-    } else if (pkt->len == 1 && pkt->dat[0] == 1) {
+    cdnet_packet_t *pkt = cdnet_socket_recvfrom(&sock1);
+    if (!pkt)
+        return;
+
+    if (pkt->len && (pkt->dat[0] == 0x60 || pkt->dat[0] == 0x20)) {
+        NVIC_SystemReset(); // TODO: return before reset
+    } else if (pkt->len && pkt->dat[0] == 0x61) {
         d_debug("p10 ser: save config to flash\n");
         save_conf();
-        pkt->len = 0;
-        cdnet_exchg_src_dst(&n_intf, pkt);
-        list_put(&n_intf.tx_head, &pkt->node);
-    } else if (pkt->len == 1 && pkt->dat[0] == 2) {
+        pkt->len = 1;
+        pkt->dat[0] = 0x80;
+        pkt->dst = pkt->src;
+        cdnet_socket_sendto(&sock10, pkt);
+    } else if (pkt->len && pkt->dat[0] == 0x62) {
         d_debug("p10 ser: stay in bootloader\n");
         app_conf.bl_wait = 0xff;
-        pkt->len = 0;
-        cdnet_exchg_src_dst(&n_intf, pkt);
-        list_put(&n_intf.tx_head, &pkt->node);
+        pkt->len = 1;
+        pkt->dat[0] = 0x80;
+        pkt->dst = pkt->src;
+        cdnet_socket_sendto(&sock10, pkt);
     }
     d_debug("p10 ser: ignore\n");
-    list_put(n_intf.free_head, &pkt->node);
+    list_put(&cdnet_free_pkts, &pkt->node);
 }
 
 // flash memory manipulation
-void p11_service(cdnet_packet_t *pkt)
+static void p11_service_routine(void)
 {
-    // erase: 0xff, addr_32, len_32  | return [] on success
-    // read:  0x00, addr_32, len_8   | return [data]
-    // write: 0x01, addr_32 + [data] | return [] on success
+    // erase: 0x6f, addr_32, len_32  | return [0x80] on success
+    // read:  0x40, addr_32, len_8   | return [0x80, data]
+    // write: 0x61, addr_32 + [data] | return [0x80] on success
 
-    if (pkt->dat[0] == 0xff && pkt->len == 9) {
+    cdnet_packet_t *pkt = cdnet_socket_recvfrom(&sock1);
+    if (!pkt)
+        return;
+
+    if (pkt->dat[0] == 0x6f && pkt->len == 9) {
         uint8_t ret;
         uint32_t err_page = 0;
         FLASH_EraseInitTypeDef f;
@@ -181,29 +217,26 @@ void p11_service(cdnet_packet_t *pkt)
 
         d_debug("nvm erase: %08x +%08x, %08x, ret: %d\n",
                 addr, len, err_page, ret);
-        if (ret == HAL_OK) {
-            pkt->len = 0;
-        } else {
-            pkt->len = 1;
-            pkt->dat[0] = ret;
-        }
+        pkt->len = 1;
+        pkt->dat[0] = ret == HAL_OK ? 0x80 : 0x81;
 
-    } else if (pkt->dat[0] == 0x00 && pkt->len == 6) {
+    } else if (pkt->dat[0] == 0x40 && pkt->len == 6) {
         uint32_t *src_dat = (uint32_t *) *(uint32_t *)(pkt->dat + 1);
         uint8_t len = pkt->dat[5];
         uint8_t cnt = (len + 3) / 4;
 
-        uint32_t *dst_dat = (uint32_t *)pkt->dat;
+        uint32_t *dst_dat = (uint32_t *)(pkt->dat + 1);
         uint8_t i;
 
-        cnt = min(cnt, CDNET_DAT_SIZE / 4);
+        cnt = min(cnt, CDNET_MAX_DAT / 4);
 
         for (i = 0; i < cnt; i++)
             *(dst_dat + i) = *(src_dat + i);
         d_debug("nvm read: %08x %d(%d)\n", src_dat, len, cnt);
-        pkt->len = min(cnt * 4, len);
+        pkt->dat[0] = 0x80;
+        pkt->len = min(cnt * 4, len) + 1;
 
-    } else if (pkt->dat[0] == 0x01 && pkt->len > 5) {
+    } else if (pkt->dat[0] == 0x61 && pkt->len > 5) {
         uint8_t ret;
         uint32_t *dst_dat = (uint32_t *) *(uint32_t *)(pkt->dat + 1);
         uint8_t len = pkt->len - 5;
@@ -219,20 +252,38 @@ void p11_service(cdnet_packet_t *pkt)
 
         d_debug("nvm write: %08x %d(%d), ret: %d\n",
                 dst_dat, pkt->len - 5, cnt, ret);
-        if (ret == HAL_OK) {
-            pkt->len = 0;
-        } else {
-            pkt->len = 1;
-            pkt->dat[0] = ret;
-        }
+        pkt->len = 1;
+        pkt->dat[0] = ret == HAL_OK ? 0x80 : 0x81;
 
     } else {
-        list_put(n_intf.free_head, &pkt->node);
+        list_put(&cdnet_free_pkts, &pkt->node);
         d_warn("nvm: wrong cmd, len: %d\n", pkt->len);
         return;
     }
 
-    cdnet_exchg_src_dst(&n_intf, pkt);
-    list_put(&n_intf.tx_head, &pkt->node);
+    pkt->dst = pkt->src;
+    cdnet_socket_sendto(&sock11, pkt);
     return;
 }
+
+
+void common_service_init(void)
+{
+    cdnet_socket_bind(&sock1, NULL);
+    cdnet_socket_bind(&sock3, NULL);
+    cdnet_socket_bind(&sock10, NULL);
+    cdnet_socket_bind(&sock11, NULL);
+    init_info_str();
+}
+
+void common_service_routine(void)
+{
+    p1_service_routine();
+    if (app_conf.mode == APP_BRIDGE)
+        p3_service_for_bridge();
+    else
+        p3_service_for_raw();
+    p10_service_routine();
+    p11_service_routine();
+}
+

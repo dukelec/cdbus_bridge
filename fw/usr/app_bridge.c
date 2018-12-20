@@ -9,54 +9,50 @@
 
 #include "app_main.h"
 
-// dummy interface for UART, for bridge mode only
-static cduart_intf_t d_intf = {0};
+static cduart_dev_t d_dev = {0}; // dummy interface for cdnet
 static cd_frame_t *d_conv_frame = NULL;
 
 void app_bridge_init(void)
 {
     d_conv_frame = list_get_entry(&frame_free_head, cd_frame_t);
 
-    cduart_intf_init(&d_intf, &frame_free_head);
-    d_intf.remote_filter[0] = 0xaa;
-    d_intf.remote_filter_len = 1;
-    d_intf.local_filter[0] = 0x55;
-    d_intf.local_filter[1] = 0x56;
-    d_intf.local_filter_len = 2;
+    cduart_dev_init(&d_dev, &frame_free_head);
+    d_dev.remote_filter[0] = 0xaa;
+    d_dev.remote_filter_len = 1;
+    d_dev.local_filter[0] = 0x55;
+    d_dev.local_filter[1] = 0x56;
+    d_dev.local_filter_len = 2;
 
-    cdnet_addr_t addr = { .net = 0, .mac = 0x55 };
-    cdnet_intf_init(&n_intf, &packet_free_head, &d_intf.cd_intf, &addr);
+    cdnet_intf_init(&n_intf, &d_dev.cd_dev, 0, 0x55);
+    cdnet_intf_register(&n_intf);
 }
 
-
-// alloc from r_intf.free_head, send through r_intf.tx_head or d_rx_head
-static void app_bridge_from_u(const uint8_t *buf, int size,
+static void read_from_host(const uint8_t *buf, int size,
         const uint8_t *wr, const uint8_t *rd)
 {
     list_node_t *pre, *cur;
 
     if (rd > wr) {
-        cduart_rx_handle(&d_intf, rd, buf + size - rd);
+        cduart_rx_handle(&d_dev, rd, buf + size - rd);
         rd = buf;
     }
     if (rd < wr)
-        cduart_rx_handle(&d_intf, rd, wr - rd);
+        cduart_rx_handle(&d_dev, rd, wr - rd);
 
-    list_for_each(&d_intf.rx_head, pre, cur) {
+    list_for_each(&d_dev.rx_head, pre, cur) {
         cd_frame_t *fr_src = list_entry(cur, cd_frame_t);
         if (fr_src->dat[1] == 0x56) {
             memcpy(d_conv_frame->dat, fr_src->dat + 3, 2);
             d_conv_frame->dat[2] = fr_src->dat[2] - 2;
             memcpy(d_conv_frame->dat + 3, fr_src->dat + 5, d_conv_frame->dat[2]);
 
-            list_pick(&d_intf.rx_head, pre, cur);
-            cdctl_put_tx_frame(&r_intf.cd_intf, d_conv_frame);
+            list_pick(&d_dev.rx_head, pre, cur);
+            cdctl_put_tx_frame(&r_dev.cd_dev, d_conv_frame);
             d_conv_frame = fr_src;
             cur = pre;
         }
     }
 }
-
 
 void app_bridge(void)
 {
@@ -72,7 +68,7 @@ void app_bridge(void)
             size = bf->len + 1; // avoid scroll to begin
             wr = bf->dat + bf->len;
             rd = bf->dat;
-            app_bridge_from_u(bf->dat, size, wr, rd);
+            read_from_host(bf->dat, size, wr, rd);
 
             local_irq_save(flags);
             list_put(&cdc_rx_free_head, &bf->node);
@@ -85,7 +81,7 @@ void app_bridge(void)
             local_irq_restore(flags);
         }
     } else { // hw_uart
-        app_bridge_from_u(circ_buf, CIRC_BUF_SZ, circ_buf + wd_pos, circ_buf + rd_pos);
+        read_from_host(circ_buf, CIRC_BUF_SZ, circ_buf + wd_pos, circ_buf + rd_pos);
     }
     rd_pos = wd_pos;
 
@@ -93,7 +89,7 @@ void app_bridge(void)
     if (!cdc_tx_head.last) {
         bf = list_get_entry(&cdc_tx_free_head, cdc_buf_t);
         if (!bf) {
-            d_warn("no cdc_tx_free, 0\n");
+            df_warn("no cdc_tx_free (tx idle)\n");
             return;
         }
         bf->len = 0;
@@ -102,34 +98,35 @@ void app_bridge(void)
         bf = list_entry(cdc_tx_head.last, cdc_buf_t);
     }
 
-    if (d_intf.tx_head.first) { // send to u: d_intf.tx_head
-        cd_frame_t *frm = list_entry(d_intf.tx_head.first, cd_frame_t);
+    // send to host
+    if (d_dev.tx_head.first) { // send d_dev.tx_head
+        cd_frame_t *frm = list_entry(d_dev.tx_head.first, cd_frame_t);
 
         if (bf->len + frm->dat[2] + 5 > 512) {
             bf = list_get_entry(&cdc_tx_free_head, cdc_buf_t);
             if (!bf) {
-                d_warn("no cdc_tx_free, 1\n");
+                df_warn("no cdc_tx_free (d_dev)\n");
                 return;
             }
             bf->len = 0;
             list_put(&cdc_tx_head, &bf->node);
         }
 
-        d_verbose("bridge -> u: 55, dat len %d\n", frm->dat[2]);
+        //df_verbose("local ret: 55, dat len %d\n", frm->dat[2]);
         cduart_fill_crc(frm->dat);
         memcpy(bf->dat + bf->len, frm->dat, frm->dat[2] + 5);
         bf->len += frm->dat[2] + 5;
 
-        list_get(&d_intf.tx_head);
-        list_put_it(r_intf.free_head, &frm->node);
+        list_get(&d_dev.tx_head);
+        list_put_it(r_dev.free_head, &frm->node);
 
-    } else if (r_intf.rx_head.first) { // send to u: r_intf.rx_head (add 56 aa)
-        cd_frame_t *frm = list_entry(r_intf.rx_head.first, cd_frame_t);
+    } else if (r_dev.rx_head.first) { // send rs485 data (add 56 aa)
+        cd_frame_t *frm = list_entry(r_dev.rx_head.first, cd_frame_t);
 
         if (bf->len + frm->dat[2] + 5 + 2 > 512) {
             bf = list_get_entry(&cdc_tx_free_head, cdc_buf_t);
             if (!bf) {
-                d_warn("no cdc_tx_free, 2\n");
+                d_warn("no cdc_tx_free (bridge)\n");
                 return;
             }
             bf->len = 0;
@@ -145,7 +142,7 @@ void app_bridge(void)
         cduart_fill_crc(buf_dst);
         bf->len += frm->dat[2] + 7;
 
-        list_get_it(&r_intf.rx_head);
-        list_put_it(r_intf.free_head, &frm->node);
+        list_get_it(&r_dev.rx_head);
+        list_put_it(r_dev.free_head, &frm->node);
     }
 }

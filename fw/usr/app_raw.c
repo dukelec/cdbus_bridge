@@ -51,7 +51,7 @@ static void read_raw_port(const uint8_t *buf, int size,
                 df_error("no free pkt\n");
                 return;
             }
-            pkt->dst = app_conf.rpt_sock;
+            pkt->dst = app_conf.rpt_dst;
             pkt->len = 1;
             pkt->dat[0] = 0; // indicate a report
         }

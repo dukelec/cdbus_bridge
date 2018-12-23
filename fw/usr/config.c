@@ -20,7 +20,7 @@ app_conf_t app_conf = {
         .ser_idx = SER_TTL,
 
         .rs485_net = 0,
-        .rs485_mac = 254,
+        .rs485_mac = 0xdf,
         .rs485_baudrate_low = 115200,
         .rs485_baudrate_high = 115200,
 
@@ -28,7 +28,7 @@ app_conf_t app_conf = {
         .rs232_baudrate = 115200,
 
         .rpt_en = true,
-        .rpt_sock = {
+        .rpt_dst = {
                 .addr.cd_addr8 = {0x80, 0x00, 0x00},
                 .port = RAW_SER_PORT
         }

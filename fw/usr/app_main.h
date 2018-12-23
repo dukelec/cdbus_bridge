@@ -17,7 +17,6 @@
 #include "modbus_crc.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
-#include "main.h"
 
 typedef enum {
     APP_BRIDGE = 0,
@@ -52,9 +51,9 @@ typedef struct {
 
     // raw
     bool            rpt_en;
-    cd_sockaddr_t   rpt_sock;
+    cd_sockaddr_t   rpt_dst;
 
-} __attribute__((packed)) app_conf_t;
+} app_conf_t;
 
 typedef struct {
     list_node_t node;

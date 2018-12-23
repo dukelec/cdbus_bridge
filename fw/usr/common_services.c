@@ -163,7 +163,7 @@ static void p3_service_for_raw(void)
 // device control
 static void p10_service_routine(void)
 {
-    cdnet_packet_t *pkt = cdnet_socket_recvfrom(&sock1);
+    cdnet_packet_t *pkt = cdnet_socket_recvfrom(&sock10);
     if (!pkt)
         return;
 
@@ -195,7 +195,7 @@ static void p11_service_routine(void)
     // read:  0x40, addr_32, len_8   | return [0x80, data]
     // write: 0x61, addr_32 + [data] | return [0x80] on success
 
-    cdnet_packet_t *pkt = cdnet_socket_recvfrom(&sock1);
+    cdnet_packet_t *pkt = cdnet_socket_recvfrom(&sock11);
     if (!pkt)
         return;
 

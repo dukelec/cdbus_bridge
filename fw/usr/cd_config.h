@@ -37,6 +37,7 @@
 
 #define CDCTL_SYS_CLK       40000000UL // 40MHz
 
+#include "main.h"
 #include "arch_wrapper.h"
 #include "debug_config.h"
 #include "cd_debug.h"

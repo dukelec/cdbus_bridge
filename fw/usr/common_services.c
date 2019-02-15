@@ -183,9 +183,10 @@ static void p10_service_routine(void)
         pkt->dat[0] = 0x80;
         pkt->dst = pkt->src;
         cdnet_socket_sendto(&sock10, pkt);
+    } else {
+        d_debug("p10 ser: ignore\n");
+        list_put(&cdnet_free_pkts, &pkt->node);
     }
-    d_debug("p10 ser: ignore\n");
-    list_put(&cdnet_free_pkts, &pkt->node);
 }
 
 // flash memory manipulation

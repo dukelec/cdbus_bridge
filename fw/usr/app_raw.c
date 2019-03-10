@@ -124,7 +124,7 @@ void app_raw(void)
     if (!pkt)
         return;
 
-    if (pkt->len > 1 && bf->dat[0] == 0) {
+    if (pkt->len > 1 && pkt->dat[0] == 0) {
         if (bf->len + pkt->len - 1 > 512) {
             bf = list_get_entry(&cdc_tx_free_head, cdc_buf_t);
             if (!bf) {

@@ -18,3 +18,9 @@ The CDBUS Bridge has two modes, which are selected by the switch:
 
 <img alt="raw_mode" src="doc/img/raw_mode.svg">
 
+
+## Download
+
+```
+git clone --recurse-submodules https://github.com/dukelec/cdbus_bridge.git
+```

@@ -18,3 +18,9 @@ CDBUS Bridge 有兩個模式，通過開關切換：
 
 <img alt="raw_mode" src="doc/img/raw_mode.svg">
 
+
+## 下载
+
+```
+git clone --recurse-submodules https://github.com/dukelec/cdbus_bridge.git
+```

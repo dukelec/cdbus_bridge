@@ -1,6 +1,6 @@
 ### Read config from device
 ```
-cdbus_tools/cdbus_iap.py --direct --local-mac=0xaa --target-addr="80:00:55" --addr=0x0801f800 --size=36 --out-file conf.bin
+cdbus_tools/cdbus_iap.py --direct --addr=0x0801f800 --size=36 --out-file conf.bin
 ```
 
 ### Convert to json
@@ -21,5 +21,5 @@ cdbus_tools/cdbus_iap.py --direct --local-mac=0xaa --target-addr="80:00:55" --ad
 
 ### Write back to device
 ```
-cdbus_tools/cdbus_iap.py --direct --local-mac=0xaa --target-addr="80:00:55" --addr=0x0801f800 --in-file conf.bin
+cdbus_tools/cdbus_iap.py --direct --addr=0x0801f800 --in-file conf.bin
 ```

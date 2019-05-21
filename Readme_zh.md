@@ -19,8 +19,25 @@ CDBUS Bridge 有兩個模式，通過開關切換：
 <img alt="raw_mode" src="doc/img/raw_mode.svg">
 
 
-## 下载
+## 下載
 
 ```
 git clone --recurse-submodules https://github.com/dukelec/cdbus_bridge.git
 ```
+
+## 安裝依賴包
+ - Linux: pip3 install pycrc pyserial
+ - Mac: pip3 install readline pycrc pyserial
+ - Windows: pip3 install pyreadline pycrc pyserial
+
+## 測試
+
+請參考 `sw/` 目錄下的 `Readme.md` 以及各腳本的 `--help` 幫助，例如常用的：
+
+```
+cd sw/cdbus_tools/
+./cdbus_terminal.py --help
+```
+
+註：上電默認 3 秒為 bootloader 模式，跳轉主程序時狀態燈會閃爍一下，請在這之後再使用相關腳本工具（IAP 除外）。
+

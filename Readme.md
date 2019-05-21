@@ -24,3 +24,20 @@ The CDBUS Bridge has two modes, which are selected by the switch:
 ```
 git clone --recurse-submodules https://github.com/dukelec/cdbus_bridge.git
 ```
+
+## Prepare
+ - Linux: pip3 install pycrc pyserial
+ - Mac: pip3 install readline pycrc pyserial
+ - Windows: pip3 install pyreadline pycrc pyserial
+
+## Test
+
+Please refer scripts' `--help` message and the `Readme.md` under `sw/` folder, e.g.:
+
+```
+cd sw/cdbus_tools/
+./cdbus_terminal.py --help
+```
+
+Note: The default is 3 seconds for bootloader mode on power-on. The status light will flash when it jumps to the main program. Please use the relevant script tool (except IAP) after this.
+

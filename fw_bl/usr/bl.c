@@ -28,9 +28,9 @@ static void jump_to_app(void)
     printf("jump to app...\n");
 
     // NOTE: change app's SCB->VTOR in app's system_stm32fxxx.c
-    for(int i = 0; i < 256; i++)
-        HAL_NVIC_DisableIRQ(i);
-    HAL_NVIC_DisableIRQ(SysTick_IRQn);
+    //for(int i = 0; i < 256; i++)
+    //    HAL_NVIC_DisableIRQ(i);
+    //HAL_NVIC_DisableIRQ(SysTick_IRQn);
     __set_MSP(stack); // init stack pointer
     ((void(*)()) func)();
 }

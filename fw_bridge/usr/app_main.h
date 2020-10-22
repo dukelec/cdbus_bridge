@@ -61,7 +61,7 @@ typedef struct {
     bool            save_conf;
 
     //uint8_t       bus_mode; // a, bs, trad
-    //uint8_t       bus_net;
+    uint8_t         bus_net;
     uint8_t         bus_mac;
     uint32_t        bus_baud_low;
     uint32_t        bus_baud_high;

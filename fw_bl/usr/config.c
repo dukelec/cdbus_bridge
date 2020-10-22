@@ -23,8 +23,8 @@ csa_t csa = {
         .bus_mac = 0,
         .bus_baud_low = 115200,
         .bus_baud_high = 115200,
-        .dbg_en = true,
-        .dbg_dst = { .addr = {0x80, 0x00, 0x00}, .port = 9 },
+        .dbg_en = false,
+        .dbg_dst = { .addr = {0x80, 0x00, 0xaa}, .port = 9 },
 
         .ser_idx = SER_TTL,
         .ttl_baudrate = 115200,

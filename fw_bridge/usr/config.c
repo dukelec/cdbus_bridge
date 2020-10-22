@@ -23,8 +23,8 @@ csa_t csa = {
         .bus_mac = 0,
         .bus_baud_low = 115200,
         .bus_baud_high = 115200,
-        .dbg_en = true,
-        .dbg_dst = { .addr = {0x80, 0x00, 0x00}, .port = 9 },
+        .dbg_en = false,
+        .dbg_dst = { .addr = {0x80, 0x00, 0xaa}, .port = 9 },
 
         .ser_idx = SER_TTL,
         .ttl_baudrate = 115200,
@@ -82,20 +82,20 @@ int save_conf(void)
 
 
 #define CSA_SHOW(_x) \
-        d_info("   R_" #_x " = 0x%04x # len: %d\n", offsetof(csa_t, _x), sizeof(csa._x));
+        printf("   R_" #_x " = 0x%04x # len: %d\n", offsetof(csa_t, _x), sizeof(csa._x));
 
 #define CSA_SHOW_SUB(_x, _y_t, _y) \
-        d_info("   R_" #_x "_" #_y " = 0x%04x # len: %d\n", offsetof(csa_t, _x) + offsetof(_y_t, _y), sizeof(csa._x._y));
+        printf("   R_" #_x "_" #_y " = 0x%04x # len: %d\n", offsetof(csa_t, _x) + offsetof(_y_t, _y), sizeof(csa._x._y));
 
 void csa_list_show(void)
 {
-    d_info("csa_list_show:\n\n");
+    printf("csa_list_show:\n\n");
 
     CSA_SHOW(conf_ver);
     CSA_SHOW(conf_from);
     CSA_SHOW(do_reboot);
     CSA_SHOW(save_conf);
-    d_info("\n");
+    printf("\n");
 
     CSA_SHOW(bus_mac);
     CSA_SHOW(bus_baud_low);
@@ -103,10 +103,10 @@ void csa_list_show(void)
     CSA_SHOW(dbg_en);
     CSA_SHOW_SUB(dbg_dst, cdn_sockaddr_t, addr);
     CSA_SHOW_SUB(dbg_dst, cdn_sockaddr_t, port);
-    d_info("\n");
+    printf("\n");
 
     CSA_SHOW(ser_idx);
     CSA_SHOW(ttl_baudrate);
     CSA_SHOW(rs232_baudrate);
-    d_info("\n");
+    printf("\n");
 }

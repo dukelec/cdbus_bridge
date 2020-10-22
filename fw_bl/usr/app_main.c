@@ -201,7 +201,7 @@ static void dump_hw_status(void)
 
 void app_main(void)
 {
-    printf("\nstart app_main...\n");
+    printf("\nstart app_main (bl)...\n");
     stack_check_init();
     debug_init(&dft_ns, &csa.dbg_dst, &csa.dbg_en);
     load_conf();

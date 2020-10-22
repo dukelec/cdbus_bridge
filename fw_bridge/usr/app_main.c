@@ -194,16 +194,17 @@ static void dump_hw_status(void)
 
 void app_main(void)
 {
-    printf("\nstart app_main...\n");
+    printf("\nstart app_main (bridge)...\n");
     stack_check_init();
     debug_init(&dft_ns, &csa.dbg_dst, &csa.dbg_en);
     load_conf();
     device_init();
     common_service_init();
+    printf("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
     d_info("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
     set_led_state(LED_POWERON);
     app_bridge_init();
-    csa_list_show(); ///
+    csa_list_show();
 
     if (csa.ser_idx != SER_USB)
         HAL_UART_Receive_DMA(hw_uart->huart, circ_buf, CIRC_BUF_SZ);

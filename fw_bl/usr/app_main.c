@@ -75,6 +75,7 @@ static void device_init(void)
     cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
 
     csa.sw_val = gpio_get_value(&sw);
+    printf("sw_val: %d\n", csa.sw_val);
 
     if (csa.sw_val == 0) { // bridge
         cduart_dev_init(&d_dev, &frame_free_head);
@@ -206,10 +207,10 @@ void app_main(void)
     load_conf();
     device_init();
     common_service_init();
-    d_info("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
+    printf("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
     set_led_state(LED_POWERON);
     bl_init();
-    csa_list_show(); ///
+    csa_list_show();
 
     if (csa.ser_idx != SER_USB)
         HAL_UART_Receive_DMA(hw_uart->huart, circ_buf, CIRC_BUF_SZ);
@@ -218,7 +219,7 @@ void app_main(void)
 
         if (csa.ser_idx != SER_USB &&
                 hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
-            d_info("usb connected\n");
+            printf("usb connected\n");
             csa.ser_idx = SER_USB;
             HAL_UART_DMAStop(hw_uart->huart);
         }
@@ -235,7 +236,7 @@ void app_main(void)
                     hw_uart->huart->gState = HAL_UART_STATE_READY;
                     list_put(&cdc_tx_free_head, &cdc_tx_buf->node);
                     cdc_tx_buf = NULL;
-                    //d_verbose("hw_uart dma done.\n");
+                    //printf("hw_uart dma done.\n");
                 }
             }
         }
@@ -247,7 +248,7 @@ void app_main(void)
                     CDC_Transmit_FS(bf->dat, bf->len);
                     local_irq_enable();
                 } else { // hw_uart
-                    //d_verbose("hw_uart dma tx...\n");
+                    //printf("hw_uart dma tx...\n");
                     HAL_UART_Transmit_DMA(hw_uart->huart, bf->dat, bf->len);
                 }
                 list_get(&cdc_tx_head);
@@ -255,9 +256,11 @@ void app_main(void)
             }
         }
 
-        data_led_task();
+        if (csa.sw_val) { // raw
+            data_led_task();
+            dump_hw_status();
+        }
         stack_check();
-        dump_hw_status();
         cdn_routine(&dft_ns); // handle cdnet
         common_service_routine();
         bl_routine();
@@ -287,5 +290,5 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 }
 void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
 {
-    d_error("spi error...\n");
+    printf("spi error...\n");
 }

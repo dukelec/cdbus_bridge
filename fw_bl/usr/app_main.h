@@ -22,8 +22,8 @@
 #define APP_CONF_ADDR       0x0801F800 // last page
 #define APP_CONF_VER        0x0001
 
-#define FRAME_MAX           20
-#define PACKET_MAX          20
+#define FRAME_MAX           10
+#define PACKET_MAX          10
 
 #define RAW_SER_PORT        20
 

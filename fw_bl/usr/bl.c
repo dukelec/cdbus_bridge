@@ -17,7 +17,7 @@ static uint32_t boot_time;
 static bool update_baud = false;
 
 
-#define APP_ADDR 0x08010000 // sector 4
+#define APP_ADDR 0x0800c000 // 48K offset
 
 static void jump_to_app(void)
 {
@@ -62,7 +62,7 @@ void bl_routine(void)
     if (gpio_get_value(&sw) != csa.sw_val) {
         if (!csa.keep_in_bl) {
             csa.keep_in_bl = true;
-            d_info("keep in bootloader by key\n");
+            printf("keep in bootloader by key\n");
         }
     }
 
@@ -71,12 +71,12 @@ void bl_routine(void)
         gpio_set_value(&led_b, !gpio_get_value(&led_b));
     }
 
-    if (!csa.keep_in_bl && !update_baud && get_systick() - boot_time > 1000000 / SYSTICK_US_DIV) {
+    if (!csa.keep_in_bl && csa.sw_val && !update_baud && get_systick() - boot_time > 1000000 / SYSTICK_US_DIV) {
         update_baud = true;
         if (csa.bus_baud_low != 115200 || csa.bus_baud_high != 115200) {
+            printf("baud rate updated\n");
             cdctl_set_baud_rate(&r_dev, csa.bus_baud_low, csa.bus_baud_high);
             cdctl_flush(&r_dev);
-            d_info("baud rate updated\n");
         }
     }
 
@@ -102,7 +102,7 @@ void bl_routine(void)
             list_put(&cdc_rx_free_head, &bf->node);
             if (!cdc_rx_buf) {
                 cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
-                d_verbose("continue CDC Rx\n");
+                //printf("continue CDC Rx\n");
                 USBD_CDC_SetRxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat);
                 USBD_CDC_ReceivePacket(&hUsbDeviceFS);
             }
@@ -117,7 +117,7 @@ void bl_routine(void)
     if (!cdc_tx_head.last) {
         bf = list_get_entry(&cdc_tx_free_head, cdc_buf_t);
         if (!bf) {
-            df_warn("no cdc_tx_free (tx idle)\n");
+            printf("no cdc_tx_free (tx idle)\n");
             return;
         }
         bf->len = 0;
@@ -133,19 +133,19 @@ void bl_routine(void)
         if (bf->len + frm->dat[2] + 5 > 512) {
             bf = list_get_entry(&cdc_tx_free_head, cdc_buf_t);
             if (!bf) {
-                df_warn("no cdc_tx_free (d_dev)\n");
+                printf("no cdc_tx_free (d_dev)\n");
                 return;
             }
             bf->len = 0;
             list_put(&cdc_tx_head, &bf->node);
         }
 
-        //df_verbose("local ret: 55, dat len %d\n", frm->dat[2]);
+        //printf("local ret: 55, dat len %d\n", frm->dat[2]);
         cduart_fill_crc(frm->dat);
         memcpy(bf->dat + bf->len, frm->dat, frm->dat[2] + 5);
         bf->len += frm->dat[2] + 5;
 
         list_get(&d_dev.tx_head);
-        list_put_it(r_dev.free_head, &frm->node);
+        list_put_it(d_dev.free_head, &frm->node);
     }
 }

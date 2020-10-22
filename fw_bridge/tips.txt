@@ -1,0 +1,4 @@
+# flash command
+
+st-flash --reset write build/fw_bridge.bin 0x0800c000
+

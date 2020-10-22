@@ -157,16 +157,16 @@ static void p5_service_routine(void)
             uint16_t start = clip(offset, regr->offset, regr->offset + regr->size);
             uint16_t end = clip(offset + len, regr->offset, regr->offset + regr->size);
             if (start == end) {
-                //d_debug("csa i%d: [%x, %x), [%x, %x) -> [%x, %x)\n",
-                //        i, regr->offset, regr->offset + regr->size,
-                //        offset, offset + len,
-                //        start, end);
+                printf("csa i%d: [%x, %x), [%x, %x) -> [%x, %x)\n",
+                        i, regr->offset, regr->offset + regr->size,
+                        offset, offset + len,
+                        start, end);
                 continue;
             }
 
-            //d_debug("csa @ %p, %p <- %p, len %d, dat[0]: %x\n",
-            //        &csa, ((void *) &csa) + start, src_dat + (start - offset), end - start,
-            //        *(src_dat + (start - offset)));
+            printf("csa @ %p, %p <- %p, len %d, dat[0]: %x\n",
+                    &csa, ((void *) &csa) + start, src_dat + (start - offset), end - start,
+                    *(src_dat + (start - offset)));
 
             local_irq_save(flags);
             memcpy(((void *) &csa) + start, src_dat + (start - offset), end - start);
@@ -180,7 +180,7 @@ static void p5_service_routine(void)
         if (csa.save_conf) {
             csa.save_conf = false;
             pkt->dat[0] |= save_conf();
-            d_debug("csa: save config to flash, ret: %x\n", pkt->dat[0]);
+            printf("csa: save config to flash, ret: %x\n", pkt->dat[0]);
         }
 
     } else {

@@ -79,7 +79,6 @@ void bl_routine(void)
             cdctl_flush(&r_dev);
         }
     }
-
     if (!csa.keep_in_bl && get_systick() - boot_time > 3000000 / SYSTICK_US_DIV)
         jump_to_app();
 
@@ -87,7 +86,7 @@ void bl_routine(void)
     // handle data exchange
     uint32_t wd_pos = CIRC_BUF_SZ - hw_uart->huart->hdmarx->Instance->CNDTR;
 
-    if (csa.ser_idx == SER_USB) {
+    if (csa.usb_online) {
         int size;
         uint8_t *wr, *rd;
         cdc_buf_t *bf = list_get_entry_it(&cdc_rx_head, cdc_buf_t);

@@ -89,9 +89,9 @@ static void device_init(void)
     dft_ns.intfs[0].net = 0;
     dft_ns.intfs[0].mac = 0x55;
 
-    if (csa.ser_idx == SER_TTL) {
+    if (!csa.is_rs232) {
         hw_uart = &ttl_uart;
-    } else if (csa.ser_idx == SER_RS232) {
+    } else {
         hw_uart = &rs232_uart;
     }
 }
@@ -204,21 +204,18 @@ void app_main(void)
     d_info("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
     set_led_state(LED_POWERON);
     app_bridge_init();
+    HAL_UART_Receive_DMA(hw_uart->huart, circ_buf, CIRC_BUF_SZ);
     csa_list_show();
 
-    if (csa.ser_idx != SER_USB)
-        HAL_UART_Receive_DMA(hw_uart->huart, circ_buf, CIRC_BUF_SZ);
-
     while (true) {
-        if (csa.ser_idx != SER_USB &&
-                hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
-            d_info("usb connected\n");
-            csa.ser_idx = SER_USB;
+        if (!csa.usb_online && hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
+            printf("usb connected\n");
+            csa.usb_online = true;
             HAL_UART_DMAStop(hw_uart->huart);
         }
 
         if (cdc_tx_buf) {
-            if (csa.ser_idx == SER_USB) {
+            if (csa.usb_online) {
                 USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
                 if (hcdc->TxState == 0) {
                     list_put(&cdc_tx_free_head, &cdc_tx_buf->node);
@@ -236,7 +233,7 @@ void app_main(void)
         if (!cdc_tx_buf && cdc_tx_head.first) {
             cdc_buf_t *bf = list_entry(cdc_tx_head.first, cdc_buf_t);
             if (bf->len != 0) {
-                if (csa.ser_idx == SER_USB) {
+                if (csa.usb_online) {
                     local_irq_disable();
                     CDC_Transmit_FS(bf->dat, bf->len);
                     local_irq_enable();

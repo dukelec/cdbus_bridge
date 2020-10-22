@@ -22,8 +22,8 @@
 #define APP_CONF_ADDR       0x0801F800 // last page
 #define APP_CONF_VER        0x0001
 
-#define FRAME_MAX           10
-#define PACKET_MAX          10
+#define FRAME_MAX           20
+#define PACKET_MAX          20
 
 #define RAW_SER_PORT        20
 
@@ -38,13 +38,6 @@ typedef struct {
     uint16_t    len;
     uint8_t     dat[512]; // CDC_DATA_HS_MAX_PACKET_SIZE
 } cdc_buf_t;
-
-typedef enum {
-    SER_USB = 0,
-    SER_TTL,
-    SER_RS232
-} ser_idx_t;
-
 
 typedef struct {
     uint16_t        offset;
@@ -71,7 +64,7 @@ typedef struct {
     bool            dbg_en;
     cdn_sockaddr_t  dbg_dst;
     
-    ser_idx_t       ser_idx;
+    bool            is_rs232; // default ttl
     uint32_t        ttl_baudrate;
     uint32_t        rs232_baudrate;
 
@@ -80,6 +73,7 @@ typedef struct {
     uint8_t         _end;
 
     bool            sw_val;
+    bool            usb_online;
 
 } csa_t; // config status area
 

@@ -26,7 +26,7 @@ csa_t csa = {
         .dbg_en = false,
         .dbg_dst = { .addr = {0x80, 0x00, 0xaa}, .port = 9 },
 
-        .ser_idx = SER_TTL,
+        .is_rs232 = false,
         .ttl_baudrate = 115200,
         .rs232_baudrate = 115200,
 };
@@ -69,7 +69,7 @@ void csa_list_show(void)
     CSA_SHOW_SUB(dbg_dst, cdn_sockaddr_t, port);
     printf("\n");
 
-    CSA_SHOW(ser_idx);
+    CSA_SHOW(is_rs232);
     CSA_SHOW(ttl_baudrate);
     CSA_SHOW(rs232_baudrate);
     printf("\n");

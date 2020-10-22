@@ -26,7 +26,7 @@ csa_t csa = {
         .dbg_en = false,
         .dbg_dst = { .addr = {0x80, 0x00, 0xaa}, .port = 9 },
 
-        .ser_idx = SER_TTL,
+        .is_rs232 = false,
         .ttl_baudrate = 115200,
         .rs232_baudrate = 115200,
 };
@@ -59,23 +59,25 @@ int save_conf(void)
         ret = HAL_FLASHEx_Erase(&f, &err_page);
 
     if (ret != HAL_OK)
-        d_info("conf: failed to erase flash\n");
+        printf("conf: failed to erase flash\n");
 
     uint32_t *dst_dat = (uint32_t *)APP_CONF_ADDR;
     uint32_t *src_dat = (uint32_t *)&csa;
-    uint8_t cnt = (offsetof(csa_t, _end) + 3) / 4;
-    uint8_t i;
+    int cnt = (offsetof(csa_t, _end) + 3) / 4;
 
-    for (i = 0; ret == HAL_OK && i < cnt; i++)
+    for (int i = 0; ret == HAL_OK && i < cnt; i++) {
         ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)(dst_dat + i), *(src_dat + i));
+        printf("w: csa @ %08lx, addr %08lx <- val: %08lx\n",
+                (uint32_t)(src_dat + i), (uint32_t)(dst_dat + i), *(src_dat + i));
+    }
 
     ret |= HAL_FLASH_Lock();
 
     if (ret == HAL_OK) {
-        d_info("conf: save to flash successed\n");
+        printf("conf: save to flash successed\n");
         return 0;
     } else {
-        d_error("conf: save to flash error\n");
+        printf("conf: save to flash error\n");
         return 1;
     }
 }
@@ -105,7 +107,7 @@ void csa_list_show(void)
     CSA_SHOW_SUB(dbg_dst, cdn_sockaddr_t, port);
     printf("\n");
 
-    CSA_SHOW(ser_idx);
+    CSA_SHOW(is_rs232);
     CSA_SHOW(ttl_baudrate);
     CSA_SHOW(rs232_baudrate);
     printf("\n");

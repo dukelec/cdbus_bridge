@@ -25,8 +25,6 @@
 #define FRAME_MAX           20
 #define PACKET_MAX          20
 
-#define RAW_SER_PORT        20
-
 typedef enum {
     LED_POWERON = 0,
     LED_WARN,
@@ -70,14 +68,16 @@ typedef struct {
 
     bool            dbg_en;
     cdn_sockaddr_t  dbg_dst;
-    
-    ser_idx_t       ser_idx;
+
+    bool            is_rs232; // default ttl
     uint32_t        ttl_baudrate;
     uint32_t        rs232_baudrate;
 
     // end of eeprom
 
     uint8_t         _end;
+
+    bool            usb_online;
 
 } csa_t; // config status area
 

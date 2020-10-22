@@ -48,7 +48,7 @@ void app_bridge(void)
     // handle data exchange
     uint32_t wd_pos = CIRC_BUF_SZ - hw_uart->huart->hdmarx->Instance->CNDTR;
 
-    if (csa.ser_idx == SER_USB) {
+    if (csa.usb_online) {
         int size;
         uint8_t *wr, *rd;
         cdc_buf_t *bf = list_get_entry_it(&cdc_rx_head, cdc_buf_t);

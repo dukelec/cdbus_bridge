@@ -22,8 +22,8 @@
 #define APP_CONF_ADDR       0x0801F800 // last page
 #define APP_CONF_VER        0x0001
 
-#define FRAME_MAX           20
-#define PACKET_MAX          20
+#define FRAME_MAX           80
+#define PACKET_MAX          80
 
 typedef enum {
     LED_POWERON = 0,
@@ -82,6 +82,7 @@ typedef struct {
 } csa_t; // config status area
 
 extern csa_t csa;
+extern const csa_t csa_dft;
 extern regr_t regr_wa[]; // writable list
 extern int regr_wa_num;
 

@@ -21,7 +21,7 @@ static  gpio_t led_g = { .group = LED_G_GPIO_Port, .num = LED_G_Pin };
 static  gpio_t led_b = { .group = LED_B_GPIO_Port, .num = LED_B_Pin };
 static  gpio_t led_tx = { .group = LED_TX_GPIO_Port, .num = LED_TX_Pin };
 static  gpio_t led_rx = { .group = LED_RX_GPIO_Port, .num = LED_RX_Pin };
-//static  gpio_t sw = { .group = SW_MODE_GPIO_Port, .num = SW_MODE_Pin };
+static  gpio_t sw = { .group = SW_MODE_GPIO_Port, .num = SW_MODE_Pin };
 
 uart_t debug_uart = { .huart = &huart4 };
 static uart_t ttl_uart = { .huart = &huart1 };
@@ -55,6 +55,7 @@ cdn_ns_t dft_ns = {0};      // CDNET
 
 int usb_rx_cnt = 0;
 int usb_tx_cnt = 0;
+static bool cdc_need_flush = false;
 
 uint8_t circ_buf[CIRC_BUF_SZ];
 uint32_t rd_pos = 0;
@@ -63,6 +64,8 @@ uint32_t rd_pos = 0;
 static void device_init(void)
 {
     int i;
+    cdn_init_ns(&dft_ns);
+
     for (i = 0; i < CDC_RX_MAX; i++)
         list_put(&cdc_rx_free_head, &cdc_rx_alloc[i].node);
     for (i = 0; i < CDC_TX_MAX; i++)
@@ -74,9 +77,11 @@ static void device_init(void)
 
     cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
 
-    cdctl_dev_init(&r_dev, &frame_free_head, csa.bus_mac,
-            csa.bus_baud_low, csa.bus_baud_high,
-            &r_spi, &r_rst_n, &r_int_n);
+    if (gpio_get_value(&sw) == 0)
+        cdctl_dev_init(&r_dev, &frame_free_head, csa.bus_mac, csa.bus_baud_low, csa.bus_baud_high,
+                &r_spi, &r_rst_n, &r_int_n);
+    else
+        cdctl_dev_init(&r_dev, &frame_free_head, csa.bus_mac, 115200, 115200, &r_spi, &r_rst_n, &r_int_n);
 
     cduart_dev_init(&d_dev, &frame_free_head);
     d_dev.remote_filter[0] = 0xaa;
@@ -85,9 +90,8 @@ static void device_init(void)
     d_dev.local_filter[1] = 0x56;
     d_dev.local_filter_len = 2;
     
-    dft_ns.intfs[0].dev = &d_dev.cd_dev; // uart / usb
-    dft_ns.intfs[0].net = 0;
-    dft_ns.intfs[0].mac = 0x55;
+    //                    uart / usb
+    cdn_add_intf(&dft_ns, &d_dev.cd_dev, 0, 0x55);
 
     if (!csa.is_rs232) {
         hw_uart = &ttl_uart;
@@ -179,6 +183,7 @@ static void dump_hw_status(void)
     if (get_systick() - t_l > 8000) {
         USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
         t_l = get_systick();
+
         d_debug("ctl: state %d, t_len %d, r_len %d, irq %d\n",
                 r_dev.state, r_dev.tx_head.len, r_dev.rx_head.len,
                 !gpio_get_value(r_dev.int_n));
@@ -208,6 +213,8 @@ void app_main(void)
     csa_list_show();
 
     while (true) {
+        USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
+
         if (!csa.usb_online && hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
             printf("usb connected\n");
             csa.usb_online = true;
@@ -216,7 +223,6 @@ void app_main(void)
 
         if (cdc_tx_buf) {
             if (csa.usb_online) {
-                USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
                 if (hcdc->TxState == 0) {
                     list_put(&cdc_tx_free_head, &cdc_tx_buf->node);
                     cdc_tx_buf = NULL;
@@ -230,19 +236,28 @@ void app_main(void)
                 }
             }
         }
-        if (!cdc_tx_buf && cdc_tx_head.first) {
-            cdc_buf_t *bf = list_entry(cdc_tx_head.first, cdc_buf_t);
-            if (bf->len != 0) {
-                if (csa.usb_online) {
+        if (cdc_tx_head.first) {
+            if (!cdc_tx_buf && hcdc->TxState == 0) {
+                cdc_buf_t *bf = list_entry(cdc_tx_head.first, cdc_buf_t);
+                if (bf->len != 0) {
+                    if (csa.usb_online) {
+                        local_irq_disable();
+                        CDC_Transmit_FS(bf->dat, bf->len);
+                        local_irq_enable();
+                        cdc_need_flush = true;
+                    } else { // hw_uart
+                        //d_verbose("hw_uart dma tx...\n");
+                        HAL_UART_Transmit_DMA(hw_uart->huart, bf->dat, bf->len);
+                    }
+                    list_get(&cdc_tx_head);
+                    cdc_tx_buf = bf;
+
+                } else if (cdc_need_flush) {
                     local_irq_disable();
-                    CDC_Transmit_FS(bf->dat, bf->len);
+                    CDC_Transmit_FS(NULL, 0);
                     local_irq_enable();
-                } else { // hw_uart
-                    //d_verbose("hw_uart dma tx...\n");
-                    HAL_UART_Transmit_DMA(hw_uart->huart, bf->dat, bf->len);
+                    cdc_need_flush = false;
                 }
-                list_get(&cdc_tx_head);
-                cdc_tx_buf = bf;
             }
         }
 
@@ -252,7 +267,7 @@ void app_main(void)
         cdn_routine(&dft_ns); // handle cdnet
         common_service_routine();
         app_bridge();
-        debug_flush();
+        debug_flush(false);
     }
 }
 

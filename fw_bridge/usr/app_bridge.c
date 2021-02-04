@@ -109,7 +109,9 @@ void app_bridge(void)
         list_get(&d_dev.tx_head);
         list_put_it(d_dev.free_head, &frm->node);
 
-    } else if (r_dev.rx_head.first) { // send rs485 data (add 56 aa)
+    }
+
+    if (r_dev.rx_head.first) { // send rs485 data (add 56 aa)
         cd_frame_t *frm = list_entry(r_dev.rx_head.first, cd_frame_t);
 
         if (bf->len + frm->dat[2] + 5 + 2 > 512) {

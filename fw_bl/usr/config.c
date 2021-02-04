@@ -16,7 +16,7 @@ regr_t regr_wa[] = {
 int regr_wa_num = sizeof(regr_wa) / sizeof(regr_t);
 
 
-csa_t csa = {
+const csa_t csa_dft = {
         .magic_code = 0xcdcd,
         .conf_ver = APP_CONF_VER,
 
@@ -31,6 +31,8 @@ csa_t csa = {
         .rs232_baudrate = 115200,
 };
 
+csa_t csa;
+
 
 void load_conf(void)
 {
@@ -41,6 +43,8 @@ void load_conf(void)
     if (app_tmp.magic_code == 0xcdcd && app_tmp.conf_ver == APP_CONF_VER) {
         memcpy(&csa, &app_tmp, offsetof(csa_t, _end));
         csa.conf_from = 1;
+    } else {
+        csa = csa_dft;
     }
 }
 

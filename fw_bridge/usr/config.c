@@ -87,32 +87,50 @@ int save_conf(void)
 }
 
 
-#define CSA_SHOW(_x) \
-        printf("   R_" #_x " = 0x%04x # len: %d\n", offsetof(csa_t, _x), sizeof(csa._x));
+#define t_name(expr)  \
+        (_Generic((expr), \
+                int8_t: "b", uint8_t: "B", \
+                int16_t: "h", uint16_t: "H", \
+                int32_t: "i", uint32_t: "I", \
+                int: "i", \
+                bool: "b", \
+                float: "f", \
+                char *: "[c]", \
+                uint8_t *: "[B]", \
+                regr_t *: "{H,H}", \
+                default: "-"))
 
-#define CSA_SHOW_SUB(_x, _y_t, _y) \
-        printf("   R_" #_x "_" #_y " = 0x%04x # len: %d\n", offsetof(csa_t, _x) + offsetof(_y_t, _y), sizeof(csa._x._y));
+
+#define CSA_SHOW(_p, _x, _desc) \
+        d_debug("  [ 0x%04x, %d, \"%s\", " #_p ", \"" #_x "\", \"%s\" ],\n", \
+                offsetof(csa_t, _x), sizeof(csa._x), t_name(csa._x), _desc);
+
+#define CSA_SHOW_SUB(_p, _x, _y_t, _y, _desc) \
+        d_debug("  [ 0x%04x, %d, \"%s\", " #_p ", \"" #_x "_" #_y "\", \"%s\" ],\n", \
+                offsetof(csa_t, _x) + offsetof(_y_t, _y), sizeof(csa._x._y), t_name(csa._x._y), _desc);
 
 void csa_list_show(void)
 {
-    printf("csa_list_show:\n\n");
+    d_debug("csa_list_show:\n");
+    d_debug("\n"); debug_flush(true);
 
-    CSA_SHOW(conf_ver);
-    CSA_SHOW(conf_from);
-    CSA_SHOW(do_reboot);
-    CSA_SHOW(save_conf);
-    printf("\n");
+    CSA_SHOW(1, magic_code, "Magic code: 0xcdcd");
+    CSA_SHOW(1, conf_ver, "Config version");
+    CSA_SHOW(0, conf_from, "0: default config, 1: load from flash");
+    CSA_SHOW(0, do_reboot, "Write 1 to reboot");
+    CSA_SHOW(0, save_conf, "Write 1 to save current config to flash");
+    d_debug("\n"); debug_flush(true);
 
-    CSA_SHOW(bus_mac);
-    CSA_SHOW(bus_baud_low);
-    CSA_SHOW(bus_baud_high);
-    CSA_SHOW(dbg_en);
-    CSA_SHOW_SUB(dbg_dst, cdn_sockaddr_t, addr);
-    CSA_SHOW_SUB(dbg_dst, cdn_sockaddr_t, port);
-    printf("\n");
+    CSA_SHOW(1, bus_mac, "RS-485 port id, range: 0~254");
+    CSA_SHOW(0, bus_baud_low, "RS-485 baud rate for first byte");
+    CSA_SHOW(0, bus_baud_high, "RS-485 baud rate for follow bytes");
+    CSA_SHOW(0, dbg_en, "1: Report debug message to host, 0: do not report");
+    CSA_SHOW_SUB(2, dbg_dst, cdn_sockaddr_t, addr, "Send debug message to this address");
+    CSA_SHOW_SUB(1, dbg_dst, cdn_sockaddr_t, port, "Send debug message to this port");
+    d_debug("\n"); debug_flush(true);
 
-    CSA_SHOW(is_rs232);
-    CSA_SHOW(ttl_baudrate);
-    CSA_SHOW(rs232_baudrate);
-    printf("\n");
+    CSA_SHOW(0, is_rs232, "0: TTL, 1: RS-232");
+    CSA_SHOW(0, ttl_baudrate, "TTL baudrate");
+    CSA_SHOW(0, rs232_baudrate, "RS-232 baudrate");
+    d_debug("\n"); debug_flush(true);
 }

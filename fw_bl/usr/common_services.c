@@ -9,7 +9,7 @@
 
 #include "app_main.h"
 
-static char cpu_id[25];
+char cpu_id[25];
 static char info_str[100];
 
 static cdn_sock_t sock1 = { .port = 1, .ns = &dft_ns };

@@ -20,7 +20,7 @@
 #include "usbd_cdc_if.h"
 
 #define APP_CONF_ADDR       0x0801F800 // last page
-#define APP_CONF_VER        0x0001
+#define APP_CONF_VER        0x0102
 
 #define FRAME_MAX           80
 #define PACKET_MAX          80
@@ -53,14 +53,7 @@ typedef struct {
     bool            keep_in_bl;
     bool            _reserved;
 
-    //uint8_t       bus_mode; // a, bs, trad
-    uint8_t         bus_net;
-    uint8_t         bus_mac;
-    uint32_t        bus_baud_low;
-    uint32_t        bus_baud_high;
-    //uint16_t      bus_tx_premit_len;
-    //uint16_t      bus_max_idle_len;
-
+    cdctl_cfg_t     bus_cfg;
     bool            dbg_en;
     cdn_sockaddr_t  dbg_dst;
     
@@ -72,7 +65,6 @@ typedef struct {
 
     uint8_t         _end;
 
-    bool            sw_val;
     bool            usb_online;
 
 } csa_t; // config status area
@@ -99,7 +91,6 @@ extern cdc_buf_t *cdc_tx_buf;
 
 extern list_head_t frame_free_head;
 
-extern cdctl_dev_t r_dev;   // RS485
 extern cduart_dev_t d_dev;  // uart / usb
 extern cdn_ns_t dft_ns;
 

@@ -78,10 +78,9 @@ static void device_init(void)
     cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
 
     if (gpio_get_value(&sw) == 0)
-        cdctl_dev_init(&r_dev, &frame_free_head, csa.bus_mac, csa.bus_baud_low, csa.bus_baud_high,
-                &r_spi, &r_rst_n, &r_int_n);
+        cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, &r_rst_n, &r_int_n);
     else
-        cdctl_dev_init(&r_dev, &frame_free_head, csa.bus_mac, 115200, 115200, &r_spi, &r_rst_n, &r_int_n);
+        cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, &r_rst_n, &r_int_n);
 
     cduart_dev_init(&d_dev, &frame_free_head);
     d_dev.remote_filter[0] = 0xaa;

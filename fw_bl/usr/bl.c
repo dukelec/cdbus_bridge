@@ -14,7 +14,6 @@ static cd_frame_t *d_conv_frame = NULL;
 
 static uint32_t t_last;
 static uint32_t boot_time;
-static bool update_baud = false;
 
 
 #define APP_ADDR 0x0800c000 // 48K offset
@@ -46,9 +45,6 @@ void bl_init(void)
 static void read_from_host(const uint8_t *buf, int size,
         const uint8_t *wr, const uint8_t *rd)
 {
-    if (csa.sw_val != 0) // only allow for bridge mode
-        return;
-
     if (rd > wr) {
         cduart_rx_handle(&d_dev, rd, buf + size - rd);
         rd = buf;
@@ -59,29 +55,12 @@ static void read_from_host(const uint8_t *buf, int size,
 
 void bl_routine(void)
 {
-    if (gpio_get_value(&sw) != csa.sw_val) {
-        if (!csa.keep_in_bl) {
-            csa.keep_in_bl = true;
-            printf("keep in bootloader by key\n");
-        }
-    }
-
-    if (get_systick() - t_last > (update_baud ? 150000 : 300000) / SYSTICK_US_DIV) {
+    if (get_systick() - t_last > 300000 / SYSTICK_US_DIV) {
         t_last = get_systick();
         gpio_set_value(&led_b, !gpio_get_value(&led_b));
     }
-
-    if (!csa.keep_in_bl && csa.sw_val && !update_baud && get_systick() - boot_time > 1000000 / SYSTICK_US_DIV) {
-        update_baud = true;
-        if (csa.bus_baud_low != 115200 || csa.bus_baud_high != 115200) {
-            printf("baud rate updated\n");
-            cdctl_set_baud_rate(&r_dev, csa.bus_baud_low, csa.bus_baud_high);
-            cdctl_flush(&r_dev);
-        }
-    }
     if (!csa.keep_in_bl && get_systick() - boot_time > 3000000 / SYSTICK_US_DIV)
         jump_to_app();
-
 
     // handle data exchange
     uint32_t wd_pos = CIRC_BUF_SZ - hw_uart->huart->hdmarx->Instance->CNDTR;

@@ -217,7 +217,7 @@ static void p6_service_routine(void)
         uint32_t flags;
 
         local_irq_save(flags);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             regr_t *regr = csa.qxchg_set + i;
             if (!regr->size)
                 break;
@@ -227,7 +227,7 @@ static void p6_service_routine(void)
             memcpy(((void *) &csa) + regr->offset, src_dat, lim_size);
             src_dat += lim_size;
         }
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             regr_t *regr = csa.qxchg_ret + i;
             if (!regr->size)
                 break;
@@ -245,7 +245,7 @@ static void p6_service_routine(void)
             uint32_t flags;
 
             local_irq_save(flags);
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 5; i++) {
                 regr_t *regr = csa.qxchg_ro + i;
                 if (!regr->size)
                     break;

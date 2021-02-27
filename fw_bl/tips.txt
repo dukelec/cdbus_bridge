@@ -1,4 +1,0 @@
-# flash command
-
-st-flash --reset write build/fw_bl.bin 0x08000000
-

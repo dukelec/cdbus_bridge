@@ -92,7 +92,7 @@ extern cdc_buf_t *cdc_tx_buf;
 
 extern list_head_t frame_free_head;
 
-extern cdctl_dev_t r_dev;   // RS485
+//extern cdctl_dev_t r_dev;   // RS485
 extern cduart_dev_t d_dev;  // uart / usb
 extern cdn_ns_t dft_ns;
 

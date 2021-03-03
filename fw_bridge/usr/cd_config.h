@@ -26,6 +26,9 @@
 //#define CDN_L0_C
 //#define CDN_L2
 
+// un-comment this for 50Mbps version:
+//#define CDCTL_SYS_CLK       150000000UL
+
 #include "main.h"
 #include "debug_config.h"
 

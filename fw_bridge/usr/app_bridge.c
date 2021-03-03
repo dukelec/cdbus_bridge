@@ -19,28 +19,12 @@ void app_bridge_init(void)
 static void read_from_host(const uint8_t *buf, int size,
         const uint8_t *wr, const uint8_t *rd)
 {
-    list_node_t *pre, *cur;
-
     if (rd > wr) {
         cduart_rx_handle(&d_dev, rd, buf + size - rd);
         rd = buf;
     }
     if (rd < wr)
         cduart_rx_handle(&d_dev, rd, wr - rd);
-
-    list_for_each(&d_dev.rx_head, pre, cur) {
-        cd_frame_t *fr_src = list_entry(cur, cd_frame_t);
-        if (fr_src->dat[1] == 0x56) {
-            memcpy(d_conv_frame->dat, fr_src->dat + 3, 2);
-            d_conv_frame->dat[2] = fr_src->dat[2] - 2;
-            memcpy(d_conv_frame->dat + 3, fr_src->dat + 5, d_conv_frame->dat[2]);
-
-            list_pick(&d_dev.rx_head, pre, cur);
-            cdctl_put_tx_frame(&r_dev.cd_dev, d_conv_frame);
-            d_conv_frame = fr_src;
-            cur = pre;
-        }
-    }
 }
 
 void app_bridge(void)
@@ -109,31 +93,5 @@ void app_bridge(void)
         list_get(&d_dev.tx_head);
         list_put_it(d_dev.free_head, &frm->node);
 
-    }
-
-    if (r_dev.rx_head.first) { // send rs485 data (add 56 aa)
-        cd_frame_t *frm = list_entry(r_dev.rx_head.first, cd_frame_t);
-
-        if (bf->len + frm->dat[2] + 5 + 2 > 512) {
-            bf = list_get_entry(&cdc_tx_free_head, cdc_buf_t);
-            if (!bf) {
-                d_warn("no cdc_tx_free (bridge)\n");
-                return;
-            }
-            bf->len = 0;
-            list_put(&cdc_tx_head, &bf->node);
-        }
-
-        uint8_t *buf_dst = bf->dat + bf->len;
-        *buf_dst = 0x56;
-        *(buf_dst + 1) = 0xaa;
-        *(buf_dst + 2) = frm->dat[2] + 2;
-        memcpy(buf_dst + 3, frm->dat, 2);
-        memcpy(buf_dst + 5, frm->dat + 3, *(buf_dst + 2));
-        cduart_fill_crc(buf_dst);
-        bf->len += frm->dat[2] + 7;
-
-        list_get_it(&r_dev.rx_head);
-        list_put_it(r_dev.free_head, &frm->node);
     }
 }

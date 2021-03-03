@@ -49,7 +49,7 @@ list_head_t frame_free_head = {0};
 
 static cdn_pkt_t packet_alloc[PACKET_MAX];
 
-cdctl_dev_t r_dev = {0};    // 485
+static cdctl_dev_t r_dev = {0};    // 485
 cduart_dev_t d_dev = {0};   // uart / usb
 cdn_ns_t dft_ns = {0};      // CDNET
 
@@ -59,6 +59,12 @@ static bool cdc_need_flush = false;
 
 uint8_t circ_buf[CIRC_BUF_SZ];
 uint32_t rd_pos = 0;
+
+static int test_err = 0;
+static int last_err = 0;
+static uint32_t local_cnt = 0;
+static uint32_t remote_cnt = 0;
+static uint32_t cmd_in_cnt = 0;
 
 
 static void device_init(void)
@@ -134,6 +140,17 @@ static void data_led_task(void)
     static uint32_t tx_cnt_last = 0;
     static uint32_t rx_cnt_last = 0;
 
+    if (rx_cnt_last != cmd_in_cnt) {
+        rx_cnt_last = cmd_in_cnt;
+        rx_t_last = get_systick();
+        gpio_set_value(&led_rx, 0);
+    }
+    if (tx_cnt_last != local_cnt) {
+        tx_cnt_last = local_cnt;
+        tx_t_last = get_systick();
+        gpio_set_value(&led_tx, 0);
+    }
+    /*
     if (rx_cnt_last != r_dev.rx_cnt) {
         rx_cnt_last = r_dev.rx_cnt;
         rx_t_last = get_systick();
@@ -144,6 +161,7 @@ static void data_led_task(void)
         tx_t_last = get_systick();
         gpio_set_value(&led_tx, 0);
     }
+    */
 
     if (gpio_get_value(&led_rx) == 0 && get_systick() - rx_t_last > 10)
         gpio_set_value(&led_rx, 1);
@@ -177,11 +195,12 @@ static void stack_check(void)
     }
 }
 
+
 static void dump_hw_status(void)
 {
     static int t_l = 0;
     if (get_systick() - t_l > 8000) {
-        USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
+        //USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
         t_l = get_systick();
 
         d_debug("ctl: state %d, t_len %d, r_len %d, irq %d\n",
@@ -191,8 +210,70 @@ static void dump_hw_status(void)
                 r_dev.rx_cnt, r_dev.rx_lost_cnt, r_dev.rx_error_cnt,
                 r_dev.rx_no_free_node_cnt,
                 r_dev.tx_cnt, r_dev.tx_cd_cnt, r_dev.tx_error_cnt);
-        d_debug("usb: r_cnt %d, t_cnt %d, t_buf %p, t_len %d, t_state %x\n",
-                usb_rx_cnt, usb_tx_cnt, cdc_tx_buf, cdc_tx_head.len, hcdc->TxState);
+        //d_debug("usb: r_cnt %d, t_cnt %d, t_buf %p, t_len %d, t_state %x\n",
+        //        usb_rx_cnt, usb_tx_cnt, cdc_tx_buf, cdc_tx_head.len, hcdc->TxState);
+        d_info("TTT: local_cnt %d, remote_cnt %d\n", local_cnt, remote_cnt);
+        if (test_err || last_err)
+            d_error("test: err_cnt %d, last: %d !!!!!!!!\n", test_err, last_err);
+    }
+}
+
+
+void cdbus_test(void)
+{
+    static uint32_t size = 5;
+    uint8_t target_mac;
+
+    cd_dev_t *cd_dev = &r_dev.cd_dev;
+    target_mac = ~csa.bus_cfg.mac; // avoid addr 0, or specify an address
+
+    cd_frame_t *frame = cd_dev->get_rx_frame(cd_dev);
+    if (frame) {
+        if (frame->dat[3] == 0x01) { // receive command
+            frame->dat[1] = frame->dat[0];
+            frame->dat[0] = csa.bus_cfg.mac;
+            frame->dat[3] = 0x81; // 0x01: command, 0x81: reply
+            cd_dev->put_tx_frame(cd_dev, frame);
+            cmd_in_cnt++;
+
+        } else if (frame->dat[3] == 0x81) { // receive reply
+            uint32_t val = *(uint32_t *)&frame->dat[4];
+            if (val != remote_cnt) {
+                test_err++;
+                last_err = 100;
+                d_error("ERR-RX: cnt: %d, (local %d, remote %d) !!!!!!!!!!!!\n", val, local_cnt, remote_cnt);
+            } else {
+                remote_cnt++;
+            }
+            cd_dev->put_free_frame(cd_dev, frame);
+        } else {
+            test_err++;
+            d_error("ERR-RX: unknown command!!!!!!!\n");
+            cd_dev->put_free_frame(cd_dev, frame);
+        }
+    }
+
+    if (gpio_get_value(&sw) && local_cnt == remote_cnt) {
+        for (int i = 0; i < 2; i++) {
+            cd_frame_t *frame = cd_dev->get_free_frame(cd_dev);
+            if (!frame) {
+                test_err++;
+                last_err = 10+i;
+                d_error("ERR-TX: no free frame !!!!!!!!!!!!!!!\n");
+                break;
+            }
+
+            frame->dat[0] = csa.bus_cfg.mac;
+            frame->dat[1] = target_mac;
+            frame->dat[2] = (local_cnt & 0x01) ? size : 253+5-size; // frame size
+            frame->dat[3] = 0x01; // 0x01: command, 0x81: reply
+
+            *(uint32_t *)&frame->dat[4] = local_cnt++;
+            cd_dev->put_tx_frame(cd_dev, frame);
+
+            if (++size > 253)
+                size = 5;
+        }
     }
 }
 
@@ -263,6 +344,7 @@ void app_main(void)
 
         data_led_task();
         stack_check();
+        cdbus_test();
         dump_hw_status();
         cdn_routine(&dft_ns); // handle cdnet
         common_service_routine();

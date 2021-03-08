@@ -221,58 +221,23 @@ static void dump_hw_status(void)
 
 void cdbus_test(void)
 {
-    static uint32_t size = 5;
+    static uint32_t size = 0;
     uint8_t target_mac;
 
     cd_dev_t *cd_dev = &r_dev.cd_dev;
     target_mac = ~csa.bus_cfg.mac; // avoid addr 0, or specify an address
 
-    cd_frame_t *frame = cd_dev->get_rx_frame(cd_dev);
-    if (frame) {
-        if (frame->dat[3] == 0x01) { // receive command
-            frame->dat[1] = frame->dat[0];
-            frame->dat[0] = csa.bus_cfg.mac;
-            frame->dat[3] = 0x81; // 0x01: command, 0x81: reply
-            cd_dev->put_tx_frame(cd_dev, frame);
-            cmd_in_cnt++;
-
-        } else if (frame->dat[3] == 0x81) { // receive reply
-            uint32_t val = *(uint32_t *)&frame->dat[4];
-            if (val != remote_cnt) {
-                test_err++;
-                last_err = 100;
-                d_error("ERR-RX: cnt: %d, (local %d, remote %d) !!!!!!!!!!!!\n", val, local_cnt, remote_cnt);
-            } else {
-                remote_cnt++;
-            }
-            cd_dev->put_free_frame(cd_dev, frame);
-        } else {
-            test_err++;
-            d_error("ERR-RX: unknown command!!!!!!!\n");
-            cd_dev->put_free_frame(cd_dev, frame);
-        }
-    }
-
-    if (gpio_get_value(&sw) && local_cnt == remote_cnt) {
-        for (int i = 0; i < 2; i++) {
-            cd_frame_t *frame = cd_dev->get_free_frame(cd_dev);
-            if (!frame) {
-                test_err++;
-                last_err = 10+i;
-                d_error("ERR-TX: no free frame !!!!!!!!!!!!!!!\n");
-                break;
-            }
-
+    if (gpio_get_value(&sw)) {
+        cd_frame_t *frame = cd_dev->get_free_frame(cd_dev);
+        if (frame) {
             frame->dat[0] = csa.bus_cfg.mac;
             frame->dat[1] = target_mac;
-            frame->dat[2] = (local_cnt & 0x01) ? size : 253+5-size; // frame size
-            frame->dat[3] = 0x01; // 0x01: command, 0x81: reply
-
+            frame->dat[2] = size; // frame size
             *(uint32_t *)&frame->dat[4] = local_cnt++;
             cd_dev->put_tx_frame(cd_dev, frame);
 
             if (++size > 253)
-                size = 5;
+                size = 0;
         }
     }
 }

@@ -4,17 +4,10 @@
  * Copyright (c) 2017, DUKELEC, Inc.
  * All rights reserved.
  *
- * Author: Duke Fong <duke@dukelec.com>
+ * Author: Duke Fong <d@d-l.io>
  */
 
 #include "app_main.h"
-
-regr_t regr_wa[] = {
-        { .offset = offsetof(csa_t, magic_code), .size = offsetof(csa_t, _end) - offsetof(csa_t, magic_code) }
-};
-
-int regr_wa_num = sizeof(regr_wa) / sizeof(regr_t);
-
 
 const csa_t csa_dft = {
         .magic_code = 0xcdcd,
@@ -33,14 +26,47 @@ csa_t csa;
 
 void load_conf(void)
 {
-    csa_t app_tmp;
-    memcpy(&app_tmp, (void *)APP_CONF_ADDR, offsetof(csa_t, _end));
-    memset(&app_tmp.conf_from, 0, 4);
+    uint16_t magic_code = *(uint16_t *)APP_CONF_ADDR;
+    uint16_t conf_ver = *(uint16_t *)(APP_CONF_ADDR + 2);
+    csa = csa_dft;
 
-    if (app_tmp.magic_code == 0xcdcd && (app_tmp.conf_ver & 0xff00) == (APP_CONF_VER & 0xff00)) {
-        memcpy(&csa, &app_tmp, offsetof(csa_t, _end));
+    if (magic_code == 0xcdcd && (conf_ver >> 8) == (APP_CONF_VER >> 8)) {
+        memcpy(&csa, (void *)APP_CONF_ADDR, offsetof(csa_t, _end_save));
         csa.conf_from = 1;
-    } else {
-        csa = csa_dft;
+        memset(&csa.do_reboot, 0, 3);
     }
 }
+
+int save_conf(void)
+{
+    uint8_t ret;
+    uint32_t err_page = 0;
+    FLASH_EraseInitTypeDef f;
+    f.TypeErase = FLASH_TYPEERASE_PAGES;
+    f.PageAddress = APP_CONF_ADDR;
+    f.NbPages = 1;
+
+    ret = HAL_FLASH_Unlock();
+    if (ret == HAL_OK)
+        ret = HAL_FLASHEx_Erase(&f, &err_page);
+
+    if (ret != HAL_OK)
+        d_info("conf: failed to erase flash\n");
+
+    uint32_t *dst_dat = (uint32_t *)APP_CONF_ADDR;
+    uint32_t *src_dat = (uint32_t *)&csa;
+    int cnt = (offsetof(csa_t, _end_save) + 3) / 4;
+
+    for (int i = 0; ret == HAL_OK && i < cnt; i++)
+        ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)(dst_dat + i), *(src_dat + i));
+    ret |= HAL_FLASH_Lock();
+
+    if (ret == HAL_OK) {
+        d_info("conf: save to flash successed, size: %d\n", offsetof(csa_t, _end_save));
+        return 0;
+    } else {
+        d_error("conf: save to flash error\n");
+        return 1;
+    }
+}
+

@@ -4,7 +4,7 @@
  * Copyright (c) 2017, DUKELEC, Inc.
  * All rights reserved.
  *
- * Author: Duke Fong <duke@dukelec.com>
+ * Author: Duke Fong <d@d-l.io>
  */
 
 #ifndef __APP_MAIN_H__
@@ -20,7 +20,7 @@
 #include "usbd_cdc_if.h"
 
 #define APP_CONF_ADDR       0x0801F800 // last page
-#define APP_CONF_VER        0x0102
+#define APP_CONF_VER        0x0103
 
 #define FRAME_MAX           80
 #define PACKET_MAX          80
@@ -51,33 +51,49 @@ typedef struct {
 
 
 typedef struct {
-    uint16_t        magic_code; // 0xcdcd
+    uint16_t        magic_code;     // 0xcdcd
     uint16_t        conf_ver;
-    bool            conf_from;  // 0: default, 1: load from flash
+    uint8_t         conf_from;      // 0: default, 1: load from flash
     bool            do_reboot;
-    bool            _reserved;  // keep_in_bl for bl
+    bool            _reserved_bl;   // keep_in_bl for bl
     bool            save_conf;
 
     cdctl_cfg_t     bus_cfg;
     bool            dbg_en;
     cdn_sockaddr_t  dbg_dst;
+    #define         _end_common is_rs232
 
-    bool            is_rs232; // default ttl
+    bool            is_rs232;       // default ttl
     uint32_t        ttl_baudrate;
     uint32_t        rs232_baudrate;
 
-    // end of eeprom
-
-    uint8_t         _end;
+    // end of flash
+    #define         _end_save usb_online
 
     bool            usb_online;
 
 } csa_t; // config status area
 
+
+typedef uint8_t (*hook_func_t)(uint16_t sub_offset, uint8_t len, uint8_t *dat);
+
+typedef struct {
+    regr_t          range;
+    hook_func_t     before;
+    hook_func_t     after;
+} csa_hook_t;
+
+
 extern csa_t csa;
 extern const csa_t csa_dft;
-extern regr_t regr_wa[]; // writable list
-extern int regr_wa_num;
+
+extern regr_t csa_w_allow[]; // writable list
+extern int csa_w_allow_num;
+
+extern csa_hook_t csa_w_hook[];
+extern int csa_w_hook_num;
+extern csa_hook_t csa_r_hook[];
+extern int csa_r_hook_num;
 
 
 extern USBD_HandleTypeDef hUsbDeviceFS;

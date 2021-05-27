@@ -22,8 +22,8 @@
 #define APP_CONF_ADDR       0x0801F800 // last page
 #define APP_CONF_VER        0x0102
 
-#define FRAME_MAX           80
-#define PACKET_MAX          80
+#define FRAME_MAX           50
+#define PACKET_MAX          50
 
 #define RAW_SER_PORT        20
 
@@ -48,10 +48,10 @@ typedef struct {
 typedef struct {
     uint16_t        magic_code; // 0xcdcd
     uint16_t        conf_ver;
-    bool            conf_from;  // 0: default, 1: load from flash
+    uint8_t         conf_from;  // 0: default, 1: load from flash
     bool            do_reboot;
     bool            keep_in_bl;
-    bool            _reserved;
+    bool            save_conf;
 
     cdctl_cfg_t     bus_cfg;
     bool            dbg_en;
@@ -61,9 +61,10 @@ typedef struct {
     uint32_t        ttl_baudrate;
     uint32_t        rs232_baudrate;
 
-    // end of eeprom
+    uint8_t         _keep[256]; // covers the areas in the app csa that need to be saved
 
-    uint8_t         _end;
+    // end of flash
+    #define         _end_save usb_online
 
     bool            usb_online;
 

@@ -94,7 +94,6 @@ cdnet/parser/cdnet_l1.c \
 cdnet/dev/cdctl_it.c \
 cdnet/dev/cdbus_uart.c \
 cdnet/utils/cd_list.c \
-cdnet/utils/rbtree.c \
 cdnet/utils/modbus_crc.c \
 cdnet/utils/cd_debug.c \
 cdnet/utils/hex_dump.c \

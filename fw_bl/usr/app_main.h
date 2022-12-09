@@ -4,7 +4,7 @@
  * Copyright (c) 2017, DUKELEC, Inc.
  * All rights reserved.
  *
- * Author: Duke Fong <duke@dukelec.com>
+ * Author: Duke Fong <d@d-l.io>
  */
 
 #ifndef __APP_MAIN_H__
@@ -13,19 +13,16 @@
 #include "cdnet_dispatch.h"
 #include "cd_debug.h"
 #include "cdbus_uart.h"
-#include "cdctl_it.h"
 
 #include "modbus_crc.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
 
 #define APP_CONF_ADDR       0x0801F800 // last page
-#define APP_CONF_VER        0x0102
+#define APP_CONF_VER        0x0200
 
-#define FRAME_MAX           50
-#define PACKET_MAX          50
-
-#define RAW_SER_PORT        20
+#define FRAME_MAX           80
+#define PACKET_MAX          80
 
 typedef enum {
     LED_POWERON = 0,
@@ -53,13 +50,8 @@ typedef struct {
     bool            keep_in_bl;
     bool            save_conf;
 
-    cdctl_cfg_t     bus_cfg;
     bool            dbg_en;
     cdn_sockaddr_t  dbg_dst;
-    
-    bool            is_rs232; // default ttl
-    uint32_t        ttl_baudrate;
-    uint32_t        rs232_baudrate;
 
     uint8_t         _keep[256]; // covers the areas in the app csa that need to be saved
 
@@ -72,16 +64,16 @@ typedef struct {
 
 extern csa_t csa;
 extern const csa_t csa_dft;
-extern regr_t regr_wa[]; // writable list
-extern int regr_wa_num;
 
+extern regr_t csa_w_allow[]; // writable list
+extern int csa_w_allow_num;
+
+int flash_erase(uint32_t addr, uint32_t len);
+int flash_write(uint32_t addr, uint32_t len, const uint8_t *buf);
 
 extern USBD_HandleTypeDef hUsbDeviceFS;
-extern uart_t *hw_uart;
-extern gpio_t led_r;
-extern gpio_t led_g;
+extern uart_t debug_uart;
 extern gpio_t led_b;
-extern gpio_t sw;
 
 extern list_head_t cdc_rx_free_head;
 extern list_head_t cdc_tx_free_head;

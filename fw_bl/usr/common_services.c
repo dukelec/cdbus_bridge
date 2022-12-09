@@ -9,7 +9,7 @@
 
 #include "app_main.h"
 
-char cpu_id[25];
+static char cpu_id[25];
 static char info_str[100];
 
 static cdn_sock_t sock1 = { .port = 1, .ns = &dft_ns };
@@ -30,7 +30,7 @@ static void get_uid(char *buf)
     buf[24] = '\0';
 }
 
-void init_info_str(void)
+static void init_info_str(void)
 {
     // M: model; S: serial string; HW: hardware version; SW: software version
     get_uid(cpu_id);
@@ -55,7 +55,7 @@ static void p1_service_routine(void)
         return;
     }
     d_debug("p1 ser: ignore\n");
-    list_put(&dft_ns.free_pkts, &pkt->node);
+    list_put(dft_ns.free_pkts, &pkt->node);
 }
 
 
@@ -104,7 +104,7 @@ static void p5_service_routine(void)
 
     } else {
         d_warn("csa: wrong cmd, len: %d\n", pkt->len);
-        list_put(&dft_ns.free_pkts, &pkt->node);
+        list_put(dft_ns.free_pkts, &pkt->node);
         return;
     }
 
@@ -127,22 +127,9 @@ static void p8_service_routine(void)
         return;
 
     if (pkt->dat[0] == 0x2f && pkt->len == 9) {
-        int ret = -1;
-        uint32_t err_page = 0xffffffff;
-        FLASH_EraseInitTypeDef f;
         uint32_t addr = *(uint32_t *)(pkt->dat + 1);
         uint32_t len = *(uint32_t *)(pkt->dat + 5);
-
-        f.TypeErase = FLASH_TYPEERASE_PAGES;
-        f.PageAddress = addr;
-        f.NbPages = (len + FLASH_PAGE_SIZE - 1) / FLASH_PAGE_SIZE;
-
-        ret = HAL_FLASH_Unlock();
-        if (ret == HAL_OK)
-            ret = HAL_FLASHEx_Erase(&f, &err_page);
-        ret |= HAL_FLASH_Lock();
-        d_debug("nvm erase: %08x +%08x, %08x, ret: %d\n", addr, len, err_page, ret);
-
+        int ret = flash_erase(addr, len);
         pkt->len = 1;
         pkt->dat[0] = ret == HAL_OK ? 0x80 : 0x81;
 
@@ -155,18 +142,9 @@ static void p8_service_routine(void)
         pkt->len = len + 1;
 
     } else if (pkt->dat[0] == 0x20 && pkt->len > 5) {
-        int ret;
-        uint32_t *dst_dat = (uint32_t *) *(uint32_t *)(pkt->dat + 1);
+        uint32_t addr = *(uint32_t *)(pkt->dat + 1);
         uint8_t len = pkt->len - 5;
-        uint8_t cnt = (len + 3) / 4;
-        uint32_t *src_dat = (uint32_t *)(pkt->dat + 5);
-
-        ret = HAL_FLASH_Unlock();
-        for (int i = 0; ret == HAL_OK && i < cnt; i++)
-            ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)(dst_dat + i), *(src_dat + i));
-        ret |= HAL_FLASH_Lock();
-
-        d_verbose("nvm write: %08x %d(%d), ret: %d\n", dst_dat, len, cnt, ret);
+        int ret = flash_write(addr, len, pkt->dat + 5);
         pkt->len = 1;
         pkt->dat[0] = ret == HAL_OK ? 0x80 : 0x81;
 #if 0
@@ -182,7 +160,7 @@ static void p8_service_routine(void)
 #endif
     } else {
         d_warn("nvm: wrong cmd, len: %d\n", pkt->len);
-        list_put(&dft_ns.free_pkts, &pkt->node);
+        list_put(dft_ns.free_pkts, &pkt->node);
         return;
     }
 

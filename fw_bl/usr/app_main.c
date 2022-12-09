@@ -9,22 +9,16 @@
 
 #include "app_main.h"
 
-extern ADC_HandleTypeDef hadc1;
-extern UART_HandleTypeDef huart1;
-extern UART_HandleTypeDef huart2;
-extern UART_HandleTypeDef huart4;
-extern SPI_HandleTypeDef hspi1;
+extern UART_HandleTypeDef huart5;
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
-gpio_t sw = { .group = SW_MODE_GPIO_Port, .num = SW_MODE_Pin };
-gpio_t led_r = { .group = LED_R_GPIO_Port, .num = LED_R_Pin };
-gpio_t led_g = { .group = LED_G_GPIO_Port, .num = LED_G_Pin };
-gpio_t led_b = { .group = LED_B_GPIO_Port, .num = LED_B_Pin };
+gpio_t led_r = { .group = RGB_R_GPIO_Port, .num = RGB_R_Pin };
+gpio_t led_g = { .group = RGB_G_GPIO_Port, .num = RGB_G_Pin };
+gpio_t led_b = { .group = RGB_B_GPIO_Port, .num = RGB_B_Pin };
+static  gpio_t sw1 = { .group = SW1_GPIO_Port, .num = SW1_Pin };
+//static  gpio_t sw2 = { .group = SW2_GPIO_Port, .num = SW2_Pin };
 
-uart_t debug_uart = { .huart = &huart4 };
-static uart_t ttl_uart = { .huart = &huart1 };
-static uart_t rs232_uart = { .huart = &huart2 };
-uart_t *hw_uart = NULL;
+uart_t debug_uart = { .huart = &huart5 };
 
 #define CDC_RX_MAX 6
 #define CDC_TX_MAX 6
@@ -41,6 +35,7 @@ static cd_frame_t frame_alloc[FRAME_MAX];
 list_head_t frame_free_head = {0};
 
 static cdn_pkt_t packet_alloc[PACKET_MAX];
+list_head_t packet_free_head = {0};
 
 cduart_dev_t d_dev = {0};   // uart / usb
 cdn_ns_t dft_ns = {0};      // CDNET
@@ -56,7 +51,7 @@ uint32_t rd_pos = 0;
 static void device_init(void)
 {
     int i;
-    cdn_init_ns(&dft_ns);
+    cdn_init_ns(&dft_ns, &packet_free_head);
 
     for (i = 0; i < CDC_RX_MAX; i++)
         list_put(&cdc_rx_free_head, &cdc_rx_alloc[i].node);
@@ -65,7 +60,7 @@ static void device_init(void)
     for (i = 0; i < FRAME_MAX; i++)
         list_put(&frame_free_head, &frame_alloc[i].node);
     for (i = 0; i < PACKET_MAX; i++)
-        list_put(&dft_ns.free_pkts, &packet_alloc[i].node);
+        list_put(&packet_free_head, &packet_alloc[i].node);
 
     cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
 
@@ -74,14 +69,10 @@ static void device_init(void)
     d_dev.remote_filter_len = 1;
     d_dev.local_filter[0] = 0x55;
     d_dev.local_filter_len = 1;
-
-    cdn_add_intf(&dft_ns, &d_dev.cd_dev, 0, 0x55); // uart / usb
-
-    if (!csa.is_rs232) {
-        hw_uart = &ttl_uart;
-    } else {
-        hw_uart = &rs232_uart;
-    }
+    
+    //                    uart / usb
+    cdn_add_intf(&dft_ns, &d_dev.cd_dev, 0, 0x55);
+    ///hw_uart = &ttl_uart;
 }
 
 void set_led_state(led_state_t state)
@@ -142,14 +133,13 @@ void app_main(void)
 {
     printf("\nstart app_main (bl)...\n");
     stack_check_init();
-    debug_init(&dft_ns, &csa.dbg_dst, &csa.dbg_en);
     load_conf();
+    debug_init(&dft_ns, &csa.dbg_dst, &csa.dbg_en);
     device_init();
     common_service_init();
     printf("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
     set_led_state(LED_POWERON);
     bl_init();
-    HAL_UART_Receive_DMA(hw_uart->huart, circ_buf, CIRC_BUF_SZ);
 
     while (true) {
         USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
@@ -157,7 +147,6 @@ void app_main(void)
         if (!csa.usb_online && hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
             printf("usb connected\n");
             csa.usb_online = true;
-            HAL_UART_DMAStop(hw_uart->huart);
         }
 
         if (cdc_tx_buf) {
@@ -166,14 +155,7 @@ void app_main(void)
                     list_put(&cdc_tx_free_head, &cdc_tx_buf->node);
                     cdc_tx_buf = NULL;
                 }
-            } else { // hw_uart
-                if (hw_uart->huart->TxXferCount == 0) {
-                    hw_uart->huart->gState = HAL_UART_STATE_READY;
-                    list_put(&cdc_tx_free_head, &cdc_tx_buf->node);
-                    cdc_tx_buf = NULL;
-                    //printf("hw_uart dma done.\n");
-                }
-            }
+            } // else wait online
         }
         if (cdc_tx_head.first) {
             if (!cdc_tx_buf && hcdc->TxState == 0) {
@@ -184,10 +166,7 @@ void app_main(void)
                         CDC_Transmit_FS(bf->dat, bf->len);
                         local_irq_enable();
                         cdc_need_flush = true;
-                    } else { // hw_uart
-                        //d_verbose("hw_uart dma tx...\n");
-                        HAL_UART_Transmit_DMA(hw_uart->huart, bf->dat, bf->len);
-                    }
+                    } // else wait online
                     list_get(&cdc_tx_head);
                     cdc_tx_buf = bf;
 

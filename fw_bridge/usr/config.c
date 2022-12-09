@@ -1,5 +1,5 @@
 /*
- * Software License Agreement (MIT License)
+ * Software License Agreement (BSD License)
  *
  * Copyright (c) 2017, DUKELEC, Inc.
  * All rights reserved.
@@ -24,13 +24,11 @@ int csa_r_hook_num = sizeof(csa_r_hook) / sizeof(csa_hook_t);
 const csa_t csa_dft = {
         .magic_code = 0xcdcd,
         .conf_ver = APP_CONF_VER,
-        .bus_cfg = CDCTL_CFG_DFT(0x00),
         .dbg_en = false,
         .dbg_dst = { .addr = {0x80, 0x00, 0xaa}, .port = 9 },
 
-        .is_rs232 = false,
-        .ttl_baudrate = 115200,
-        .rs232_baudrate = 115200,
+        .bus_cfg = CDCTL_CFG_DFT(0x00),
+        .ttl_baudrate = 115200
 };
 
 csa_t csa;
@@ -48,6 +46,7 @@ void load_conf(void)
     } else if (magic_code == 0xcdcd && (conf_ver >> 8) == (APP_CONF_VER >> 8)) {
         memcpy(&csa, (void *)APP_CONF_ADDR, offsetof(csa_t, _end_common));
         csa.conf_from = 2;
+        csa.conf_ver = APP_CONF_VER;
     }
     if (csa.conf_from)
         memset(&csa.do_reboot, 0, 3);
@@ -55,35 +54,58 @@ void load_conf(void)
 
 int save_conf(void)
 {
-    uint8_t ret;
-    uint32_t err_page = 0;
-    FLASH_EraseInitTypeDef f;
-    f.TypeErase = FLASH_TYPEERASE_PAGES;
-    f.PageAddress = APP_CONF_ADDR;
-    f.NbPages = 1;
-
-    ret = HAL_FLASH_Unlock();
-    if (ret == HAL_OK)
-        ret = HAL_FLASHEx_Erase(&f, &err_page);
-
+    uint8_t ret = flash_erase(APP_CONF_ADDR, 2048);
     if (ret != HAL_OK)
         d_info("conf: failed to erase flash\n");
-
-    uint32_t *dst_dat = (uint32_t *)APP_CONF_ADDR;
-    uint32_t *src_dat = (uint32_t *)&csa;
-    int cnt = (offsetof(csa_t, _end_save) + 3) / 4;
-
-    for (int i = 0; ret == HAL_OK && i < cnt; i++)
-        ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (uint32_t)(dst_dat + i), *(src_dat + i));
-    ret |= HAL_FLASH_Lock();
+    ret = flash_write(APP_CONF_ADDR, offsetof(csa_t, _end_save), (uint8_t *)&csa);
 
     if (ret == HAL_OK) {
-        d_info("conf: save to flash successed\n");
+        d_info("conf: save to flash successed, size: %d\n", offsetof(csa_t, _end_save));
         return 0;
     } else {
         d_error("conf: save to flash error\n");
         return 1;
     }
+}
+
+
+int flash_erase(uint32_t addr, uint32_t len)
+{
+    int ret = -1;
+    uint32_t err_sector = 0xffffffff;
+    FLASH_EraseInitTypeDef f;
+
+    uint32_t ofs = addr & ~0x08000000;
+    f.TypeErase = FLASH_TYPEERASE_PAGES;
+    f.Banks = FLASH_BANK_1;
+    f.Page = ofs / 2048;
+    f.NbPages = (ofs + len) / 2048 - f.Page;
+    if ((ofs + len) % 2048)
+        f.NbPages++;
+
+    ret = HAL_FLASH_Unlock();
+    if (ret == HAL_OK)
+        ret = HAL_FLASHEx_Erase(&f, &err_sector);
+    ret |= HAL_FLASH_Lock();
+    d_debug("nvm erase: %08x +%08x (%d %d), %08x, ret: %d\n", addr, len, f.Page, f.NbPages, err_sector, ret);
+    return ret;
+}
+
+int flash_write(uint32_t addr, uint32_t len, const uint8_t *buf)
+{
+    int ret = -1;
+
+    uint64_t *dst_dat = (uint64_t *) addr;
+    int cnt = (len + 7) / 8;
+    uint64_t *src_dat = (uint64_t *)buf;
+
+    ret = HAL_FLASH_Unlock();
+    for (int i = 0; ret == HAL_OK && i < cnt; i++)
+        ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, (uint32_t)(dst_dat + i), *(src_dat + i));
+    ret |= HAL_FLASH_Lock();
+
+    d_verbose("nvm write: %08x %d(%d), ret: %d\n", dst_dat, len, cnt, ret);
+    return ret;
 }
 
 
@@ -117,9 +139,14 @@ void csa_list_show(void)
 
     CSA_SHOW(1, magic_code, "Magic code: 0xcdcd");
     CSA_SHOW(1, conf_ver, "Config version");
-    CSA_SHOW(0, conf_from, "0: default config, 1: load from flash");
+    CSA_SHOW(1, conf_from, "0: default config, 1: all from flash, 2: partly from flash");
     CSA_SHOW(0, do_reboot, "Write 1 to reboot");
     CSA_SHOW(0, save_conf, "Write 1 to save current config to flash");
+    d_debug("\n"); debug_flush(true);
+
+    CSA_SHOW(0, dbg_en, "1: Report debug message to host, 0: do not report");
+    CSA_SHOW_SUB(2, dbg_dst, cdn_sockaddr_t, addr, "Send debug message to this address");
+    CSA_SHOW_SUB(1, dbg_dst, cdn_sockaddr_t, port, "Send debug message to this port");
     d_debug("\n"); debug_flush(true);
 
     CSA_SHOW_SUB(1, bus_cfg, cdctl_cfg_t, mac, "RS-485 port id, range: 0~254");
@@ -132,13 +159,6 @@ void csa_list_show(void)
     CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, tx_pre_len, " Active TX_EN before TX");
     d_debug("\n"); debug_flush(true);
 
-    CSA_SHOW(0, dbg_en, "1: Report debug message to host, 0: do not report");
-    CSA_SHOW_SUB(2, dbg_dst, cdn_sockaddr_t, addr, "Send debug message to this address");
-    CSA_SHOW_SUB(1, dbg_dst, cdn_sockaddr_t, port, "Send debug message to this port");
-    d_debug("\n"); debug_flush(true);
-
-    CSA_SHOW(0, is_rs232, "0: TTL, 1: RS-232");
     CSA_SHOW(0, ttl_baudrate, "TTL baudrate");
-    CSA_SHOW(0, rs232_baudrate, "RS-232 baudrate");
     d_debug("\n"); debug_flush(true);
 }

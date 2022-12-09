@@ -4,11 +4,10 @@
  * Copyright (c) 2017, DUKELEC, Inc.
  * All rights reserved.
  *
- * Author: Duke Fong <duke@dukelec.com>
+ * Author: Duke Fong <d@d-l.io>
  */
 
 #include "app_main.h"
-
 
 static cd_frame_t *d_conv_frame = NULL;
 
@@ -16,7 +15,7 @@ static uint32_t t_last;
 static uint32_t boot_time;
 
 
-#define APP_ADDR 0x0800c000 // 48K offset
+#define APP_ADDR 0x08009000 // 36K offset
 
 static void jump_to_app(void)
 {
@@ -25,13 +24,19 @@ static void jump_to_app(void)
 
     gpio_set_value(&led_b, 1);
     printf("jump to app...\n");
+    while (!__HAL_UART_GET_FLAG(debug_uart.huart, UART_FLAG_TC));
+    HAL_UART_DeInit(debug_uart.huart);
+    USBD_Stop(&hUsbDeviceFS);
+    USBD_DeInit(&hUsbDeviceFS);
+    HAL_RCC_DeInit();
 
     // NOTE: change app's SCB->VTOR in app's system_stm32fxxx.c
     //for(int i = 0; i < 256; i++)
     //    HAL_NVIC_DisableIRQ(i);
-    //HAL_NVIC_DisableIRQ(SysTick_IRQn);
+    HAL_NVIC_DisableIRQ(SysTick_IRQn);
     __set_MSP(stack); // init stack pointer
     ((void(*)()) func)();
+    while (true);
 }
 
 
@@ -63,7 +68,6 @@ void bl_routine(void)
         jump_to_app();
 
     // handle data exchange
-    uint32_t wd_pos = CIRC_BUF_SZ - hw_uart->huart->hdmarx->Instance->CNDTR;
 
     if (csa.usb_online) {
         int size;
@@ -86,10 +90,7 @@ void bl_routine(void)
             }
             local_irq_restore(flags);
         }
-    } else { // hw_uart
-        read_from_host(circ_buf, CIRC_BUF_SZ, circ_buf + wd_pos, circ_buf + rd_pos);
     }
-    rd_pos = wd_pos;
 
     cdc_buf_t *bf = NULL;
     if (!cdc_tx_head.last) {

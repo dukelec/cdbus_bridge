@@ -1,5 +1,5 @@
 /*
- * Software License Agreement (MIT License)
+ * Software License Agreement (BSD License)
  *
  * Copyright (c) 2017, DUKELEC, Inc.
  * All rights reserved.
@@ -10,28 +10,27 @@
 #include "app_main.h"
 
 extern ADC_HandleTypeDef hadc1;
-extern UART_HandleTypeDef huart1;
-extern UART_HandleTypeDef huart2;
-extern UART_HandleTypeDef huart4;
+extern UART_HandleTypeDef huart3;
+extern UART_HandleTypeDef huart5;
 extern SPI_HandleTypeDef hspi1;
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
-static  gpio_t led_r = { .group = LED_R_GPIO_Port, .num = LED_R_Pin };
-static  gpio_t led_g = { .group = LED_G_GPIO_Port, .num = LED_G_Pin };
-static  gpio_t led_b = { .group = LED_B_GPIO_Port, .num = LED_B_Pin };
-static  gpio_t led_tx = { .group = LED_TX_GPIO_Port, .num = LED_TX_Pin };
-static  gpio_t led_rx = { .group = LED_RX_GPIO_Port, .num = LED_RX_Pin };
-static  gpio_t sw = { .group = SW_MODE_GPIO_Port, .num = SW_MODE_Pin };
+static  gpio_t led_r = { .group = RGB_R_GPIO_Port, .num = RGB_R_Pin };
+static  gpio_t led_g = { .group = RGB_G_GPIO_Port, .num = RGB_G_Pin };
+static  gpio_t led_b = { .group = RGB_B_GPIO_Port, .num = RGB_B_Pin };
+static  gpio_t led_tx = { .group = LED_Y_GPIO_Port, .num = LED_Y_Pin };
+static  gpio_t led_rx = { .group = LED_B_GPIO_Port, .num = LED_B_Pin };
+static  gpio_t sw1 = { .group = SW1_GPIO_Port, .num = SW1_Pin };
+//static  gpio_t sw2 = { .group = SW2_GPIO_Port, .num = SW2_Pin };
 
-uart_t debug_uart = { .huart = &huart4 };
-static uart_t ttl_uart = { .huart = &huart1 };
-static uart_t rs232_uart = { .huart = &huart2 };
-uart_t *hw_uart = NULL;
+uart_t debug_uart = { .huart = &huart5 };
+static uart_t ttl_uart = { .huart = &huart3 };
+uart_t *hw_uart = &ttl_uart;
 
-static gpio_t r_rst_n = { .group = CDCTL_RST_N_GPIO_Port, .num = CDCTL_RST_N_Pin };
-static gpio_t r_int_n = { .group = CDCTL_INT_N_GPIO_Port, .num = CDCTL_INT_N_Pin };
-static gpio_t r_ns = { .group = CDCTL_NS_GPIO_Port, .num = CDCTL_NS_Pin };
-static spi_t r_spi = { .hspi = &hspi1, .ns_pin = &r_ns };
+static gpio_t r_rst = { .group = CD_RST_GPIO_Port, .num = CD_RST_Pin };
+static gpio_t r_int = { .group = CD_INT_GPIO_Port, .num = CD_INT_Pin };
+static gpio_t r_ss = { .group = CD_SS_GPIO_Port, .num = CD_SS_Pin };
+static spi_t r_spi = { .hspi = &hspi1, .ns_pin = &r_ss };
 
 #define CDC_RX_MAX 6
 #define CDC_TX_MAX 6
@@ -48,6 +47,7 @@ static cd_frame_t frame_alloc[FRAME_MAX];
 list_head_t frame_free_head = {0};
 
 static cdn_pkt_t packet_alloc[PACKET_MAX];
+list_head_t packet_free_head = {0};
 
 cdctl_dev_t r_dev = {0};    // 485
 cduart_dev_t d_dev = {0};   // uart / usb
@@ -64,7 +64,7 @@ uint32_t rd_pos = 0;
 static void device_init(void)
 {
     int i;
-    cdn_init_ns(&dft_ns);
+    cdn_init_ns(&dft_ns, &packet_free_head);
 
     for (i = 0; i < CDC_RX_MAX; i++)
         list_put(&cdc_rx_free_head, &cdc_rx_alloc[i].node);
@@ -73,15 +73,15 @@ static void device_init(void)
     for (i = 0; i < FRAME_MAX; i++)
         list_put(&frame_free_head, &frame_alloc[i].node);
     for (i = 0; i < PACKET_MAX; i++)
-        list_put(&dft_ns.free_pkts, &packet_alloc[i].node);
+        list_put(&packet_free_head, &packet_alloc[i].node);
 
     cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
 
-    if (gpio_get_value(&sw)) {
+    if (gpio_get_value(&sw1)) {
         csa.bus_cfg.baud_l = 115200;
         csa.bus_cfg.baud_h = 115200;
     }
-    cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, &r_rst_n, &r_int_n);
+    cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, &r_rst, &r_int);
 
     cduart_dev_init(&d_dev, &frame_free_head);
     d_dev.remote_filter[0] = 0xaa;
@@ -92,12 +92,7 @@ static void device_init(void)
     
     //                    uart / usb
     cdn_add_intf(&dft_ns, &d_dev.cd_dev, 0, 0x55);
-
-    if (!csa.is_rs232) {
-        hw_uart = &ttl_uart;
-    } else {
-        hw_uart = &rs232_uart;
-    }
+    ///hw_uart = &ttl_uart;
 }
 
 void set_led_state(led_state_t state)
@@ -137,18 +132,18 @@ static void data_led_task(void)
     if (rx_cnt_last != r_dev.rx_cnt) {
         rx_cnt_last = r_dev.rx_cnt;
         rx_t_last = get_systick();
-        gpio_set_value(&led_rx, 0);
+        gpio_set_value(&led_rx, 1);
     }
     if (tx_cnt_last != r_dev.tx_cnt) {
         tx_cnt_last = r_dev.tx_cnt;
         tx_t_last = get_systick();
-        gpio_set_value(&led_tx, 0);
+        gpio_set_value(&led_tx, 1);
     }
 
-    if (gpio_get_value(&led_rx) == 0 && get_systick() - rx_t_last > 10)
-        gpio_set_value(&led_rx, 1);
-    if (gpio_get_value(&led_tx) == 0 && get_systick() - tx_t_last > 10)
-        gpio_set_value(&led_tx, 1);
+    if (gpio_get_value(&led_rx) == 1 && get_systick() - rx_t_last > 10)
+        gpio_set_value(&led_rx, 0);
+    if (gpio_get_value(&led_tx) == 1 && get_systick() - tx_t_last > 10)
+        gpio_set_value(&led_tx, 0);
 }
 
 
@@ -201,8 +196,8 @@ void app_main(void)
 {
     printf("\nstart app_main (bridge)...\n");
     stack_check_init();
-    debug_init(&dft_ns, &csa.dbg_dst, &csa.dbg_en);
     load_conf();
+    debug_init(&dft_ns, &csa.dbg_dst, &csa.dbg_en);
     device_init();
     common_service_init();
     printf("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
@@ -272,9 +267,9 @@ void app_main(void)
 }
 
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 {
-    if (GPIO_Pin == r_int_n.num) {
+    if (GPIO_Pin == r_int.num) {
         cdctl_int_isr(&r_dev);
     }
 }

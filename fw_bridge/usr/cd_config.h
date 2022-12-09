@@ -19,9 +19,7 @@
 #define DBG_TX_IT
 //#define LIST_DEBUG
 
-//#define CDN_IRQ_SAFE
-#define CDUART_IRQ_SAFE
-#define CDUART_IDLE_TIME    (500000 / SYSTICK_US_DIV) // 500 ms
+#define CDN_IRQ_SAFE
 
 #define CDN_SEQ
 //#define CDN_RB_TREE

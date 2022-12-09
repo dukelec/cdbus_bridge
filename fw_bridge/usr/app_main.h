@@ -20,7 +20,7 @@
 #include "usbd_cdc_if.h"
 
 #define APP_CONF_ADDR       0x0801F800 // last page
-#define APP_CONF_VER        0x0103
+#define APP_CONF_VER        0x0201
 
 #define FRAME_MAX           80
 #define PACKET_MAX          80
@@ -53,19 +53,18 @@ typedef struct {
 typedef struct {
     uint16_t        magic_code;     // 0xcdcd
     uint16_t        conf_ver;
-    uint8_t         conf_from;      // 0: default, 1: load from flash
+    uint8_t         conf_from;      // 0: default, 1: all from flash, 2: partly from flash
     bool            do_reboot;
     bool            _reserved_bl;   // keep_in_bl for bl
     bool            save_conf;
 
-    cdctl_cfg_t     bus_cfg;
     bool            dbg_en;
     cdn_sockaddr_t  dbg_dst;
-    #define         _end_common is_rs232
+    #define         _end_common bus_cfg
 
-    bool            is_rs232;       // default ttl
+    cdctl_cfg_t     bus_cfg;
+    uint8_t         _reserved[4];
     uint32_t        ttl_baudrate;
-    uint32_t        rs232_baudrate;
 
     // end of flash
     #define         _end_save usb_online
@@ -95,6 +94,8 @@ extern int csa_w_hook_num;
 extern csa_hook_t csa_r_hook[];
 extern int csa_r_hook_num;
 
+int flash_erase(uint32_t addr, uint32_t len);
+int flash_write(uint32_t addr, uint32_t len, const uint8_t *buf);
 
 extern USBD_HandleTypeDef hUsbDeviceFS;
 extern uart_t *hw_uart;

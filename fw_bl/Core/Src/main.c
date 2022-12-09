@@ -93,6 +93,8 @@ int main(void)
   MX_USART5_UART_Init();
   MX_USB_Device_Init();
   /* USER CODE BEGIN 2 */
+  void app_main(void);
+  app_main();
 
   /* USER CODE END 2 */
 

@@ -14,6 +14,7 @@
 # target
 ######################################
 TARGET = cdbus_bridge
+GIT_VERSION := $(shell git describe --dirty --always --tags)
 
 
 ######################################
@@ -22,7 +23,7 @@ TARGET = cdbus_bridge
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -Og
+OPT = -Os
 
 
 #######################################
@@ -68,7 +69,20 @@ Core/Src/system_stm32g0xx.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
 Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
-Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c  
+Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
+cdnet/dispatch/cdnet_dispatch.c \
+cdnet/dispatch/helper.c \
+cdnet/parser/cdnet_l0.c \
+cdnet/parser/cdnet_l1.c \
+cdnet/dev/cdbus_uart.c \
+cdnet/utils/cd_list.c \
+cdnet/utils/modbus_crc.c \
+cdnet/utils/cd_debug.c \
+cdnet/utils/hex_dump.c \
+usr/config.c \
+usr/common_services.c \
+usr/app_main.c \
+usr/bl.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -117,7 +131,8 @@ AS_DEFS =
 # C defines
 C_DEFS =  \
 -DUSE_HAL_DRIVER \
--DSTM32G0B1xx
+-DSTM32G0B1xx \
+-DSW_VER=\"$(GIT_VERSION)\"
 
 
 # AS includes
@@ -133,7 +148,13 @@ C_INCLUDES =  \
 -IMiddlewares/ST/STM32_USB_Device_Library/Core/Inc \
 -IMiddlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
 -IDrivers/CMSIS/Device/ST/STM32G0xx/Include \
--IDrivers/CMSIS/Include
+-IDrivers/CMSIS/Include \
+-Icdnet/parser \
+-Icdnet/dispatch \
+-Icdnet/utils \
+-Icdnet/dev \
+-Icdnet/arch/stm32 \
+-Iusr
 
 
 # compile gcc flags

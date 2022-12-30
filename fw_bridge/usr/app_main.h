@@ -70,6 +70,7 @@ typedef struct {
     #define         _end_save usb_online
 
     bool            usb_online;
+    bool            force_115200;
 
 } csa_t; // config status area
 

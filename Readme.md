@@ -6,7 +6,7 @@ The CDBUS Bridge is a USB virtual serial port to RS485 converter by default, and
 
  - The USB serial communication rate is not affected by the selected baud rate, and the specified baud rate is ignored when the USB serial port is opened.
  - RS485 baud rate needs to be configured using the CDBUS GUI tool, since the hardware supports dual baud rate mode, the baud rate specified when opening the USB serial port is not used.
- - RS485 baud rate can be temporarily set to 115200 single-rate mode at power-up via S2 of the left switch to facilitate quick connection to devices with default baud rate.
+ - RS485 baud rate can be temporarily set to 115200 single-rate mode via S2 of the left switch to facilitate quick connection to devices with default baud rate.
  - S1 of the left switch switches bootloader and app mode and off to app mode.
  - 2 RS485 ports internal straight-through, for easy wiring.
  - The right switch S1 is the pull-up enable on the A wire of RS485, S2 is the termination resistor enable between AB, S3 is the pull-down enable on the B wire, and S4 is the USB to external power enable switch.

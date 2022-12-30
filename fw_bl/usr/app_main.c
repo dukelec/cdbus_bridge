@@ -184,5 +184,10 @@ void app_main(void)
         common_service_routine();
         bl_routine();
         debug_flush(false);
+
+        if (gpio_get_value(&sw1)) {
+            printf("sw1 switch off, reboot...\n");
+            csa.do_reboot = true;
+        }
     }
 }

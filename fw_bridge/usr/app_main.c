@@ -20,7 +20,7 @@ static  gpio_t led_g = { .group = RGB_G_GPIO_Port, .num = RGB_G_Pin };
 static  gpio_t led_b = { .group = RGB_B_GPIO_Port, .num = RGB_B_Pin };
 static  gpio_t led_tx = { .group = LED_Y_GPIO_Port, .num = LED_Y_Pin };
 static  gpio_t led_rx = { .group = LED_B_GPIO_Port, .num = LED_B_Pin };
-//static  gpio_t sw1 = { .group = SW1_GPIO_Port, .num = SW1_Pin };
+static  gpio_t sw1 = { .group = SW1_GPIO_Port, .num = SW1_Pin };
 static  gpio_t sw2 = { .group = SW2_GPIO_Port, .num = SW2_Pin };
 
 uart_t debug_uart = { .huart = &huart5 };
@@ -77,7 +77,8 @@ static void device_init(void)
 
     cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
 
-    if (!gpio_get_value(&sw2)) {
+    csa.force_115200 = !gpio_get_value(&sw2);
+    if (csa.force_115200) {
         csa.bus_cfg.baud_l = 115200;
         csa.bus_cfg.baud_h = 115200;
         printf("force baudrate to 115200 by sw2!\n");
@@ -264,6 +265,15 @@ void app_main(void)
         common_service_routine();
         app_bridge();
         debug_flush(false);
+
+        if (csa.force_115200 != !gpio_get_value(&sw2)) {
+            printf("sw2 changed, reboot...\n");
+            csa.do_reboot = true;
+        }
+        if (!gpio_get_value(&sw1)) {
+            printf("sw1 switch on, reboot...\n");
+            csa.do_reboot = true;
+        }
     }
 }
 

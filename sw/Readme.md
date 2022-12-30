@@ -1,3 +1,6 @@
+TODO: please use CDBUS-GUI instead!
+
+
 ### Read config from device
 ```
 cdbus_tools/cdbus_iap.py --direct --addr=0x0801f800 --size=36 --out-file conf.bin

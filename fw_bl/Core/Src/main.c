@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "app_main.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -91,9 +91,9 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_USART5_UART_Init();
+  try_jump_to_app(); //
   MX_USB_Device_Init();
   /* USER CODE BEGIN 2 */
-  void app_main(void);
   app_main();
 
   /* USER CODE END 2 */

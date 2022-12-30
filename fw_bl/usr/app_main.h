@@ -47,7 +47,7 @@ typedef struct {
     uint16_t        conf_ver;
     uint8_t         conf_from;  // 0: default, 1: load from flash
     bool            do_reboot;
-    bool            keep_in_bl;
+    bool            _reserved;
     bool            save_conf;
 
     bool            dbg_en;
@@ -73,7 +73,8 @@ int flash_write(uint32_t addr, uint32_t len, const uint8_t *buf);
 
 extern USBD_HandleTypeDef hUsbDeviceFS;
 extern uart_t debug_uart;
-extern gpio_t led_b;
+extern gpio_t led_g;
+extern gpio_t sw1;
 
 extern list_head_t cdc_rx_free_head;
 extern list_head_t cdc_tx_free_head;
@@ -102,5 +103,6 @@ void app_main(void);
 void load_conf(void);
 int save_conf(void);
 void csa_list_show(void);
+void try_jump_to_app(void);
 
 #endif

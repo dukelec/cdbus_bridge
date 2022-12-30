@@ -1,24 +1,18 @@
 ## CDBUS Bridge
 
-<img alt="cdbus_bridge" src="doc/img/cdbus_bridge.jpg">
-<img alt="cdbus_bridge_pcb" src="doc/img/cdbus_bridge_pcb.jpg">
+<img alt="cdbus_bridge" src="doc/img/cdbus_bridge_v4.jpg">
 
+CDBUS Bridge 默认是 USB 虚拟串口转 RS485 的工具，RS485 数据包为 CDBUS 格式。
 
-CDBUS Bridge 有兩類通訊端口，分別爲 3 個串口和 2 個 RS485 口：
- - 3 個串口同一時間只會有一個處於使用狀態，插入 USB 會優先切換使用免配置的 USB 串口（通訊速率不受所選波特率影響）；
- - 2 個 RS485 口內部直通，方便接線（或上拉、下拉及終端電阻）。
-
-CDBUS Bridge 有兩個模式（需要燒錄不同的固件，默認爲 Bridge 模式）：
-
-### Bridge 模式（串口轉 RS485）
-
-開關定義已更改：上電時，如果開關處於 RAW，則強制使用 115200 波特率。
+ - USB 串口通訊速率不受所選波特率影響，打开 USB 串口时指定的波特率会被忽略；
+ - RS485 波特率需要使用 CDBUS GUI 工具进行配置，因为硬件支持双波特率模式，所以不采用打开 USB 串口时指定的波特率；
+ - RS485 波特率可以在上电时，通过左侧开关的 S2 临时设置为 115200 单速率模式，方便快速连接默认波特率的设备；
+ - 左侧开关的 S1 切换 bootloader 和 app 模式，关闭为 app 模式；
+ - 2 個 RS485 口內部直通，为了方便接線；
+ - 右侧开关 S1 是 A 线上拉使能，S2 是 AB 之间终端电阻使能，S3 是 B 线下拉使能，S4 是 USB 对外供电使能。
 
 <img alt="bridge_mode" src="doc/img/bridge_mode.svg">
 
-### Raw 模式（串口透傳）
-
-<img alt="raw_mode" src="doc/img/raw_mode.svg">
 
 ## GUI Configuration
 
@@ -29,9 +23,9 @@ CDBUS GUI Tool: https://github.com/dukelec/cdbus_gui
 <img src="doc/img/cdgui1.png">
 <br><br>
 
-修改配置後，往 save_conf 寫 1 保存配置到 flash。
+修改配置後，往 `save_conf` 寫 1 保存配置到 flash。
 
-如果需要恢復默認配置，修改 magic_code 爲其它值，保存到 flash，然後重新上電即可。
+如果需要恢復默認配置，修改 `magic_code` 爲其它值，保存到 flash，然後重新上電即可。
 
 <img src="doc/img/cdgui2.png">
 
@@ -57,6 +51,4 @@ git clone --recurse-submodules https://github.com/dukelec/cdbus_bridge.git
 cd sw/cdbus_tools/
 ./cdbus_terminal.py --help
 ```
-
-註：上電默認 3 秒為 bootloader 模式，跳轉主程序時狀態燈會閃爍一下，請在這之後再使用相關腳本工具（IAP 除外）。
 

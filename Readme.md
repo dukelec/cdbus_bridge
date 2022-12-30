@@ -1,24 +1,17 @@
 ## CDBUS Bridge
 
-<img alt="cdbus_bridge" src="doc/img/cdbus_bridge.jpg">
-<img alt="cdbus_bridge_pcb" src="doc/img/cdbus_bridge_pcb.jpg">
+<img alt="cdbus_bridge" src="doc/img/cdbus_bridge_v4.jpg">
 
+The CDBUS Bridge is a USB virtual serial port to RS485 converter by default, and the RS485 packets are in CDBUS format.
 
-CDBUS Bridge has two types of communication ports, which are 3 serial ports and 2 RS485 ports:
- - Only one of the three serial ports will be in use at the same time. Inserting USB will switch over to the configuration-free USB serial port (the communication rate will not be affected by the selected baud rate);
- - The two RS485 ports are internally connected for easy wiring (or pull up, pull down, and termination resistors).
-
-CDBUS Bridge has two modes (requires different firmware to be programmed, default is Bridge mode):
-
-### Bridge Mode (Serial to RS485)
-
-Switch Definition Changed: Forcing 115200 baud rate if the switch is in RAW when powering up.
+ - The USB serial communication rate is not affected by the selected baud rate, and the specified baud rate is ignored when the USB serial port is opened.
+ - RS485 baud rate needs to be configured using the CDBUS GUI tool, since the hardware supports dual baud rate mode, the baud rate specified when opening the USB serial port is not used.
+ - RS485 baud rate can be temporarily set to 115200 single-rate mode at power-up via S2 of the left switch to facilitate quick connection to devices with default baud rate.
+ - S1 of the left switch switches bootloader and app mode and off to app mode.
+ - 2 RS485 ports internal straight-through, for easy wiring.
+ - The right switch S1 is the pull-up enable on the A wire of RS485, S2 is the termination resistor enable between AB, S3 is the pull-down enable on the B wire, and S4 is the USB to external power enable switch.
 
 <img alt="bridge_mode" src="doc/img/bridge_mode.svg">
-
-### Raw Mode (Serial passthrough)
-
-<img alt="raw_mode" src="doc/img/raw_mode.svg">
 
 
 ## GUI Configuration
@@ -30,9 +23,9 @@ When configuring the Bridge as the target, do not select the CDBUS Bridge select
 <img src="doc/img/cdgui1.png">
 <br><br>
 
-After modifying the configuration, write 1 to save_conf to save the configuration to flash.
+After modifying the configuration, write 1 to `save_conf` to save the configuration to flash.
 
-If you need to restore the default configuration, change magic_code to another value and save it to flash. Then reapply power.
+If you need to restore the default configuration, change `magic_code` to another value and save it to flash. Then reapply power.
 
 <img src="doc/img/cdgui2.png">
 
@@ -56,6 +49,4 @@ Please refer scripts' `--help` message and the `Readme.md` under `sw/` folder, e
 cd sw/cdbus_tools/
 ./cdbus_terminal.py --help
 ```
-
-Note: The default is 3 seconds for bootloader mode on power-on. The status light will flash when it jumps to the main program. Please use the relevant script tool (except IAP) after this.
 

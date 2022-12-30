@@ -55,7 +55,7 @@ typedef struct {
     uint16_t        conf_ver;
     uint8_t         conf_from;      // 0: default, 1: all from flash, 2: partly from flash
     bool            do_reboot;
-    bool            _reserved_bl;   // keep_in_bl for bl
+    bool            _reserved0;
     bool            save_conf;
 
     bool            dbg_en;
@@ -63,7 +63,7 @@ typedef struct {
     #define         _end_common bus_cfg
 
     cdctl_cfg_t     bus_cfg;
-    uint8_t         _reserved[4];
+    uint8_t         _reserved1[4];
     uint32_t        ttl_baudrate;
 
     // end of flash

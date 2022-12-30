@@ -15,8 +15,8 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 gpio_t led_r = { .group = RGB_R_GPIO_Port, .num = RGB_R_Pin };
 gpio_t led_g = { .group = RGB_G_GPIO_Port, .num = RGB_G_Pin };
 gpio_t led_b = { .group = RGB_B_GPIO_Port, .num = RGB_B_Pin };
-static  gpio_t sw1 = { .group = SW1_GPIO_Port, .num = SW1_Pin };
-//static  gpio_t sw2 = { .group = SW2_GPIO_Port, .num = SW2_Pin };
+gpio_t sw1 = { .group = SW1_GPIO_Port, .num = SW1_Pin };
+//gpio_t sw2 = { .group = SW2_GPIO_Port, .num = SW2_Pin };
 
 uart_t debug_uart = { .huart = &huart5 };
 
@@ -84,8 +84,8 @@ void set_led_state(led_state_t state)
     switch (state) {
     case LED_POWERON:
         gpio_set_value(&led_r, 1);
-        gpio_set_value(&led_g, 1);
-        gpio_set_value(&led_b, 0);
+        gpio_set_value(&led_g, 0);
+        gpio_set_value(&led_b, 1);
         break;
     case LED_WARN:
         gpio_set_value(&led_r, 0);

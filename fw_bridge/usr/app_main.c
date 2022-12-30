@@ -20,8 +20,8 @@ static  gpio_t led_g = { .group = RGB_G_GPIO_Port, .num = RGB_G_Pin };
 static  gpio_t led_b = { .group = RGB_B_GPIO_Port, .num = RGB_B_Pin };
 static  gpio_t led_tx = { .group = LED_Y_GPIO_Port, .num = LED_Y_Pin };
 static  gpio_t led_rx = { .group = LED_B_GPIO_Port, .num = LED_B_Pin };
-static  gpio_t sw1 = { .group = SW1_GPIO_Port, .num = SW1_Pin };
-//static  gpio_t sw2 = { .group = SW2_GPIO_Port, .num = SW2_Pin };
+//static  gpio_t sw1 = { .group = SW1_GPIO_Port, .num = SW1_Pin };
+static  gpio_t sw2 = { .group = SW2_GPIO_Port, .num = SW2_Pin };
 
 uart_t debug_uart = { .huart = &huart5 };
 static uart_t ttl_uart = { .huart = &huart3 };
@@ -77,9 +77,10 @@ static void device_init(void)
 
     cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
 
-    if (gpio_get_value(&sw1)) {
+    if (!gpio_get_value(&sw2)) {
         csa.bus_cfg.baud_l = 115200;
         csa.bus_cfg.baud_h = 115200;
+        printf("force baudrate to 115200 by sw2!\n");
     }
     cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, &r_rst, &r_int);
 
@@ -104,8 +105,8 @@ void set_led_state(led_state_t state)
     switch (state) {
     case LED_POWERON:
         gpio_set_value(&led_r, 1);
-        gpio_set_value(&led_g, 1);
-        gpio_set_value(&led_b, 0);
+        gpio_set_value(&led_g, 0);
+        gpio_set_value(&led_b, 1);
         break;
     case LED_WARN:
         gpio_set_value(&led_r, 0);

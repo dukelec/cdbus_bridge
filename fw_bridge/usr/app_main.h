@@ -22,8 +22,8 @@
 #define APP_CONF_ADDR       0x0801F800 // last page
 #define APP_CONF_VER        0x0201
 
-#define FRAME_MAX           80
-#define PACKET_MAX          80
+#define FRAME_MAX           200
+#define PACKET_MAX           80
 
 typedef enum {
     LED_POWERON = 0,

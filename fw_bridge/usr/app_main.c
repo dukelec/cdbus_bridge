@@ -1,10 +1,10 @@
 /*
- * Software License Agreement (BSD License)
+ * Software License Agreement (MIT License)
  *
  * Copyright (c) 2017, DUKELEC, Inc.
  * All rights reserved.
  *
- * Author: Duke Fong <duke@dukelec.com>
+ * Author: Duke Fong <d@d-l.io>
  */
 
 #include "app_main.h"
@@ -32,8 +32,8 @@ static gpio_t r_int = { .group = CD_INT_GPIO_Port, .num = CD_INT_Pin };
 static gpio_t r_ss = { .group = CD_SS_GPIO_Port, .num = CD_SS_Pin };
 static spi_t r_spi = { .hspi = &hspi1, .ns_pin = &r_ss };
 
-#define CDC_RX_MAX 6
-#define CDC_TX_MAX 6
+#define CDC_RX_MAX 30
+#define CDC_TX_MAX 80
 static cdc_buf_t cdc_rx_alloc[CDC_RX_MAX];
 static cdc_buf_t cdc_tx_alloc[CDC_TX_MAX];
 list_head_t cdc_rx_free_head = {0};
@@ -56,6 +56,7 @@ cdn_ns_t dft_ns = {0};      // CDNET
 int usb_rx_cnt = 0;
 int usb_tx_cnt = 0;
 static bool cdc_need_flush = false;
+static uint32_t flush_set_time = 0;
 
 uint8_t circ_buf[CIRC_BUF_SZ];
 uint32_t rd_pos = 0;
@@ -242,6 +243,7 @@ void app_main(void)
                         CDC_Transmit_FS(bf->dat, bf->len);
                         local_irq_enable();
                         cdc_need_flush = true;
+                        flush_set_time = get_systick();
                     } else { // hw_uart
                         //d_verbose("hw_uart dma tx...\n");
                         HAL_UART_Transmit_DMA(hw_uart->huart, bf->dat, bf->len);
@@ -249,7 +251,7 @@ void app_main(void)
                     list_get(&cdc_tx_head);
                     cdc_tx_buf = bf;
 
-                } else if (cdc_need_flush) {
+                } else if (cdc_need_flush && get_systick() - flush_set_time > 5000) {
                     local_irq_disable();
                     CDC_Transmit_FS(NULL, 0);
                     local_irq_enable();

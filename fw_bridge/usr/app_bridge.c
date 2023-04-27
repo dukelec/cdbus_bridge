@@ -4,12 +4,13 @@
  * Copyright (c) 2017, DUKELEC, Inc.
  * All rights reserved.
  *
- * Author: Duke Fong <duke@dukelec.com>
+ * Author: Duke Fong <d@d-l.io>
  */
 
 #include "app_main.h"
 
 static cd_frame_t *d_conv_frame = NULL;
+static int wr_cdc_left = 0;
 
 void app_bridge_init(void)
 {
@@ -85,55 +86,53 @@ void app_bridge(void)
         list_put(&cdc_tx_head, &bf->node);
     } else {
         bf = list_entry(cdc_tx_head.last, cdc_buf_t);
+        if (bf->len == 512) {
+            bf = list_get_entry(&cdc_tx_free_head, cdc_buf_t);
+            if (!bf) {
+                df_warn("no cdc_tx_free (tx pend %d)\n", cdc_tx_head.len);
+                return;
+            }
+            bf->len = 0;
+            list_put(&cdc_tx_head, &bf->node);
+        }
+    }
+
+    // move rs485 rx data to d_dev
+    cd_frame_t *frm = list_get_entry_it(&r_dev.rx_head, cd_frame_t);
+    if (frm) {
+        memmove(frm->dat + 5, frm->dat + 3, frm->dat[2]);
+        memcpy(frm->dat + 3, frm->dat, 2);
+        frm->dat[0] = 0x56;
+        frm->dat[1] = 0xaa;
+        frm->dat[2] += 2;
+        list_put_it(&d_dev.tx_head, &frm->node);
     }
 
     // send to host
     if (d_dev.tx_head.first) { // send d_dev.tx_head
         cd_frame_t *frm = list_entry(d_dev.tx_head.first, cd_frame_t);
+        int frm_full_len = frm->dat[2] + 5;
 
-        if (bf->len + frm->dat[2] + 5 > 512) {
-            bf = list_get_entry(&cdc_tx_free_head, cdc_buf_t);
-            if (!bf) {
-                df_warn("no cdc_tx_free (d_dev)\n");
-                return;
+        if (wr_cdc_left == 0) {
+            cduart_fill_crc(frm->dat);
+
+            if (bf->len + frm_full_len > 512) {
+                wr_cdc_left = bf->len + frm_full_len - 512;
+                memcpy(bf->dat + bf->len, frm->dat, 512 - bf->len);
+                bf->len = 512;
+            } else {
+                memcpy(bf->dat + bf->len, frm->dat, frm_full_len);
+                bf->len += frm_full_len;
+                list_get(&d_dev.tx_head);
+                list_put_it(d_dev.free_head, &frm->node);
             }
-            bf->len = 0;
-            list_put(&cdc_tx_head, &bf->node);
+
+        } else { // bf->len is 0
+                memcpy(bf->dat, frm->dat + (frm_full_len - wr_cdc_left), wr_cdc_left);
+                bf->len = wr_cdc_left;
+                list_get(&d_dev.tx_head);
+                list_put_it(d_dev.free_head, &frm->node);
+                wr_cdc_left = 0;
         }
-
-        //df_verbose("local ret: 55, dat len %d\n", frm->dat[2]);
-        cduart_fill_crc(frm->dat);
-        memcpy(bf->dat + bf->len, frm->dat, frm->dat[2] + 5);
-        bf->len += frm->dat[2] + 5;
-
-        list_get(&d_dev.tx_head);
-        list_put_it(d_dev.free_head, &frm->node);
-
-    }
-
-    if (r_dev.rx_head.first) { // send rs485 data (add 56 aa)
-        cd_frame_t *frm = list_entry(r_dev.rx_head.first, cd_frame_t);
-
-        if (bf->len + frm->dat[2] + 5 + 2 > 512) {
-            bf = list_get_entry(&cdc_tx_free_head, cdc_buf_t);
-            if (!bf) {
-                d_warn("no cdc_tx_free (bridge)\n");
-                return;
-            }
-            bf->len = 0;
-            list_put(&cdc_tx_head, &bf->node);
-        }
-
-        uint8_t *buf_dst = bf->dat + bf->len;
-        *buf_dst = 0x56;
-        *(buf_dst + 1) = 0xaa;
-        *(buf_dst + 2) = frm->dat[2] + 2;
-        memcpy(buf_dst + 3, frm->dat, 2);
-        memcpy(buf_dst + 5, frm->dat + 3, *(buf_dst + 2));
-        cduart_fill_crc(buf_dst);
-        bf->len += frm->dat[2] + 7;
-
-        list_get_it(&r_dev.rx_head);
-        list_put_it(r_dev.free_head, &frm->node);
     }
 }

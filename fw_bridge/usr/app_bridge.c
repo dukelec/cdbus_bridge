@@ -50,25 +50,27 @@ void app_bridge(void)
     uint32_t wd_pos = CIRC_BUF_SZ - hw_uart->huart->hdmarx->Instance->CNDTR;
 
     if (csa.usb_online) {
-        int size;
-        uint8_t *wr, *rd;
-        cdc_buf_t *bf = list_get_entry_it(&cdc_rx_head, cdc_buf_t);
-        if (bf) {
-            uint32_t flags;
-            size = bf->len + 1; // avoid scroll to begin
-            wr = bf->dat + bf->len;
-            rd = bf->dat;
-            read_from_host(bf->dat, size, wr, rd);
+        if (d_dev.free_head->len > 5) {
+            int size;
+            uint8_t *wr, *rd;
+            cdc_buf_t *bf = list_get_entry_it(&cdc_rx_head, cdc_buf_t);
+            if (bf) {
+                uint32_t flags;
+                size = bf->len + 1; // avoid scroll to begin
+                wr = bf->dat + bf->len;
+                rd = bf->dat;
+                read_from_host(bf->dat, size, wr, rd);
 
-            local_irq_save(flags);
-            list_put(&cdc_rx_free_head, &bf->node);
-            if (!cdc_rx_buf) {
-                cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
-                d_verbose("continue CDC Rx\n");
-                USBD_CDC_SetRxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat);
-                USBD_CDC_ReceivePacket(&hUsbDeviceFS);
+                local_irq_save(flags);
+                list_put(&cdc_rx_free_head, &bf->node);
+                if (!cdc_rx_buf) {
+                    cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
+                    d_verbose("continue CDC Rx\n");
+                    USBD_CDC_SetRxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat);
+                    USBD_CDC_ReceivePacket(&hUsbDeviceFS);
+                }
+                local_irq_restore(flags);
             }
-            local_irq_restore(flags);
         }
     } else { // hw_uart
         read_from_host(circ_buf, CIRC_BUF_SZ, circ_buf + wd_pos, circ_buf + rd_pos);

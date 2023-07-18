@@ -95,7 +95,6 @@ static void device_init(void)
     
     //                    uart / usb
     cdn_add_intf(&dft_ns, &d_dev.cd_dev, 0, 0x55);
-    ///hw_uart = &ttl_uart;
 }
 
 void set_led_state(led_state_t state)

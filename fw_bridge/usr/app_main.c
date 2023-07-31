@@ -86,6 +86,20 @@ static void device_init(void)
     }
     cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, &r_rst, &r_int);
 
+    // 24MHz / (2 + 2) * (48 + 2) / 2^1 = 150MHz
+    cdctl_write_reg(&r_dev, REG_PLL_N, 0x2);
+    d_info("pll_n: %02x\n", cdctl_read_reg(&r_dev, REG_PLL_N));
+    cdctl_write_reg(&r_dev, REG_PLL_ML, 0x30); // 0x30: 48
+    d_info("pll_ml: %02x\n", cdctl_read_reg(&r_dev, REG_PLL_ML));
+
+    d_info("pll_ctrl: %02x\n", cdctl_read_reg(&r_dev, REG_PLL_CTRL));
+    cdctl_write_reg(&r_dev, REG_PLL_CTRL, 0x10); // enable pll
+    d_info("clk_status: %02x\n", cdctl_read_reg(&r_dev, REG_CLK_STATUS));
+    cdctl_write_reg(&r_dev, REG_CLK_CTRL, 0x01); // select pll
+
+    d_info("clk_status after select pll: %02x\n", cdctl_read_reg(&r_dev, REG_CLK_STATUS));
+    d_info("version after select pll: %02x\n", cdctl_read_reg(&r_dev, REG_VERSION));
+
     cduart_dev_init(&d_dev, &frame_free_head);
     d_dev.remote_filter[0] = 0xaa;
     d_dev.remote_filter_len = 1;

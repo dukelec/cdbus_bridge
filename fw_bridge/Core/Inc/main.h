@@ -73,8 +73,6 @@ void Error_Handler(void);
 #define SW2_GPIO_Port GPIOC
 #define SW1_Pin GPIO_PIN_15
 #define SW1_GPIO_Port GPIOC
-#define CD_RST_Pin GPIO_PIN_3
-#define CD_RST_GPIO_Port GPIOA
 #define CD_SS_Pin GPIO_PIN_4
 #define CD_SS_GPIO_Port GPIOA
 #define CD_INT_Pin GPIO_PIN_0

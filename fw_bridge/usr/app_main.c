@@ -27,7 +27,6 @@ uart_t debug_uart = { .huart = &huart5 };
 static uart_t ttl_uart = { .huart = &huart3 };
 uart_t *hw_uart = &ttl_uart;
 
-static gpio_t r_rst = { .group = CD_RST_GPIO_Port, .num = CD_RST_Pin };
 static gpio_t r_int = { .group = CD_INT_GPIO_Port, .num = CD_INT_Pin };
 static gpio_t r_ss = { .group = CD_SS_GPIO_Port, .num = CD_SS_Pin };
 static spi_t r_spi = { .hspi = &hspi1, .ns_pin = &r_ss };
@@ -84,7 +83,7 @@ static void device_init(void)
         csa.bus_cfg.baud_h = 115200;
         printf("force baudrate to 115200 by sw2!\n");
     }
-    cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, &r_rst, &r_int);
+    cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, NULL, &r_int);
 
     // 24MHz / (2 + 2) * (48 + 2) / 2^1 = 150MHz
     cdctl_write_reg(&r_dev, REG_PLL_N, 0x2);

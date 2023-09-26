@@ -11,17 +11,18 @@ The CDBUS Bridge is a USB virtual serial port to RS485 converter by default, and
  - 2 RS485 ports internal straight-through, for easy wiring.
  - The right switch S1 is the pull-up enable on the A wire of RS485, S2 is the termination resistor enable between AB, S3 is the pull-down enable on the B wire, and S4 is the USB to external power enable switch.
 
-<img alt="bridge_mode" src="doc/img/bridge_mode.svg">
-
 
 ## GUI Configuration
 
 CDBUS GUI Tool: https://github.com/dukelec/cdbus_gui
 
-When configuring the Bridge as the target, do not select the CDBUS Bridge selection box, set the local MAC to 0xaa and the target address to 80:00:55.
+There are two ways to configure the Bridge:
+1. Configuration in bootloader stage.
+2. In the app stage, when you open the serial port, specify the baud rate as `52685` (`0xcdcd`) to enter the configuration mode.
 
-<img src="doc/img/cdgui1.png">
-<br><br>
+The second way is convenient to check the status statistics after power on.  
+When configuring the Bridge, the target address should be set to `80:00:fe`.
+
 
 After modifying the configuration, write 1 to `save_conf` to save the configuration to flash.
 
@@ -33,7 +34,7 @@ If you need to restore the default configuration, change `magic_code` to another
 ## Download Source Code
 
 ```
-git clone --recurse-submodules https://github.com/dukelec/cdbus_bridge.git
+git clone --recurse-submodules https://github.com/dukelec/cdbus_bridge
 ```
 
 ## Test

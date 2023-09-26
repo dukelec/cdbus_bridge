@@ -4,7 +4,7 @@
  * Copyright (c) 2017, DUKELEC, Inc.
  * All rights reserved.
  *
- * Author: Duke Fong <duke@dukelec.com>
+ * Author: Duke Fong <d@d-l.io>
  */
 
 #include "app_main.h"
@@ -65,13 +65,9 @@ static void device_init(void)
     cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
 
     cduart_dev_init(&d_dev, &frame_free_head);
-    d_dev.remote_filter[0] = 0xaa;
-    d_dev.remote_filter_len = 1;
-    d_dev.local_filter[0] = 0x55;
-    d_dev.local_filter_len = 1;
     
     //                    uart / usb
-    cdn_add_intf(&dft_ns, &d_dev.cd_dev, 0, 0x55);
+    cdn_add_intf(&dft_ns, &d_dev.cd_dev, 0, 0xfe);
     ///hw_uart = &ttl_uart;
 }
 
@@ -131,6 +127,8 @@ static void stack_check(void)
 
 void app_main(void)
 {
+    USBD_CDC_HandleTypeDef *hcdc = NULL;
+
     printf("\nstart app_main (bl)...\n");
     stack_check_init();
     load_conf();
@@ -142,40 +140,36 @@ void app_main(void)
     bl_init();
 
     while (true) {
-        USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
-
-        if (!csa.usb_online && hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
-            printf("usb connected\n");
-            csa.usb_online = true;
-        }
-
-        if (cdc_tx_buf) {
-            if (csa.usb_online) {
-                if (hcdc->TxState == 0) {
-                    list_put(&cdc_tx_free_head, &cdc_tx_buf->node);
-                    cdc_tx_buf = NULL;
-                }
-            } // else wait online
-        }
-        if (cdc_tx_head.first) {
-            if (!cdc_tx_buf && hcdc->TxState == 0) {
-                cdc_buf_t *bf = list_entry(cdc_tx_head.first, cdc_buf_t);
-                if (bf->len != 0) {
-                    if (csa.usb_online) {
+        if (csa.usb_online) {
+            if (cdc_tx_buf && hcdc->TxState == 0) {
+                list_put(&cdc_tx_free_head, &cdc_tx_buf->node);
+                cdc_tx_buf = NULL;
+            }
+            if (cdc_tx_head.first) {
+                if (!cdc_tx_buf && hcdc->TxState == 0) {
+                    cdc_buf_t *bf = list_entry(cdc_tx_head.first, cdc_buf_t);
+                    if (bf->len != 0) {
                         local_irq_disable();
                         CDC_Transmit_FS(bf->dat, bf->len);
                         local_irq_enable();
                         cdc_need_flush = true;
-                    } // else wait online
-                    list_get(&cdc_tx_head);
-                    cdc_tx_buf = bf;
 
-                } else if (cdc_need_flush) {
-                    local_irq_disable();
-                    CDC_Transmit_FS(NULL, 0);
-                    local_irq_enable();
-                    cdc_need_flush = false;
+                        list_get(&cdc_tx_head);
+                        cdc_tx_buf = bf;
+
+                    } else if (cdc_need_flush) {
+                        local_irq_disable();
+                        CDC_Transmit_FS(NULL, 0);
+                        local_irq_enable();
+                        cdc_need_flush = false;
+                    }
                 }
+            }
+        } else {
+            if (hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
+                printf("usb connected\n");
+                csa.usb_online = true;
+                hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
             }
         }
 

@@ -111,15 +111,14 @@ extern cdc_buf_t *cdc_tx_buf;
 extern list_head_t frame_free_head;
 
 extern cdctl_dev_t r_dev;   // RS485
-extern cduart_dev_t d_dev;  // uart / usb
+extern cduart_dev_t c_dev;  // usb / config mode
+extern cduart_dev_t d_dev;  // usb / data mode
 extern cdn_ns_t dft_ns;
 
-#define CIRC_BUF_SZ 1024
-extern uint8_t circ_buf[];
-extern uint32_t rd_pos;
+extern int cdc_rate;
+extern int app_mode;
 
 
-void app_bridge_init(void);
 void app_bridge(void);
 
 void common_service_init(void);

@@ -10,7 +10,6 @@
 #include "app_main.h"
 
 extern ADC_HandleTypeDef hadc1;
-extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart5;
 extern SPI_HandleTypeDef hspi1;
 extern USBD_HandleTypeDef hUsbDeviceFS;
@@ -24,8 +23,6 @@ static  gpio_t sw1 = { .group = SW1_GPIO_Port, .num = SW1_Pin };
 static  gpio_t sw2 = { .group = SW2_GPIO_Port, .num = SW2_Pin };
 
 uart_t debug_uart = { .huart = &huart5 };
-static uart_t ttl_uart = { .huart = &huart3 };
-uart_t *hw_uart = &ttl_uart;
 
 static gpio_t r_int = { .group = CD_INT_GPIO_Port, .num = CD_INT_Pin };
 static gpio_t r_ss = { .group = CD_SS_GPIO_Port, .num = CD_SS_Pin };
@@ -49,7 +46,8 @@ static cdn_pkt_t packet_alloc[PACKET_MAX];
 list_head_t packet_free_head = {0};
 
 cdctl_dev_t r_dev = {0};    // 485
-cduart_dev_t d_dev = {0};   // uart / usb
+cduart_dev_t c_dev = {0};   // usb / config mode
+cduart_dev_t d_dev = {0};   // usb / data mode
 cdn_ns_t dft_ns = {0};      // CDNET
 
 int usb_rx_cnt = 0;
@@ -57,8 +55,9 @@ int usb_tx_cnt = 0;
 static bool cdc_need_flush = false;
 static uint32_t flush_set_time = 0;
 
-uint8_t circ_buf[CIRC_BUF_SZ];
-uint32_t rd_pos = 0;
+static int cdc_rate_bk = 0;
+int cdc_rate = 0;
+int app_mode = 0; // 0: data, 1: config
 
 
 static void device_init(void)
@@ -100,14 +99,9 @@ static void device_init(void)
     d_info("version after select pll: %02x\n", cdctl_read_reg(&r_dev, REG_VERSION));
 
     cduart_dev_init(&d_dev, &frame_free_head);
-    d_dev.remote_filter[0] = 0xaa;
-    d_dev.remote_filter_len = 1;
-    d_dev.local_filter[0] = 0x55;
-    d_dev.local_filter[1] = 0x56;
-    d_dev.local_filter_len = 2;
-    
+    cduart_dev_init(&c_dev, &frame_free_head);
     //                    uart / usb
-    cdn_add_intf(&dft_ns, &d_dev.cd_dev, 0, 0x55);
+    cdn_add_intf(&dft_ns, &c_dev.cd_dev, 0, 0xfe);
 }
 
 void set_led_state(led_state_t state)
@@ -209,6 +203,8 @@ static void dump_hw_status(void)
 
 void app_main(void)
 {
+    USBD_CDC_HandleTypeDef *hcdc = NULL;
+
     printf("\nstart app_main (bridge)...\n");
     stack_check_init();
     load_conf();
@@ -218,57 +214,41 @@ void app_main(void)
     printf("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
     d_info("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
     set_led_state(LED_POWERON);
-    app_bridge_init();
-    HAL_UART_Receive_DMA(hw_uart->huart, circ_buf, CIRC_BUF_SZ);
     csa_list_show();
 
     while (true) {
-        USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
-
-        if (!csa.usb_online && hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
-            printf("usb connected\n");
-            csa.usb_online = true;
-            HAL_UART_DMAStop(hw_uart->huart);
-        }
-
-        if (cdc_tx_buf) {
-            if (csa.usb_online) {
-                if (hcdc->TxState == 0) {
-                    list_put(&cdc_tx_free_head, &cdc_tx_buf->node);
-                    cdc_tx_buf = NULL;
-                }
-            } else { // hw_uart
-                if (hw_uart->huart->TxXferCount == 0) {
-                    hw_uart->huart->gState = HAL_UART_STATE_READY;
-                    list_put(&cdc_tx_free_head, &cdc_tx_buf->node);
-                    cdc_tx_buf = NULL;
-                    //d_verbose("hw_uart dma done.\n");
-                }
+        if (csa.usb_online) {
+            if (cdc_tx_buf && hcdc->TxState == 0) {
+                list_put(&cdc_tx_free_head, &cdc_tx_buf->node);
+                cdc_tx_buf = NULL;
             }
-        }
-        if (cdc_tx_head.first) {
-            if (!cdc_tx_buf && hcdc->TxState == 0) {
-                cdc_buf_t *bf = list_entry(cdc_tx_head.first, cdc_buf_t);
-                if (bf->len != 0) {
-                    if (csa.usb_online) {
+
+            if (cdc_tx_head.first) {
+                if (!cdc_tx_buf && hcdc->TxState == 0) {
+                    cdc_buf_t *bf = list_entry(cdc_tx_head.first, cdc_buf_t);
+                    if (bf->len != 0) {
                         local_irq_disable();
                         CDC_Transmit_FS(bf->dat, bf->len);
                         local_irq_enable();
                         cdc_need_flush = true;
                         flush_set_time = get_systick();
-                    } else { // hw_uart
-                        //d_verbose("hw_uart dma tx...\n");
-                        HAL_UART_Transmit_DMA(hw_uart->huart, bf->dat, bf->len);
-                    }
-                    list_get(&cdc_tx_head);
-                    cdc_tx_buf = bf;
 
-                } else if (cdc_need_flush && get_systick() - flush_set_time > 5000) {
-                    local_irq_disable();
-                    CDC_Transmit_FS(NULL, 0);
-                    local_irq_enable();
-                    cdc_need_flush = false;
+                        list_get(&cdc_tx_head);
+                        cdc_tx_buf = bf;
+
+                    } else if (cdc_need_flush && get_systick() - flush_set_time > 5000) {
+                        local_irq_disable();
+                        CDC_Transmit_FS(NULL, 0);
+                        local_irq_enable();
+                        cdc_need_flush = false;
+                    }
                 }
+            }
+        } else {
+            if (hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
+                printf("usb connected\n");
+                csa.usb_online = true;
+                hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
             }
         }
 
@@ -287,6 +267,11 @@ void app_main(void)
         if (!gpio_get_value(&sw1)) {
             printf("sw1 switch on, reboot...\n");
             csa.do_reboot = true;
+        }
+        if (cdc_rate != cdc_rate_bk) {
+            app_mode = (cdc_rate == 0xcdcd);
+            d_info("rate: %ld, mode: %s!\n", cdc_rate, app_mode ? "config" : "data");
+            cdc_rate_bk = cdc_rate;
         }
     }
 }

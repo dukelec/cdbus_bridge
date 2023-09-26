@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2022 STMicroelectronics.
+  * Copyright (c) 2023 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -74,7 +75,7 @@ void HAL_MspInit(void)
 
   /** Disable the internal Pull-Up in Dead Battery pins of UCPD peripheral
   */
-  HAL_SYSCFG_StrobeDBattpinsConfig(SYSCFG_CFGR1_UCPD1_STROBE | SYSCFG_CFGR1_UCPD2_STROBE);
+  HAL_SYSCFG_StrobeDBattpinsConfig(/*SYSCFG_CFGR1_UCPD1_STROBE |*/ SYSCFG_CFGR1_UCPD2_STROBE); // not disable for ucpd1
 
   /* USER CODE BEGIN MspInit 1 */
 

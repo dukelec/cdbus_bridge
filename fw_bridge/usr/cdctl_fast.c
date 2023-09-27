@@ -11,15 +11,32 @@
 #include "cd_debug.h"
 #include "app_main.h"
 
+extern SPI_HandleTypeDef hspi1;
+
+static uint8_t dummy_tx[256] = { 0 };
+static uint8_t dummy_rx[256 + 1];
+
 
 static inline void spi_mem_write_fast(uint8_t mem_addr, const uint8_t *buf, int len)
 {
     *((volatile uint8_t *)&SPI1->DR) = mem_addr;
 
-    for (int i = 0; i < len; i++) {
-        *((volatile uint8_t *)&SPI1->DR) = *buf++;
-        while ((SPI1->SR & 0x1800) == 0x1800); // wait when tx fifo is full
-    }
+    DMA1_Channel3->CCR &= ~DMA_CCR_EN;
+    DMA1_Channel3->CNDTR = len;
+    //DMA1_Channel3->CPAR = (uint32_t)&SPI1->DR;
+    DMA1_Channel3->CMAR = (uint32_t)buf;
+    DMA1_Channel3->CCR |= DMA_CCR_EN;
+
+#if 1
+    DMA1_Channel2->CCR &= ~DMA_CCR_EN;
+    DMA1_Channel2->CNDTR = len + 1;
+    //DMA1_Channel2->CPAR = (uint32_t)&SPI1->DR;
+    DMA1_Channel2->CMAR = (uint32_t)dummy_rx;
+    DMA1_Channel2->CCR |= DMA_CCR_EN;
+
+    while (SPI1->SR & SPI_FLAG_BSY);
+
+#else
     while (SPI1->SR & SPI_FLAG_BSY);
 
     // Clear the SPI OVR pending flag.
@@ -29,39 +46,50 @@ static inline void spi_mem_write_fast(uint8_t mem_addr, const uint8_t *buf, int 
     tmp = SPI1->DR;
     tmp = SPI1->SR;
     (void)tmp;
+#endif
 }
 
-static inline void spi_mem_read_fast(uint8_t mem_addr, uint8_t *buf, int len)
+static inline void spi_hdr_read_fast(uint8_t mem_addr, uint8_t *buf)
 {
     *((volatile uint8_t *)&SPI1->DR) = mem_addr;
-    *((volatile uint8_t *)&SPI1->DR) = 0x00;
+
+    DMA1_Channel3->CCR &= ~DMA_CCR_EN;
+    DMA1_Channel3->CNDTR = 3;
+    //DMA1_Channel3->CPAR = (uint32_t)&SPI1->DR;
+    DMA1_Channel3->CMAR = (uint32_t)dummy_tx;
+    DMA1_Channel3->CCR |= DMA_CCR_EN;
 
     while (!(SPI1->SR & SPI_FLAG_RXNE));
     volatile uint8_t tmp = *((volatile uint8_t *)&SPI1->DR);
     UNUSED(tmp);
 
-    for (int i = 1; i < len; i++) {
-        *((volatile uint8_t *)&SPI1->DR) = 0x00;
-        while (!(SPI1->SR & SPI_FLAG_RXNE));
-        *buf++ = *((volatile uint8_t *)&SPI1->DR);
-    }
+    DMA1_Channel2->CCR &= ~DMA_CCR_EN;
+    DMA1_Channel2->CNDTR = 3;
+    //DMA1_Channel2->CPAR = (uint32_t)&SPI1->DR;
+    DMA1_Channel2->CMAR = (uint32_t)buf;
+    DMA1_Channel2->CCR |= DMA_CCR_EN;
 
-    while (!(SPI1->SR & SPI_FLAG_RXNE));
-    *buf++ = *((volatile uint8_t *)&SPI1->DR);
+    while (SPI1->SR & SPI_FLAG_BSY);
 }
 
 static inline void spi_continue_read_fast(uint8_t *buf, int len)
 {
-    *((volatile uint8_t *)&SPI1->DR) = 0x00;
+    if (!len)
+        return;
 
-    for (int i = 1; i < len; i++) {
-        *((volatile uint8_t *)&SPI1->DR) = 0x00;
-        while (!(SPI1->SR & SPI_FLAG_RXNE));
-        *buf++ = *((volatile uint8_t *)&SPI1->DR);
-    }
+    DMA1_Channel3->CCR &= ~DMA_CCR_EN;
+    DMA1_Channel3->CNDTR = len;
+    //DMA1_Channel3->CPAR = (uint32_t)&SPI1->DR;
+    DMA1_Channel3->CMAR = (uint32_t)dummy_tx;
+    DMA1_Channel3->CCR |= DMA_CCR_EN;
 
-    while (!(SPI1->SR & SPI_FLAG_RXNE));
-    *buf++ = *((volatile uint8_t *)&SPI1->DR);
+    DMA1_Channel2->CCR &= ~DMA_CCR_EN;
+    DMA1_Channel2->CNDTR = len;
+    //DMA1_Channel2->CPAR = (uint32_t)&SPI1->DR;
+    DMA1_Channel2->CMAR = (uint32_t)buf;
+    DMA1_Channel2->CCR |= DMA_CCR_EN;
+
+    while (SPI1->SR & SPI_FLAG_BSY);
 }
 
 
@@ -73,14 +101,11 @@ static inline uint8_t cdctl_read_reg_fast(uint8_t reg)
     *((volatile uint8_t *)&SPI1->DR) = reg;
     *((volatile uint8_t *)&SPI1->DR) = 0x00;
 
-    while (!(SPI1->SR & SPI_FLAG_RXNE));
-    volatile uint8_t tmp = *((volatile uint8_t *)&SPI1->DR);
-    (void)tmp;
-
-    while (!(SPI1->SR & SPI_FLAG_RXNE));
-    dat = *((volatile uint8_t *)&SPI1->DR);
-
+    while (SPI1->SR & SPI_FLAG_BSY);
     GPIOA->BSRR = 0x0010;  // PA4 = 1
+
+    volatile uint8_t tmp = *((volatile uint8_t *)&SPI1->DR); (void)tmp;
+    dat = *((volatile uint8_t *)&SPI1->DR);
     return dat;
 }
 
@@ -95,13 +120,9 @@ static inline void cdctl_write_reg_fast(uint8_t reg, uint8_t val)
 
     GPIOA->BSRR = 0x0010;  // PA4 = 1
 
-    // Clear the SPI OVR pending flag.
-    volatile uint32_t tmp = SPI1->DR;
-    tmp = SPI1->DR;
-    tmp = SPI1->DR;
-    tmp = SPI1->DR;
-    tmp = SPI1->SR;
-    (void)tmp;
+    // clear rx fifo
+    volatile uint8_t tmp = SPI1->DR;
+    tmp = SPI1->DR; (void)tmp;
 }
 
 static inline uint8_t cdctl_read_flags_fast(void)
@@ -265,6 +286,11 @@ void cdctl_dev_init(cdctl_dev_t *dev, list_head_t *free_head, cdctl_cfg_t *init,
 
     dn_debug(dev->name, "flags: %02x\n", cdctl_read_reg(dev, REG_INT_FLAG));
     //cdctl_write_reg(dev, REG_INT_MASK, CDCTL_MASK);
+
+    SET_BIT(hspi1.Instance->CR2, SPI_CR2_RXDMAEN);
+    SET_BIT(hspi1.Instance->CR2, SPI_CR2_TXDMAEN);
+    DMA1_Channel2->CPAR = (uint32_t)&SPI1->DR;
+    DMA1_Channel3->CPAR = (uint32_t)&SPI1->DR;
 }
 
 // handlers
@@ -276,9 +302,8 @@ void cdctl_routine(void)
     uint32_t cpu_flags;
 
     if (!r_dev.is_pending && r_dev.tx_head.first) {
-        cd_frame_t *frame = list_get_entry(&r_dev.tx_head, cd_frame_t);
-
         local_irq_save(cpu_flags);
+        cd_frame_t *frame = list_get_entry(&r_dev.tx_head, cd_frame_t);
         GPIOA->BRR = 0x0010; // PA4 = 0
         spi_mem_write_fast(REG_TX | 0x80, frame->dat, frame->dat[2] + 3);
         GPIOA->BSRR = 0x0010;  // PA4 = 1
@@ -307,8 +332,7 @@ void cdctl_routine(void)
 }
 
 
-
-void EXTI0_1_IRQHandler(uint16_t GPIO_Pin)
+void EXTI0_1_IRQHandler(void)
 {
     __HAL_GPIO_EXTI_CLEAR_FALLING_IT(CD_INT_Pin);
 
@@ -317,10 +341,10 @@ void EXTI0_1_IRQHandler(uint16_t GPIO_Pin)
 
         if (flags & BIT_FLAG_RX_PENDING) {
             // if get free list: copy to rx list
-            cd_frame_t *frame = list_get_entry(r_dev.free_head, cd_frame_t);
+            cd_frame_t *frame = list_get_entry(&frame_free_head, cd_frame_t);
             if (frame) {
                 GPIOA->BRR = 0x0010; // PA4 = 0
-                spi_mem_read_fast(REG_RX, frame->dat, 3);
+                spi_hdr_read_fast(REG_RX, frame->dat);
                 spi_continue_read_fast(frame->dat + 3, frame->dat[2]);
                 GPIOA->BSRR = 0x0010;  // PA4 = 1
             } else {

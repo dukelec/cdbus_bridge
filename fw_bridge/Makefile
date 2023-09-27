@@ -84,7 +84,6 @@ cdnet/dispatch/cdnet_dispatch.c \
 cdnet/dispatch/helper.c \
 cdnet/parser/cdnet_l0.c \
 cdnet/parser/cdnet_l1.c \
-cdnet/dev/cdctl_it.c \
 cdnet/dev/cdbus_uart.c \
 cdnet/utils/cd_list.c \
 cdnet/utils/modbus_crc.c \
@@ -93,7 +92,8 @@ cdnet/utils/hex_dump.c \
 usr/config.c \
 usr/common_services.c \
 usr/app_main.c \
-usr/app_bridge.c
+usr/app_bridge.c \
+usr/cdctl_fast.c
 
 # ASM sources
 ASM_SOURCES =  \

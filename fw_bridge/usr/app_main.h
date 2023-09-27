@@ -13,7 +13,7 @@
 #include "cdnet_dispatch.h"
 #include "cd_debug.h"
 #include "cdbus_uart.h"
-#include "cdctl_it.h"
+#include "cdctl_fast.h"
 
 #include "modbus_crc.h"
 #include "usb_device.h"

@@ -82,7 +82,7 @@ static void device_init(void)
         csa.bus_cfg.baud_h = 115200;
         printf("force baudrate to 115200 by sw2!\n");
     }
-    cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, NULL, &r_int);
+    cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, NULL);
 
     // 24MHz / (2 + 2) * (48 + 2) / 2^1 = 150MHz
     cdctl_write_reg(&r_dev, REG_PLL_N, 0x2);
@@ -97,6 +97,8 @@ static void device_init(void)
 
     d_info("clk_status after select pll: %02x\n", cdctl_read_reg(&r_dev, REG_CLK_STATUS));
     d_info("version after select pll: %02x\n", cdctl_read_reg(&r_dev, REG_VERSION));
+
+    cdctl_write_reg(&r_dev, REG_INT_MASK, CDCTL_MASK); // enable interrupt
 
     cduart_dev_init(&d_dev, &frame_free_head);
     cduart_dev_init(&c_dev, &frame_free_head);
@@ -188,9 +190,8 @@ static void dump_hw_status(void)
         USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
         t_l = get_systick();
 
-        d_debug("ctl: state %d, t_len %d, r_len %d, irq %d\n",
-                r_dev.state, r_dev.tx_head.len, r_dev.rx_head.len,
-                !gpio_get_value(r_dev.int_n));
+        d_debug("ctl: t_len %d, r_len %d, irq %d\n",
+                r_dev.tx_head.len, r_dev.rx_head.len, !gpio_get_value(&r_int));
         d_debug("  r_cnt %d (lost %d, err %d, no-free %d), t_cnt %d (cd %d, err %d)\n",
                 r_dev.rx_cnt, r_dev.rx_lost_cnt, r_dev.rx_error_cnt,
                 r_dev.rx_no_free_node_cnt,
@@ -255,6 +256,7 @@ void app_main(void)
         data_led_task();
         stack_check();
         dump_hw_status();
+        cdctl_routine();
         cdn_routine(&dft_ns); // handle cdnet
         common_service_routine();
         app_bridge();
@@ -276,27 +278,3 @@ void app_main(void)
     }
 }
 
-
-void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
-{
-    if (GPIO_Pin == r_int.num) {
-        cdctl_int_isr(&r_dev);
-    }
-}
-
-void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
-{
-    cdctl_spi_isr(&r_dev);
-}
-void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
-{
-    cdctl_spi_isr(&r_dev);
-}
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
-{
-    cdctl_spi_isr(&r_dev);
-}
-void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
-{
-    d_error("spi error...\n");
-}

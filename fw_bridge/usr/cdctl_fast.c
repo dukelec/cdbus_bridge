@@ -347,11 +347,12 @@ void EXTI0_1_IRQHandler(void)
                 spi_hdr_read_fast(REG_RX, frame->dat);
                 spi_continue_read_fast(frame->dat + 3, frame->dat[2]);
                 GPIOA->BSRR = 0x0010;  // PA4 = 1
+                list_put(&r_dev.rx_head, &frame->node);
+                r_dev.rx_cnt++;
             } else {
                 r_dev.rx_no_free_node_cnt++;
             }
             cdctl_write_reg_fast(REG_RX_CTRL | 0x80, BIT_RX_CLR_PENDING | BIT_RX_RST_POINTER);
-            list_put(&r_dev.rx_head, &frame->node);
         }
 
     } while (!(GPIOB->IDR & 1)); // PB0

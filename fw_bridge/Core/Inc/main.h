@@ -77,7 +77,6 @@ void Error_Handler(void);
 #define CD_SS_GPIO_Port GPIOA
 #define CD_INT_Pin GPIO_PIN_0
 #define CD_INT_GPIO_Port GPIOB
-#define CD_INT_EXTI_IRQn EXTI0_1_IRQn
 #define RGB_B_Pin GPIO_PIN_4
 #define RGB_B_GPIO_Port GPIOB
 #define RGB_G_Pin GPIO_PIN_5

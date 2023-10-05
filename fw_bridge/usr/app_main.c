@@ -98,7 +98,10 @@ static void device_init(void)
     d_info("clk_status after select pll: %02x\n", cdctl_read_reg(&r_dev, REG_CLK_STATUS));
     d_info("version after select pll: %02x\n", cdctl_read_reg(&r_dev, REG_VERSION));
 
-    cdctl_write_reg(&r_dev, REG_INT_MASK, CDCTL_MASK); // enable interrupt
+    // enable interrupt
+    cdctl_write_reg(&r_dev, REG_INT_MASK, CDCTL_MASK);
+    HAL_NVIC_SetPriority(EXTI0_1_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
 
     cduart_dev_init(&d_dev, &frame_free_head);
     cduart_dev_init(&c_dev, &frame_free_head);

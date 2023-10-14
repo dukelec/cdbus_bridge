@@ -14,6 +14,8 @@ extern UART_HandleTypeDef huart5;
 extern SPI_HandleTypeDef hspi1;
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
+int CDCTL_SYS_CLK = 150000000; // 150MHz for cdctl01a
+
 static  gpio_t led_r = { .group = RGB_R_GPIO_Port, .num = RGB_R_Pin };
 static  gpio_t led_g = { .group = RGB_G_GPIO_Port, .num = RGB_G_Pin };
 static  gpio_t led_b = { .group = RGB_B_GPIO_Port, .num = RGB_B_Pin };
@@ -84,19 +86,21 @@ static void device_init(void)
     }
     cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, NULL);
 
-    // 24MHz / (2 + 2) * (48 + 2) / 2^1 = 150MHz
-    cdctl_write_reg(&r_dev, REG_PLL_N, 0x2);
-    d_info("pll_n: %02x\n", cdctl_read_reg(&r_dev, REG_PLL_N));
-    cdctl_write_reg(&r_dev, REG_PLL_ML, 0x30); // 0x30: 48
-    d_info("pll_ml: %02x\n", cdctl_read_reg(&r_dev, REG_PLL_ML));
+    if (r_dev.version >= 0x10) {
+        // 24MHz / (2 + 2) * (48 + 2) / 2^1 = 150MHz
+        cdctl_write_reg(&r_dev, REG_PLL_N, 0x2);
+        d_info("pll_n: %02x\n", cdctl_read_reg(&r_dev, REG_PLL_N));
+        cdctl_write_reg(&r_dev, REG_PLL_ML, 0x30); // 0x30: 48
+        d_info("pll_ml: %02x\n", cdctl_read_reg(&r_dev, REG_PLL_ML));
 
-    d_info("pll_ctrl: %02x\n", cdctl_read_reg(&r_dev, REG_PLL_CTRL));
-    cdctl_write_reg(&r_dev, REG_PLL_CTRL, 0x10); // enable pll
-    d_info("clk_status: %02x\n", cdctl_read_reg(&r_dev, REG_CLK_STATUS));
-    cdctl_write_reg(&r_dev, REG_CLK_CTRL, 0x01); // select pll
+        d_info("pll_ctrl: %02x\n", cdctl_read_reg(&r_dev, REG_PLL_CTRL));
+        cdctl_write_reg(&r_dev, REG_PLL_CTRL, 0x10); // enable pll
+        d_info("clk_status: %02x\n", cdctl_read_reg(&r_dev, REG_CLK_STATUS));
+        cdctl_write_reg(&r_dev, REG_CLK_CTRL, 0x01); // select pll
 
-    d_info("clk_status after select pll: %02x\n", cdctl_read_reg(&r_dev, REG_CLK_STATUS));
-    d_info("version after select pll: %02x\n", cdctl_read_reg(&r_dev, REG_VERSION));
+        d_info("clk_status after select pll: %02x\n", cdctl_read_reg(&r_dev, REG_CLK_STATUS));
+        d_info("version after select pll: %02x\n", cdctl_read_reg(&r_dev, REG_VERSION));
+    }
 
     // enable interrupt
     cdctl_write_reg(&r_dev, REG_INT_MASK, CDCTL_MASK);

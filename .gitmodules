@@ -1,6 +1,12 @@
-[submodule "cdnet"]
-	path = fw/cdnet
+[submodule "cdnet_bl"]
+	path = fw_bl/cdnet
 	url = ../cdnet
+
+[submodule "cdnet_bridge"]
+	path = fw_bridge/cdnet
+	url = ../cdnet
+
 [submodule "cdbus_tools"]
 	path = sw/cdbus_tools
 	url = ../cdbus_tools
+

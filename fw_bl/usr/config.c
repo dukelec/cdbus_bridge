@@ -13,7 +13,7 @@ const csa_t csa_dft = {
         .magic_code = 0xcdcd,
         .conf_ver = APP_CONF_VER,
         .dbg_en = false,
-        .dbg_dst = { .addr = {0x80, 0x00, 0xaa}, .port = 9 }
+        .dbg_dst = { .addr = {0x80, 0x00, 0x00}, .port = 9 }
 };
 
 csa_t csa;

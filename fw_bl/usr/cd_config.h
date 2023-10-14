@@ -12,6 +12,7 @@
 
 //#define ARCH_SPI
 #define CD_LIST_IT
+#define CD_FRAME_SIZE       258
 
 #define DEBUG
 //#define VERBOSE

@@ -268,7 +268,12 @@ void cdctl_dev_init(cdctl_dev_t *dev, list_head_t *free_head, cdctl_cfg_t *init,
 #ifndef CDCTL_AVOID_PIN_RE
         cdctl_write_reg(dev, REG_PIN_RE_CTRL, 0x10); // enable phy rx
 #endif
+    } else {
+        d_info("fallback to cdctl-b1 module\n");
+        CDCTL_SYS_CLK = 40000000; // 40MHz
     }
+    if (dev->version < 0x0e)
+        d_error("cdctl-b1 version 0x%02x not supported\n", dev->version);
 
     uint8_t setting = (cdctl_read_reg(dev, REG_SETTING) & 0xf) | BIT_SETTING_TX_PUSH_PULL;
     setting |= init->mode == 1 ? BIT_SETTING_BREAK_SYNC : BIT_SETTING_ARBITRATE;

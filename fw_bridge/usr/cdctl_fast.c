@@ -13,13 +13,15 @@
 
 extern SPI_HandleTypeDef hspi1;
 
-static uint8_t dummy_tx[256] = { 0 };
-static uint8_t dummy_rx[256 + 1];
+//static uint8_t dummy_rx[256 + 1];
 
 
-static inline void spi_mem_write_fast(uint8_t mem_addr, const uint8_t *buf, int len)
+static inline void cdctl_write_frame_fast(cd_frame_t *frame)
 {
-    *((volatile uint8_t *)&SPI1->DR) = mem_addr;
+    uint8_t *buf = frame->dat - 1;
+    *buf = REG_TX | 0x80; // borrow space from the "node" item
+    int len = buf[3] + 4;
+    GPIOA->BRR = 0x0010; // PA4 = 0
 
     DMA1_Channel3->CCR &= ~DMA_CCR_EN;
     DMA1_Channel3->CNDTR = len;
@@ -27,69 +29,59 @@ static inline void spi_mem_write_fast(uint8_t mem_addr, const uint8_t *buf, int 
     DMA1_Channel3->CMAR = (uint32_t)buf;
     DMA1_Channel3->CCR |= DMA_CCR_EN;
 
-#if 1
-    DMA1_Channel2->CCR &= ~DMA_CCR_EN;
-    DMA1_Channel2->CNDTR = len + 1;
-    //DMA1_Channel2->CPAR = (uint32_t)&SPI1->DR;
-    DMA1_Channel2->CMAR = (uint32_t)dummy_rx;
-    DMA1_Channel2->CCR |= DMA_CCR_EN;
-
-    while (SPI1->SR & SPI_FLAG_BSY);
-
-#else
-    while (SPI1->SR & SPI_FLAG_BSY);
-
-    // Clear the SPI OVR pending flag.
-    volatile uint32_t tmp = SPI1->DR;
-    tmp = SPI1->DR;
-    tmp = SPI1->DR;
-    tmp = SPI1->DR;
-    tmp = SPI1->SR;
-    (void)tmp;
-#endif
-}
-
-static inline void spi_hdr_read_fast(uint8_t mem_addr, uint8_t *buf)
-{
-    *((volatile uint8_t *)&SPI1->DR) = mem_addr;
-
-    DMA1_Channel3->CCR &= ~DMA_CCR_EN;
-    DMA1_Channel3->CNDTR = 3;
-    //DMA1_Channel3->CPAR = (uint32_t)&SPI1->DR;
-    DMA1_Channel3->CMAR = (uint32_t)dummy_tx;
-    DMA1_Channel3->CCR |= DMA_CCR_EN;
-
-    while (!(SPI1->SR & SPI_FLAG_RXNE));
-    volatile uint8_t tmp = *((volatile uint8_t *)&SPI1->DR);
-    UNUSED(tmp);
-
-    DMA1_Channel2->CCR &= ~DMA_CCR_EN;
-    DMA1_Channel2->CNDTR = 3;
-    //DMA1_Channel2->CPAR = (uint32_t)&SPI1->DR;
-    DMA1_Channel2->CMAR = (uint32_t)buf;
-    DMA1_Channel2->CCR |= DMA_CCR_EN;
-
-    while (SPI1->SR & SPI_FLAG_BSY);
-}
-
-static inline void spi_continue_read_fast(uint8_t *buf, int len)
-{
-    if (!len)
-        return;
-
-    DMA1_Channel3->CCR &= ~DMA_CCR_EN;
-    DMA1_Channel3->CNDTR = len;
-    //DMA1_Channel3->CPAR = (uint32_t)&SPI1->DR;
-    DMA1_Channel3->CMAR = (uint32_t)dummy_tx;
-    DMA1_Channel3->CCR |= DMA_CCR_EN;
-
+    // clear spi rx fifo
     DMA1_Channel2->CCR &= ~DMA_CCR_EN;
     DMA1_Channel2->CNDTR = len;
     //DMA1_Channel2->CPAR = (uint32_t)&SPI1->DR;
+    DMA1_Channel2->CMAR = (uint32_t)buf; //dummy_rx;
+    DMA1_Channel2->CCR |= DMA_CCR_EN;
+
+    while (SPI1->SR & SPI_FLAG_BSY);
+    GPIOA->BSRR = 0x0010;  // PA4 = 1
+}
+
+
+static inline void cdctl_read_frame_fast(cd_frame_t *frame)
+{
+    uint8_t *buf = frame->dat - 1;
+    *buf = REG_RX; // borrow space from the "node" item
+
+    GPIOA->BRR = 0x0010; // PA4 = 0
+
+    DMA1_Channel3->CCR &= ~DMA_CCR_EN;
+    DMA1_Channel3->CNDTR = 4;
+    //DMA1_Channel3->CPAR = (uint32_t)&SPI1->DR;
+    DMA1_Channel3->CMAR = (uint32_t)buf;
+    DMA1_Channel3->CCR |= DMA_CCR_EN;
+
+    DMA1_Channel2->CCR &= ~DMA_CCR_EN;
+    DMA1_Channel2->CNDTR = 4;
+    //DMA1_Channel2->CPAR = (uint32_t)&SPI1->DR;
     DMA1_Channel2->CMAR = (uint32_t)buf;
     DMA1_Channel2->CCR |= DMA_CCR_EN;
 
     while (SPI1->SR & SPI_FLAG_BSY);
+
+    __DMB();
+
+    int len = min(buf[3], 253);
+    if (len) {
+        DMA1_Channel3->CCR &= ~DMA_CCR_EN;
+        DMA1_Channel3->CNDTR = len;
+        //DMA1_Channel3->CPAR = (uint32_t)&SPI1->DR;
+        DMA1_Channel3->CMAR = (uint32_t)(buf + 4);
+        DMA1_Channel3->CCR |= DMA_CCR_EN;
+
+        DMA1_Channel2->CCR &= ~DMA_CCR_EN;
+        DMA1_Channel2->CNDTR = len;
+        //DMA1_Channel2->CPAR = (uint32_t)&SPI1->DR;
+        DMA1_Channel2->CMAR = (uint32_t)(buf + 4);
+        DMA1_Channel2->CCR |= DMA_CCR_EN;
+
+        while (SPI1->SR & SPI_FLAG_BSY);
+    }
+
+    GPIOA->BSRR = 0x0010;  // PA4 = 1
 }
 
 
@@ -309,9 +301,7 @@ void cdctl_routine(void)
     if (!r_dev.is_pending && r_dev.tx_head.first) {
         local_irq_save(cpu_flags);
         cd_frame_t *frame = list_get_entry(&r_dev.tx_head, cd_frame_t);
-        GPIOA->BRR = 0x0010; // PA4 = 0
-        spi_mem_write_fast(REG_TX | 0x80, frame->dat, frame->dat[2] + 3);
-        GPIOA->BSRR = 0x0010;  // PA4 = 1
+        cdctl_write_frame_fast(frame);
 
         flags = cdctl_read_flags_fast();
         if (flags & BIT_FLAG_TX_BUF_CLEAN) {
@@ -348,10 +338,7 @@ void EXTI0_1_IRQHandler(void)
             // if get free list: copy to rx list
             cd_frame_t *frame = list_get_entry(&frame_free_head, cd_frame_t);
             if (frame) {
-                GPIOA->BRR = 0x0010; // PA4 = 0
-                spi_hdr_read_fast(REG_RX, frame->dat);
-                spi_continue_read_fast(frame->dat + 3, frame->dat[2]);
-                GPIOA->BSRR = 0x0010;  // PA4 = 1
+                cdctl_read_frame_fast(frame);
                 list_put(&r_dev.rx_head, &frame->node);
                 r_dev.rx_cnt++;
             } else {

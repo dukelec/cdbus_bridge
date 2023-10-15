@@ -102,15 +102,15 @@ static void device_init(void)
         d_info("version after select pll: %02x\n", cdctl_read_reg(&r_dev, REG_VERSION));
     }
 
-    // enable interrupt
-    cdctl_write_reg(&r_dev, REG_INT_MASK, CDCTL_MASK);
-    HAL_NVIC_SetPriority(EXTI0_1_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
-
     cduart_dev_init(&d_dev, &frame_free_head);
     cduart_dev_init(&c_dev, &frame_free_head);
     //                    uart / usb
     cdn_add_intf(&dft_ns, &c_dev.cd_dev, 0, 0xfe);
+
+    // enable interrupt
+    cdctl_write_reg(&r_dev, REG_INT_MASK, CDCTL_MASK);
+    HAL_NVIC_SetPriority(EXTI0_1_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
 }
 
 void set_led_state(led_state_t state)

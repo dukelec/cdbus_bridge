@@ -23,6 +23,7 @@ extern int CDCTL_SYS_CLK;
 #define DBG_TX_IT
 //#define LIST_DEBUG
 
+#define CDUART_IRQ_SAFE // free_head requires irq safe
 #define CDN_IRQ_SAFE
 
 #define CDN_SEQ

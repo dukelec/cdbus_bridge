@@ -310,8 +310,8 @@ void cdctl_routine(void)
         } else {
             r_dev.is_pending = true;
         }
+        list_put(r_dev.free_head, &frame->node); // frame_free_head requires irq safe
         local_irq_restore(cpu_flags);
-        list_put(r_dev.free_head, &frame->node);
     }
 
     if (r_dev.is_pending) {

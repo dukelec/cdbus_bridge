@@ -30,16 +30,16 @@ static gpio_t r_int = { .group = CD_INT_GPIO_Port, .num = CD_INT_Pin };
 static gpio_t r_ss = { .group = CD_SS_GPIO_Port, .num = CD_SS_Pin };
 static spi_t r_spi = { .hspi = &hspi1, .ns_pin = &r_ss };
 
-#define CDC_RX_MAX 30
-#define CDC_TX_MAX 80
-static cdc_buf_t cdc_rx_alloc[CDC_RX_MAX];
-static cdc_buf_t cdc_tx_alloc[CDC_TX_MAX];
+#define CDC_RX_MAX  240
+#define CDC_TX_MAX   80
+static cdc_rx_buf_t cdc_rx_alloc[CDC_RX_MAX];
+static cdc_tx_buf_t cdc_tx_alloc[CDC_TX_MAX];
 list_head_t cdc_rx_free_head = {0};
 list_head_t cdc_tx_free_head = {0};
 list_head_t cdc_rx_head = {0};
 list_head_t cdc_tx_head = {0};
-cdc_buf_t *cdc_rx_buf = NULL;
-cdc_buf_t *cdc_tx_buf = NULL;
+cdc_rx_buf_t *cdc_rx_buf = NULL;
+cdc_tx_buf_t *cdc_tx_buf = NULL;
 
 static cd_frame_t frame_alloc[FRAME_MAX];
 list_head_t frame_free_head = {0};
@@ -76,7 +76,7 @@ static void device_init(void)
     for (i = 0; i < PACKET_MAX; i++)
         list_put(&packet_free_head, &packet_alloc[i].node);
 
-    cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
+    cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_rx_buf_t);
 
     csa.force_115200 = !gpio_get_value(&sw2);
     if (csa.force_115200) {
@@ -233,7 +233,7 @@ void app_main(void)
 
             if (cdc_tx_head.first) {
                 if (!cdc_tx_buf && hcdc->TxState == 0) {
-                    cdc_buf_t *bf = list_entry(cdc_tx_head.first, cdc_buf_t);
+                    cdc_tx_buf_t *bf = list_entry(cdc_tx_head.first, cdc_tx_buf_t);
                     if (bf->len != 0) {
                         local_irq_disable();
                         CDC_Transmit_FS(bf->dat, bf->len);

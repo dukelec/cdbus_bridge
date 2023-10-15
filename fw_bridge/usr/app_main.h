@@ -25,6 +25,9 @@
 #define FRAME_MAX           200
 #define PACKET_MAX           80
 
+#define CDC_TX_SIZE         512 // split into 64-byte chunks by hal layer
+#define CDC_RX_SIZE          64 // usb full-speed bulk transfers up to 64 bytes
+
 typedef enum {
     LED_POWERON = 0,
     LED_WARN,
@@ -34,8 +37,14 @@ typedef enum {
 typedef struct {
     list_node_t node;
     uint16_t    len;
-    uint8_t     dat[512]; // CDC_DATA_HS_MAX_PACKET_SIZE
-} cdc_buf_t;
+    uint8_t     dat[CDC_TX_SIZE];
+} cdc_tx_buf_t;
+
+typedef struct {
+    list_node_t node;
+    uint16_t    len;
+    uint8_t     dat[CDC_RX_SIZE];
+} cdc_rx_buf_t;
 
 typedef enum {
     SER_USB = 0,
@@ -105,8 +114,8 @@ extern list_head_t cdc_rx_free_head;
 extern list_head_t cdc_tx_free_head;
 extern list_head_t cdc_rx_head;
 extern list_head_t cdc_tx_head;
-extern cdc_buf_t *cdc_rx_buf;
-extern cdc_buf_t *cdc_tx_buf;
+extern cdc_rx_buf_t *cdc_rx_buf;
+extern cdc_tx_buf_t *cdc_tx_buf;
 
 extern list_head_t frame_free_head;
 

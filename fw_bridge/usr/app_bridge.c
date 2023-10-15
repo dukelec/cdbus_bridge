@@ -18,7 +18,7 @@ void app_bridge(void)
 
     if (csa.usb_online) {
         if (d_dev.free_head->len > 5) {
-            cdc_buf_t *bf = list_get_entry_it(&cdc_rx_head, cdc_buf_t);
+            cdc_rx_buf_t *bf = list_get_entry_it(&cdc_rx_head, cdc_rx_buf_t);
             if (bf) {
                 uint32_t flags;
 
@@ -30,7 +30,7 @@ void app_bridge(void)
                 local_irq_save(flags);
                 list_put(&cdc_rx_free_head, &bf->node);
                 if (!cdc_rx_buf) {
-                    cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
+                    cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_rx_buf_t);
                     d_verbose("continue CDC Rx\n");
                     USBD_CDC_SetRxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat);
                     USBD_CDC_ReceivePacket(&hUsbDeviceFS);
@@ -40,9 +40,9 @@ void app_bridge(void)
         }
     }
 
-    cdc_buf_t *bf = NULL;
+    cdc_tx_buf_t *bf = NULL;
     if (!cdc_tx_head.last) {
-        bf = list_get_entry(&cdc_tx_free_head, cdc_buf_t);
+        bf = list_get_entry(&cdc_tx_free_head, cdc_tx_buf_t);
         if (!bf) {
             df_warn("no cdc_tx_free (tx idle)\n");
             return;
@@ -50,9 +50,9 @@ void app_bridge(void)
         bf->len = 0;
         list_put(&cdc_tx_head, &bf->node);
     } else {
-        bf = list_entry(cdc_tx_head.last, cdc_buf_t);
-        if (bf->len == 512) {
-            bf = list_get_entry(&cdc_tx_free_head, cdc_buf_t);
+        bf = list_entry(cdc_tx_head.last, cdc_tx_buf_t);
+        if (bf->len == CDC_TX_SIZE) {
+            bf = list_get_entry(&cdc_tx_free_head, cdc_tx_buf_t);
             if (!bf) {
                 df_warn("no cdc_tx_free (tx pend %d)\n", cdc_tx_head.len);
                 return;
@@ -94,10 +94,10 @@ void app_bridge(void)
         if (wr_cdc_left == 0) {
             cduart_fill_crc(frm->dat);
 
-            if (bf->len + frm_full_len > 512) {
-                wr_cdc_left = bf->len + frm_full_len - 512;
-                memcpy(bf->dat + bf->len, frm->dat, 512 - bf->len);
-                bf->len = 512;
+            if (bf->len + frm_full_len > CDC_TX_SIZE) {
+                wr_cdc_left = bf->len + frm_full_len - CDC_TX_SIZE;
+                memcpy(bf->dat + bf->len, frm->dat, CDC_TX_SIZE - bf->len);
+                bf->len = CDC_TX_SIZE;
             } else {
                 memcpy(bf->dat + bf->len, frm->dat, frm_full_len);
                 bf->len += frm_full_len;

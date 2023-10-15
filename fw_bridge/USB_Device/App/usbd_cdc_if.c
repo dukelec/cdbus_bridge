@@ -276,14 +276,14 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
       while (true);
   }
   cdc_rx_buf->len = *Len;
-  if (!cdc_rx_buf->len) {
-      printf("CDC_Receive_FS: !len\n");
+  if (!cdc_rx_buf->len || cdc_rx_buf->len > CDC_RX_SIZE) {
+      printf("CDC_Receive_FS: len error: %d\n", cdc_rx_buf->len);
       while (true);
   }
   usb_rx_cnt++;
   list_put(&cdc_rx_head, &cdc_rx_buf->node); // already in isr context
 
-  cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
+  cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_rx_buf_t);
   if (!cdc_rx_buf) {
       d_verbose("CDC_Receive_FS: no free buf\n");
       return USBD_OK;

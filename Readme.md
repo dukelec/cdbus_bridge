@@ -1,6 +1,7 @@
 ## CDBUS Bridge
 
-<img alt="cdbus_bridge" src="doc/img/cdbus_bridge_v4.jpg">
+<img alt="cdbus_bridge" src="doc/img/cdbridge5.2.jpg">  
+<img alt="cdbus_bridge" src="doc/img/cdbridge5.2_case.jpg">
 
 The CDBUS Bridge is a USB virtual serial port to RS485 converter by default, and the RS485 packets are in CDBUS format.
 

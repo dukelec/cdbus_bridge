@@ -10,6 +10,7 @@
 #include "app_main.h"
 
 extern ADC_HandleTypeDef hadc1;
+extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart5;
 extern SPI_HandleTypeDef hspi1;
 extern USBD_HandleTypeDef hUsbDeviceFS;
@@ -25,6 +26,7 @@ static  gpio_t sw1 = { .group = SW1_GPIO_Port, .num = SW1_Pin };
 static  gpio_t sw2 = { .group = SW2_GPIO_Port, .num = SW2_Pin };
 
 uart_t debug_uart = { .huart = &huart5 };
+uart_t ttl_uart = { .huart = &huart3 };
 
 static gpio_t r_int = { .group = CD_INT_GPIO_Port, .num = CD_INT_Pin };
 static gpio_t r_ss = { .group = CD_SS_GPIO_Port, .num = CD_SS_Pin };
@@ -60,6 +62,9 @@ static uint32_t flush_set_time = 0;
 static int cdc_rate_bk = 0;
 int cdc_rate = 0;
 int app_mode = 0; // 0: data, 1: config
+
+uint8_t circ_buf[CIRC_BUF_SZ];
+uint32_t rd_pos = 0;
 
 
 static void device_init(void)
@@ -222,6 +227,9 @@ void app_main(void)
     printf("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
     d_info("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
     set_led_state(LED_POWERON);
+    ttl_uart.huart->Init.BaudRate = csa.ttl_baudrate;
+    UART_SetConfig(ttl_uart.huart);
+    HAL_UART_Receive_DMA(ttl_uart.huart, circ_buf, CIRC_BUF_SZ);
     csa_list_show();
 
     while (true) {
@@ -253,6 +261,23 @@ void app_main(void)
                 }
             }
         } else {
+            if (cdc_tx_buf) {
+                if (ttl_uart.huart->TxXferCount == 0) {
+                    ttl_uart.huart->gState = HAL_UART_STATE_READY;
+                    list_put(&cdc_tx_free_head, &cdc_tx_buf->node);
+                    cdc_tx_buf = NULL;
+                    //d_verbose("ttl_uart dma done.\n");
+                }
+            } else if (cdc_tx_head.first) {
+                cdc_tx_buf_t *bf = list_entry(cdc_tx_head.first, cdc_tx_buf_t);
+                if (bf->len != 0) {
+                    //d_verbose("ttl_uart dma tx...\n");
+                    HAL_UART_Transmit_DMA(ttl_uart.huart, bf->dat, bf->len);
+                    list_get(&cdc_tx_head);
+                    cdc_tx_buf = bf;
+                }
+            }
+
             if (hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
                 printf("usb connected\n");
                 csa.usb_online = true;

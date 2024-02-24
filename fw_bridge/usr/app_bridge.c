@@ -15,6 +15,7 @@ static int wr_cdc_left = 0;
 void app_bridge(void)
 {
     // handle data exchange
+    uint32_t wd_pos = CIRC_BUF_SZ - ttl_uart.huart->hdmarx->Instance->CNDTR;
 
     if (csa.usb_online) {
         if (d_dev.free_head->len > 5) {
@@ -38,7 +39,19 @@ void app_bridge(void)
                 local_irq_restore(flags);
             }
         }
+    } else {
+        const uint8_t *wr = circ_buf + wd_pos;
+        const uint8_t *rd = circ_buf + rd_pos;
+        if (d_dev.free_head->len > 5) {
+            if (rd < wr) {
+                cduart_rx_handle(&d_dev, rd, wr - rd);
+            } else if (rd > wr) {
+                cduart_rx_handle(&d_dev, rd, circ_buf + CIRC_BUF_SZ - rd);
+                cduart_rx_handle(&d_dev, circ_buf, wr - circ_buf);
+            }
+        }
     }
+    rd_pos = wd_pos;
 
     cdc_tx_buf_t *bf = NULL;
     if (!cdc_tx_head.last) {

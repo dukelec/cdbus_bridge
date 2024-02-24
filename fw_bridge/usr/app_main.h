@@ -23,10 +23,12 @@
 #define APP_CONF_VER        0x0201
 
 #define FRAME_MAX           200
-#define PACKET_MAX           80
+#define PACKET_MAX          80
 
 #define CDC_TX_SIZE         512 // split into 64-byte chunks by hal layer
-#define CDC_RX_SIZE          64 // usb full-speed bulk transfers up to 64 bytes
+#define CDC_RX_SIZE         64  // usb full-speed bulk transfers up to 64 bytes
+
+#define CIRC_BUF_SZ         1024
 
 typedef enum {
     LED_POWERON = 0,
@@ -108,7 +110,6 @@ int flash_erase(uint32_t addr, uint32_t len);
 int flash_write(uint32_t addr, uint32_t len, const uint8_t *buf);
 
 extern USBD_HandleTypeDef hUsbDeviceFS;
-extern uart_t *hw_uart;
 
 extern list_head_t cdc_rx_free_head;
 extern list_head_t cdc_tx_free_head;
@@ -119,6 +120,7 @@ extern cdc_tx_buf_t *cdc_tx_buf;
 
 extern list_head_t frame_free_head;
 
+extern uart_t ttl_uart;
 extern cdctl_dev_t r_dev;   // RS485
 extern cduart_dev_t c_dev;  // usb / config mode
 extern cduart_dev_t d_dev;  // usb / data mode
@@ -126,6 +128,9 @@ extern cdn_ns_t dft_ns;
 
 extern int cdc_rate;
 extern int app_mode;
+
+extern uint8_t circ_buf[];
+extern uint32_t rd_pos;
 
 
 void app_bridge(void);

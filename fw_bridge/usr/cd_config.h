@@ -26,10 +26,8 @@ extern int CDCTL_SYS_CLK;
 #define CDUART_IRQ_SAFE // free_head requires irq safe
 #define CDN_IRQ_SAFE
 
-#define CDN_SEQ
 //#define CDN_RB_TREE
 //#define CDN_L0_C
-//#define CDN_L2
 
 #define CDUART_IDLE_TIME (100000 / SYSTICK_US_DIV) // 100 ms
 

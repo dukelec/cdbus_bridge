@@ -118,33 +118,6 @@ static void device_init(void)
     HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
 }
 
-void set_led_state(led_state_t state)
-{
-    static bool is_err = false;
-    if (is_err)
-        return;
-
-    switch (state) {
-    case LED_POWERON:
-        gpio_set_value(&led_r, 1);
-        gpio_set_value(&led_g, 0);
-        gpio_set_value(&led_b, 1);
-        break;
-    case LED_WARN:
-        gpio_set_value(&led_r, 0);
-        gpio_set_value(&led_g, 0);
-        gpio_set_value(&led_b, 1);
-        break;
-    default:
-    case LED_ERROR:
-        is_err = true;
-        gpio_set_value(&led_r, 0);
-        gpio_set_value(&led_g, 1);
-        gpio_set_value(&led_b, 1);
-        break;
-    }
-}
-
 static void data_led_task(void)
 {
     static uint32_t tx_t_last = 0;
@@ -217,6 +190,12 @@ static void dump_hw_status(void)
 void app_main(void)
 {
     USBD_CDC_HandleTypeDef *hcdc = NULL;
+    
+    gpio_set_value(&led_tx, 1);
+    gpio_set_value(&led_rx, 1);
+    delay_systick(1);
+    gpio_set_value(&led_tx, 0);
+    gpio_set_value(&led_rx, 0);
 
     printf("\nstart app_main (bridge)...\n");
     stack_check_init();
@@ -226,11 +205,18 @@ void app_main(void)
     common_service_init();
     printf("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
     d_info("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
-    set_led_state(LED_POWERON);
     ttl_uart.huart->Init.BaudRate = csa.ttl_baudrate;
     UART_SetConfig(ttl_uart.huart);
     HAL_UART_Receive_DMA(ttl_uart.huart, circ_buf, CIRC_BUF_SZ);
     csa_list_show();
+    delay_systick(100);
+    gpio_set_value(&led_r, 0);
+    delay_systick(200);
+    gpio_set_value(&led_r, 1);
+    gpio_set_value(&led_b, 0);
+    delay_systick(200);
+    gpio_set_value(&led_b, 1);
+    gpio_set_value(&led_g, 0);
 
     while (true) {
         if (csa.usb_online) {

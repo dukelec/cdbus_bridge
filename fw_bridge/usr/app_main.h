@@ -30,12 +30,6 @@
 
 #define CIRC_BUF_SZ         1024
 
-typedef enum {
-    LED_POWERON = 0,
-    LED_WARN,
-    LED_ERROR
-} led_state_t;
-
 typedef struct {
     list_node_t node;
     uint16_t    len;

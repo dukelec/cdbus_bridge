@@ -173,7 +173,8 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  HAL_RCC_MCOConfig(RCC_MCO2, RCC_MCO2SOURCE_PLLCLK, RCC_MCO2DIV_4);
+  __HAL_RCC_PLLCLKOUT_ENABLE(RCC_PLLRCLK);
+  HAL_RCC_MCOConfig(RCC_MCO_PB2, RCC_MCO2SOURCE_PLLCLK, RCC_MCO2DIV_4);
 }
 
 /**
@@ -481,7 +482,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(CD_SS_GPIO_Port, CD_SS_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOA, OLD_CD_RST_Pin|CD_SS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, RGB_B_Pin|RGB_G_Pin|RGB_R_Pin, GPIO_PIN_SET);
@@ -494,6 +495,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : OLD_CD_RST_Pin */
+  GPIO_InitStruct.Pin = OLD_CD_RST_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(OLD_CD_RST_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : CD_SS_Pin */
   GPIO_InitStruct.Pin = CD_SS_Pin;

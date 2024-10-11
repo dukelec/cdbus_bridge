@@ -99,38 +99,13 @@ void set_led_state(led_state_t state)
 }
 
 
-extern uint32_t end; // end of bss
-#define STACK_CHECK_SKIP 0x200
-#define STACK_CHECK_SIZE (64 + STACK_CHECK_SKIP)
-
-static void stack_check_init(void)
-{
-    int i;
-    printf("stack_check_init: skip: %p ~ %p, to %p\n",
-            &end, &end + STACK_CHECK_SKIP, &end + STACK_CHECK_SIZE);
-    for (i = STACK_CHECK_SKIP; i < STACK_CHECK_SIZE; i+=4)
-        *(uint32_t *)(&end + i) = 0xababcdcd;
-}
-
-static void stack_check(void)
-{
-    int i;
-    for (i = STACK_CHECK_SKIP; i < STACK_CHECK_SIZE; i+=4) {
-        if (*(uint32_t *)(&end + i) != 0xababcdcd) {
-            printf("stack overflow %p (skip: %p ~ %p): %08lx\n",
-                    &end + i, &end, &end + STACK_CHECK_SKIP, *(uint32_t *)(&end + i));
-            while (true);
-        }
-    }
-}
-
-
 void app_main(void)
 {
+    uint64_t *stack_check = (uint64_t *)((uint32_t)&end + 256);
     USBD_CDC_HandleTypeDef *hcdc = NULL;
 
     printf("\nstart app_main (bl)...\n");
-    stack_check_init();
+    *stack_check = 0xababcdcd12123434;
     load_conf();
     debug_init(&dft_ns, &csa.dbg_dst, &csa.dbg_en);
     device_init();
@@ -173,7 +148,6 @@ void app_main(void)
             }
         }
 
-        stack_check();
         cdn_routine(&dft_ns); // handle cdnet
         common_service_routine();
         bl_routine();
@@ -182,6 +156,11 @@ void app_main(void)
         if (gpio_get_value(&sw1)) {
             printf("sw1 switch off, reboot...\n");
             csa.do_reboot = true;
+        }
+
+        if (*stack_check != 0xababcdcd12123434) {
+            printf("stack overflow\n");
+            while (true);
         }
     }
 }

@@ -71,8 +71,7 @@ Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
 Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 Core/Src/sysmem.c \
 Core/Src/syscalls.c \
-cdnet/dispatch/cdnet_dispatch.c \
-cdnet/dispatch/helper.c \
+cdnet/core/cdnet_core.c \
 cdnet/parser/cdnet_l0.c \
 cdnet/parser/cdnet_l1.c \
 cdnet/dev/cdbus_uart.c \
@@ -154,7 +153,7 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32G0xx/Include \
 -IDrivers/CMSIS/Include \
 -Icdnet/parser \
--Icdnet/dispatch \
+-Icdnet/core \
 -Icdnet/utils \
 -Icdnet/dev \
 -Icdnet/arch/stm32 \

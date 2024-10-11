@@ -10,7 +10,7 @@
 #ifndef __APP_MAIN_H__
 #define __APP_MAIN_H__
 
-#include "cdnet_dispatch.h"
+#include "cdnet_core.h"
 #include "cd_debug.h"
 #include "cdbus_uart.h"
 
@@ -92,6 +92,7 @@ extern cdn_ns_t dft_ns;
 extern uint8_t circ_buf[];
 extern uint32_t rd_pos;
 
+extern uint32_t end; // end of bss
 
 void bl_init(void);
 void bl_routine(void);

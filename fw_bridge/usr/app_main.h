@@ -15,7 +15,6 @@
 #include "cdbus_uart.h"
 #include "cdctl_fast.h"
 
-#include "modbus_crc.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
 

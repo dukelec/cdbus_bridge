@@ -261,7 +261,7 @@ static void MX_CRC_Init(void)
   hcrc.Init.GeneratingPolynomial = 32773;
   hcrc.Init.CRCLength = CRC_POLYLENGTH_16B;
   hcrc.Init.InitValue = 0xFFFF;
-  hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_BYTE;
+  hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_WORD;
   hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_ENABLE;
   hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
   if (HAL_CRC_Init(&hcrc) != HAL_OK)

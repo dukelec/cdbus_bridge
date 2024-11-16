@@ -191,4 +191,3 @@ void common_service_routine(void)
     p5_service_routine();
     p8_service_routine();
 }
-

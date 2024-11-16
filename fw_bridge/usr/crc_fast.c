@@ -9,33 +9,36 @@
 
 #include "app_main.h"
 
-extern CRC_HandleTypeDef hcrc;
 
-
-void crc16_sub(const uint8_t *data, uint32_t length, uint16_t *crc_val)
+uint16_t crc16_sub(const uint8_t *data, uint32_t length, uint16_t crc_val)
 {
+    uint16_t ret_val;
 #ifdef CRC_IRQ_SAFE
-    uint8_t flags;
-    local_irq_save(cpu_flags);
+    uint32_t flags;
+    local_irq_save(flags);
 #endif
+    CRC->INIT = crc_val;
+    CRC->CR = 0xe9;
+    CRC->INIT = CRC->DR; // bit-reverse crc_val
 
-    hcrc.Instance->INIT = *crc_val;
-    __HAL_CRC_DR_RESET(&hcrc);
-    hcrc.Instance->INIT = hcrc.Instance->DR; // bit-reversal for init value
+    while (((unsigned)data & 3) && length) {
+        *(volatile uint8_t *)&CRC->DR = *data++;
+        length--;
+    }
 
-    unsigned cnt = length / 4;
+    unsigned cnt = length >> 2;
     while (cnt--) {
-        hcrc.Instance->DR = get_unaligned_be32(data);
+        CRC->DR = *(uint32_t *)data;
         data += 4;
     }
 
-    length = length % 4;
+    length &= 3;
     while (length--)
-        *(volatile uint8_t *)&hcrc.Instance->DR = *data++;
+        *(volatile uint8_t *)&CRC->DR = *data++;
 
-    *crc_val = hcrc.Instance->DR;
-
+    ret_val = CRC->DR;
 #ifdef CRC_IRQ_SAFE
-    local_irq_restore(cpu_flags);
+    local_irq_restore(flags);
 #endif
+    return ret_val;
 }

@@ -86,4 +86,3 @@ static inline void cdctl_flush(cdctl_dev_t *dev)
 void cdctl_routine(void);
 
 #endif
-

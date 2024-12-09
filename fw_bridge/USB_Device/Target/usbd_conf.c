@@ -419,7 +419,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
   hpcd_USB_DRD_FS.Init.lpm_enable = DISABLE;
   hpcd_USB_DRD_FS.Init.battery_charging_enable = DISABLE;
   hpcd_USB_DRD_FS.Init.vbus_sensing_enable = DISABLE;
-  hpcd_USB_DRD_FS.Init.bulk_doublebuffer_enable = DISABLE;
+  hpcd_USB_DRD_FS.Init.bulk_doublebuffer_enable = ENABLE;
   hpcd_USB_DRD_FS.Init.iso_singlebuffer_enable = DISABLE;
   if (HAL_PCD_Init(&hpcd_USB_DRD_FS) != HAL_OK)
   {

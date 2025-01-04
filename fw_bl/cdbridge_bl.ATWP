@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root>
+    <MCUInfo>
+        <MCUSerials>AT32F405</MCUSerials>
+        <MCUName>AT32F405KCU7-4</MCUName>
+        <MCUPackage>QFN32</MCUPackage>
+    </MCUInfo>
+    <CRC>
+        <Mode>
+            <ModeSub name="CRC_State" value="TRUE"/>
+        </Mode>
+        <Parameters>
+            <ParametersSub name="InitValue" value="0xFFFF"/>
+            <ParametersSub name="CRCPolynomialLength" value="CRC_POLY_SIZE_16B"/>
+            <ParametersSub name="CRCPolynomialValue_16" value="0x8005"/>
+            <ParametersSub name="InputDataReverseMode" value="CRC_REVERSE_INPUT_BY_WORD"/>
+            <ParametersSub name="OutputDataReverseMode" value="CRC_REVERSE_OUTPUT_DATA"/>
+        </Parameters>
+    </CRC>
+    <CRM>
+        <Mode>
+            <ModeSub name="HEXT" value="HEXT-External-Oscillator"/>
+        </Mode>
+        <Parameters>
+            <ParametersSub name="HEXT" value="HEXT_CRYSTAL"/>
+        </Parameters>
+    </CRM>
+    <DEBUG>
+        <Mode>
+            <ModeSub name="SWD" value="TRUE"/>
+            <ModeSub name="SWO" value="FALSE"/>
+        </Mode>
+    </DEBUG>
+    <SYSTEM>
+        <Mode>
+            <ModeSub name="Time_Base" value="SysTick"/>
+        </Mode>
+        <Parameters>
+            <ParametersSub name="Delay_Mode" value="Interrupt"/>
+        </Parameters>
+    </SYSTEM>
+    <UART7>
+        <Mode>
+            <ModeSub name="Mode" value="Asynchronous_TransmitOnly"/>
+        </Mode>
+        <Parameters>
+            <ParametersSub name="VirtualMode" value="VM_ASYNC_T"/>
+            <ParametersSub name="BaudRate" value="2000000"/>
+            <ParametersSub name="RealBaudRate" value="2000000"/>
+        </Parameters>
+    </UART7>
+    <USB_OTGHS1>
+        <Mode>
+            <ModeSub name="Mode" value="Device_Only"/>
+        </Mode>
+    </USB_OTGHS1>
+    <USB_DEVICE>
+        <Mode>
+            <ModeSub name="OTGHS_Device" value="CDC"/>
+        </Mode>
+        <Parameters>
+            <ParametersSub name="DEVICE_HS_Manufacturer" value="DUKELEC"/>
+            <ParametersSub name="DEVICE_HS_Product_CDC" value="CDBUS Bridge (BL)"/>
+            <ParametersSub name="DEVICE_HS_Receive_FIFO_Size" value="512"/>
+        </Parameters>
+    </USB_DEVICE>
+    <NVIC>
+        <PriorityGroup>NVIC_PRIORITY_GROUP_2</PriorityGroup>
+        <SVC_Handler>1;3;0;0;0</SVC_Handler>
+        <SysTick_Handler>1;1;0;0;0</SysTick_Handler>
+        <FLASH_IRQHandler>0;0;0;0;0</FLASH_IRQHandler>
+        <CRM_IRQHandler>0;0;0;0;0</CRM_IRQHandler>
+        <OTGHS_EP1_OUT_IRQHandler>0;0;0;0;0</OTGHS_EP1_OUT_IRQHandler>
+        <OTGHS_EP1_IN_IRQHandler>0;0;0;0;0</OTGHS_EP1_IN_IRQHandler>
+        <OTGHS_WKUP_IRQHandler>0;0;0;0;0</OTGHS_WKUP_IRQHandler>
+        <OTGHS_IRQHandler>1;2;0;0;0</OTGHS_IRQHandler>
+        <FPU_IRQHandler>0;0;0;0;0</FPU_IRQHandler>
+        <UART7_IRQHandler>0;0;0;0;0</UART7_IRQHandler>
+    </NVIC>
+    <GPIO>
+        <Signal SignalName="GPIO_Output" PinName="PA0">
+            <Parameters name="GPIO_Outputlevel" value="GPIO_OUTPUTLEVEL_HIGH"/>
+            <Parameters name="Label" value="RGB_G"/>
+        </Signal>
+        <Signal SignalName="GPIO_Input" PinName="PB5">
+            <Parameters name="GPIO_PullType_Set" value="GPIO_PULL_UP"/>
+            <Parameters name="Label" value="SW1"/>
+        </Signal>
+    </GPIO>
+    <ClockConfiguration>
+        <rtcsel>0</rtcsel>
+        <rtcdiv>2</rtcdiv>
+        <hext>12.000000</hext>
+        <hextdiv>1</hextdiv>
+        <hickdiv>1</hickdiv>
+        <pllrcs>0</pllrcs>
+        <pllms>1</pllms>
+        <pllns>72</pllns>
+        <pllfp>4</pllfp>
+        <sclkselect>1</sclkselect>
+        <ahbdiv>1</ahbdiv>
+        <apb1div>2</apb1div>
+        <apb2div>2</apb2div>
+        <pllfu>18</pllfu>
+        <hicktousb>1</hicktousb>
+        <hicktosclk>0</hicktosclk>
+        <clkout>5</clkout>
+        <clkoutdiv1>1</clkoutdiv1>
+        <clkoutdiv2>1</clkoutdiv2>
+        <clkoutpinselect>0</clkoutpinselect>
+        <i2sf5clocksel>0</i2sf5clocksel>
+        <i2sf5clock>0</i2sf5clock>
+        <systicsel>8</systicsel>
+    </ClockConfiguration>
+    <PINInfo>
+        <PinSub pinname="PF0" signalname="CRM_HEXT_IN" signaltype="2"/>
+        <PinSub pinname="PF1" signalname="CRM_HEXT_OUT" signaltype="2"/>
+        <PinSub pinname="PA0" signalname="GPIO_Output" signaltype="3"/>
+        <PinSub pinname="USB_OTGHS1_R" signalname="USB_OTGHS1_R" signaltype="2"/>
+        <PinSub pinname="USB_OTGHS1_D-" signalname="USB_OTGHS1_D-" signaltype="2"/>
+        <PinSub pinname="USB_OTGHS1_D+" signalname="USB_OTGHS1_D+" signaltype="2"/>
+        <PinSub pinname="PA13" signalname="DEBUG_SWDIO" signaltype="2"/>
+        <PinSub pinname="PA14" signalname="DEBUG_SWCLK" signaltype="2"/>
+        <PinSub pinname="PA15" signalname="UART7_TX" signaltype="3"/>
+        <PinSub pinname="PB5" signalname="GPIO_Input" signaltype="3"/>
+    </PINInfo>
+    <ProjectInfomation>
+        <ProjectName>cdbridge_bl</ProjectName>
+        <ProjectLocation>/mnt/TF/company/dukelec/cdbus/fw/cdbus_bridge_at/fw_bl</ProjectLocation>
+        <ToolchainIDE>Eclipse_gcc</ToolchainIDE>
+        <ARMCompiler>1</ARMCompiler>
+        <KeepUserCode>true</KeepUserCode>
+        <NotUsedPinAnalog>false</NotUsedPinAnalog>
+        <CodeSplitIP>false</CodeSplitIP>
+        <AddNecessaryFileFlag>true</AddNecessaryFileFlag>
+        <MinHeapSize>0x200</MinHeapSize>
+        <MinStackSize>0x400</MinStackSize>
+        <UseFirmware>true</UseFirmware>
+        <PackageVersion>V2.1.1</PackageVersion>
+    </ProjectInfomation>
+</Root>

@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root>
+    <MCUInfo>
+        <MCUSerials>AT32F405</MCUSerials>
+        <MCUName>AT32F405KCU7-4</MCUName>
+        <MCUPackage>QFN32</MCUPackage>
+    </MCUInfo>
+    <CRC>
+        <Mode>
+            <ModeSub name="CRC_State" value="TRUE"/>
+        </Mode>
+        <Parameters>
+            <ParametersSub name="InitValue" value="0xFFFF"/>
+            <ParametersSub name="CRCPolynomialLength" value="CRC_POLY_SIZE_16B"/>
+            <ParametersSub name="CRCPolynomialValue_16" value="0x8005"/>
+            <ParametersSub name="InputDataReverseMode" value="CRC_REVERSE_INPUT_BY_WORD"/>
+            <ParametersSub name="OutputDataReverseMode" value="CRC_REVERSE_OUTPUT_DATA"/>
+        </Parameters>
+    </CRC>
+    <CRM>
+        <Mode>
+            <ModeSub name="HEXT" value="HEXT-External-Oscillator"/>
+        </Mode>
+        <Parameters>
+            <ParametersSub name="HEXT" value="HEXT_CRYSTAL"/>
+        </Parameters>
+    </CRM>
+    <DEBUG>
+        <Mode>
+            <ModeSub name="SWD" value="TRUE"/>
+            <ModeSub name="SWO" value="FALSE"/>
+        </Mode>
+    </DEBUG>
+    <EXINT>
+        <Mode>
+            <ModeSub name="EXINT0" value="TRUE"/>
+        </Mode>
+        <Parameters>
+            <ParametersSub name="TriggerPolarity_0" value="EXINT_TRIGGER_FALLING_EDGE"/>
+        </Parameters>
+    </EXINT>
+    <SPI1>
+        <Mode>
+            <ModeSub name="Mode" value="Full_Duplex_Master"/>
+        </Mode>
+        <Parameters>
+            <ParametersSub name="TransmissionMode" value="SPI_TRANSMIT_FULL_DUPLEX"/>
+            <ParametersSub name="Mode" value="SPI_MODE_MASTER"/>
+            <ParametersSub name="FirstBit" value="SPI_FIRST_BIT_MSB"/>
+            <ParametersSub name="ClkDivision" value="SPI_MCLK_DIV_3"/>
+        </Parameters>
+    </SPI1>
+    <SYSTEM>
+        <Mode>
+            <ModeSub name="Time_Base" value="SysTick"/>
+        </Mode>
+        <Parameters>
+            <ParametersSub name="Delay_Mode" value="Interrupt"/>
+        </Parameters>
+    </SYSTEM>
+    <USART1>
+        <Mode>
+            <ModeSub name="Mode" value="Asynchronous"/>
+            <ModeSub name="Hardware Flow Control (RS485)" value="TRUE"/>
+        </Mode>
+        <Parameters>
+            <ParametersSub name="BaudRate" value="2000000"/>
+            <ParametersSub name="RealBaudRate" value="2000000"/>
+            <ParametersSub name="TransmitStartDelayTime" value="1"/>
+        </Parameters>
+    </USART1>
+    <UART7>
+        <Mode>
+            <ModeSub name="Mode" value="Asynchronous_TransmitOnly"/>
+        </Mode>
+        <Parameters>
+            <ParametersSub name="VirtualMode" value="VM_ASYNC_T"/>
+            <ParametersSub name="BaudRate" value="2000000"/>
+            <ParametersSub name="RealBaudRate" value="2000000"/>
+        </Parameters>
+    </UART7>
+    <USB_OTGHS1>
+        <Mode>
+            <ModeSub name="Mode" value="Device_Only"/>
+        </Mode>
+    </USB_OTGHS1>
+    <USB_DEVICE>
+        <Mode>
+            <ModeSub name="OTGHS_Device" value="CDC"/>
+        </Mode>
+        <Parameters>
+            <ParametersSub name="DEVICE_HS_Manufacturer" value="DUKELEC"/>
+            <ParametersSub name="DEVICE_HS_Product_CDC" value="CDBUS Bridge"/>
+            <ParametersSub name="DEVICE_HS_Receive_FIFO_Size" value="512"/>
+        </Parameters>
+    </USB_DEVICE>
+    <DMA>
+        <SPI1_RX>
+            <ParametersSub name="Instance" value="DMA1_Channel1"/>
+            <ParametersSub name="Priority" value="DMA_PRIORITY_HIGH"/>
+            <ParametersSub name="SyncRequestCount" value="1"/>
+            <ParametersSub name="RequestCount" value="1"/>
+        </SPI1_RX>
+        <SPI1_TX>
+            <ParametersSub name="Instance" value="DMA1_Channel2"/>
+            <ParametersSub name="Priority" value="DMA_PRIORITY_HIGH"/>
+            <ParametersSub name="SyncRequestCount" value="1"/>
+            <ParametersSub name="RequestCount" value="1"/>
+        </SPI1_TX>
+        <USART1_RX>
+            <ParametersSub name="Instance" value="DMA2_Channel1"/>
+            <ParametersSub name="DMANum" value="DMA2"/>
+            <ParametersSub name="Mode" value="TRUE"/>
+            <ParametersSub name="Priority" value="DMA_PRIORITY_MEDIUM"/>
+            <ParametersSub name="SyncRequestCount" value="1"/>
+            <ParametersSub name="RequestCount" value="1"/>
+        </USART1_RX>
+        <USART1_TX>
+            <ParametersSub name="Instance" value="DMA2_Channel2"/>
+            <ParametersSub name="DMANum" value="DMA2"/>
+            <ParametersSub name="Priority" value="DMA_PRIORITY_MEDIUM"/>
+            <ParametersSub name="SyncRequestCount" value="1"/>
+            <ParametersSub name="RequestCount" value="1"/>
+        </USART1_TX>
+    </DMA>
+    <NVIC>
+        <PriorityGroup>NVIC_PRIORITY_GROUP_2</PriorityGroup>
+        <SVC_Handler>1;3;0;0;0</SVC_Handler>
+        <SysTick_Handler>1;1;0;0;0</SysTick_Handler>
+        <FLASH_IRQHandler>0;0;0;0;0</FLASH_IRQHandler>
+        <CRM_IRQHandler>0;0;0;0;0</CRM_IRQHandler>
+        <EXINT0_IRQHandler>1;2;0;0;0</EXINT0_IRQHandler>
+        <DMA1_Channel1_IRQHandler>1;2;0;0;0</DMA1_Channel1_IRQHandler>
+        <DMA1_Channel2_IRQHandler>0;2;0;0;0</DMA1_Channel2_IRQHandler>
+        <SPI1_IRQHandler>0;0;0;0;0</SPI1_IRQHandler>
+        <USART1_IRQHandler>0;0;0;0;0</USART1_IRQHandler>
+        <DMA2_Channel1_IRQHandler>0;2;0;0;0</DMA2_Channel1_IRQHandler>
+        <DMA2_Channel2_IRQHandler>1;2;0;0;0</DMA2_Channel2_IRQHandler>
+        <OTGHS_EP1_OUT_IRQHandler>0;0;0;0;0</OTGHS_EP1_OUT_IRQHandler>
+        <OTGHS_EP1_IN_IRQHandler>0;0;0;0;0</OTGHS_EP1_IN_IRQHandler>
+        <OTGHS_WKUP_IRQHandler>0;0;0;0;0</OTGHS_WKUP_IRQHandler>
+        <OTGHS_IRQHandler>1;2;0;0;0</OTGHS_IRQHandler>
+        <FPU_IRQHandler>0;0;0;0;0</FPU_IRQHandler>
+        <UART7_IRQHandler>0;0;0;0;0</UART7_IRQHandler>
+        <DMAMUX_IRQHandler>0;0;0;0;0</DMAMUX_IRQHandler>
+    </NVIC>
+    <GPIO>
+        <Signal SignalName="GPIO_Output" PinName="PA0">
+            <Parameters name="GPIO_Outputlevel" value="GPIO_OUTPUTLEVEL_HIGH"/>
+            <Parameters name="Label" value="RGB_G"/>
+        </Signal>
+        <Signal SignalName="GPIO_Output" PinName="PA1">
+            <Parameters name="GPIO_Outputlevel" value="GPIO_OUTPUTLEVEL_HIGH"/>
+            <Parameters name="Label" value="RGB_R"/>
+        </Signal>
+        <Signal SignalName="GPIO_Output" PinName="PA2">
+            <Parameters name="Label" value="LED_Y"/>
+        </Signal>
+        <Signal SignalName="GPIO_Output" PinName="PA3">
+            <Parameters name="Label" value="LED_G"/>
+        </Signal>
+        <Signal SignalName="GPIO_Output" PinName="PA4">
+            <Parameters name="GPIO_Outputlevel" value="GPIO_OUTPUTLEVEL_HIGH"/>
+            <Parameters name="Label" value="CD_SS"/>
+        </Signal>
+        <Signal SignalName="EXINT0" PinName="PB0">
+            <Parameters name="Label" value="CD_INT"/>
+        </Signal>
+        <Signal SignalName="GPIO_Input" PinName="PB4">
+            <Parameters name="GPIO_PullType_Set" value="GPIO_PULL_UP"/>
+            <Parameters name="Label" value="SW2"/>
+        </Signal>
+        <Signal SignalName="GPIO_Input" PinName="PB5">
+            <Parameters name="GPIO_PullType_Set" value="GPIO_PULL_UP"/>
+            <Parameters name="Label" value="SW1"/>
+        </Signal>
+        <Signal SignalName="GPIO_Output" PinName="PB8">
+            <Parameters name="GPIO_Outputlevel" value="GPIO_OUTPUTLEVEL_HIGH"/>
+            <Parameters name="Label" value="RGB_B"/>
+        </Signal>
+    </GPIO>
+    <ClockConfiguration>
+        <rtcsel>0</rtcsel>
+        <rtcdiv>2</rtcdiv>
+        <hext>12.000000</hext>
+        <hextdiv>1</hextdiv>
+        <hickdiv>1</hickdiv>
+        <pllrcs>0</pllrcs>
+        <pllms>1</pllms>
+        <pllns>72</pllns>
+        <pllfp>4</pllfp>
+        <sclkselect>1</sclkselect>
+        <ahbdiv>1</ahbdiv>
+        <apb1div>2</apb1div>
+        <apb2div>2</apb2div>
+        <pllfu>18</pllfu>
+        <hicktousb>1</hicktousb>
+        <hicktosclk>0</hicktosclk>
+        <clkout>5</clkout>
+        <clkoutdiv1>1</clkoutdiv1>
+        <clkoutdiv2>1</clkoutdiv2>
+        <clkoutpinselect>0</clkoutpinselect>
+        <i2sf5clocksel>0</i2sf5clocksel>
+        <i2sf5clock>0</i2sf5clock>
+        <systicsel>8</systicsel>
+    </ClockConfiguration>
+    <PINInfo>
+        <PinSub pinname="PF0" signalname="CRM_HEXT_IN" signaltype="2"/>
+        <PinSub pinname="PF1" signalname="CRM_HEXT_OUT" signaltype="2"/>
+        <PinSub pinname="PA0" signalname="GPIO_Output" signaltype="3"/>
+        <PinSub pinname="PA1" signalname="GPIO_Output" signaltype="3"/>
+        <PinSub pinname="PA2" signalname="GPIO_Output" signaltype="3"/>
+        <PinSub pinname="PA3" signalname="GPIO_Output" signaltype="3"/>
+        <PinSub pinname="PA4" signalname="GPIO_Output" signaltype="3"/>
+        <PinSub pinname="PA5" signalname="SPI1_SCK" signaltype="2"/>
+        <PinSub pinname="PA6" signalname="SPI1_MISO" signaltype="2"/>
+        <PinSub pinname="PA7" signalname="SPI1_MOSI" signaltype="2"/>
+        <PinSub pinname="PB0" signalname="EXINT0" signaltype="3"/>
+        <PinSub pinname="USB_OTGHS1_R" signalname="USB_OTGHS1_R" signaltype="2"/>
+        <PinSub pinname="USB_OTGHS1_D-" signalname="USB_OTGHS1_D-" signaltype="2"/>
+        <PinSub pinname="USB_OTGHS1_D+" signalname="USB_OTGHS1_D+" signaltype="2"/>
+        <PinSub pinname="PA13" signalname="DEBUG_SWDIO" signaltype="2"/>
+        <PinSub pinname="PA14" signalname="DEBUG_SWCLK" signaltype="2"/>
+        <PinSub pinname="PA15" signalname="UART7_TX" signaltype="3"/>
+        <PinSub pinname="PB3" signalname="USART1_DE" signaltype="3"/>
+        <PinSub pinname="PB4" signalname="GPIO_Input" signaltype="3"/>
+        <PinSub pinname="PB5" signalname="GPIO_Input" signaltype="3"/>
+        <PinSub pinname="PB6" signalname="USART1_TX" signaltype="3"/>
+        <PinSub pinname="PB7" signalname="USART1_RX" signaltype="3"/>
+        <PinSub pinname="PB8" signalname="GPIO_Output" signaltype="3"/>
+    </PINInfo>
+    <ProjectInfomation>
+        <ProjectName>cdbridge</ProjectName>
+        <ProjectLocation>/mnt/TF/company/dukelec/cdbus/fw/cdbus_bridge_at/fw_bridge</ProjectLocation>
+        <ToolchainIDE>Eclipse_gcc</ToolchainIDE>
+        <ARMCompiler>1</ARMCompiler>
+        <KeepUserCode>true</KeepUserCode>
+        <NotUsedPinAnalog>false</NotUsedPinAnalog>
+        <CodeSplitIP>false</CodeSplitIP>
+        <AddNecessaryFileFlag>true</AddNecessaryFileFlag>
+        <MinHeapSize>0x200</MinHeapSize>
+        <MinStackSize>0x400</MinStackSize>
+        <UseFirmware>true</UseFirmware>
+        <PackageVersion>V2.1.1_ZH</PackageVersion>
+    </ProjectInfomation>
+</Root>

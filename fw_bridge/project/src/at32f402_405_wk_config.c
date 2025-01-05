@@ -233,11 +233,8 @@ void wk_nvic_config(void)
   NVIC_SetPriority(UsageFault_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
   NVIC_SetPriority(SVCall_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 3, 0));
   NVIC_SetPriority(DebugMonitor_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
-  NVIC_SetPriority(PendSV_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
+  NVIC_SetPriority(PendSV_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 3, 0));
   NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 1, 0));
-  nvic_irq_enable(EXINT0_IRQn, 2, 0);
-  nvic_irq_enable(DMA1_Channel1_IRQn, 2, 0);
-  nvic_irq_enable(DMA2_Channel2_IRQn, 2, 0);
   nvic_irq_enable(OTGHS_IRQn, 2, 0);
 }
 
@@ -322,14 +319,6 @@ void wk_exint_config(void)
   exint_init_struct.line_select = EXINT_LINE_0;
   exint_init_struct.line_polarity = EXINT_TRIGGER_FALLING_EDGE;
   exint_init(&exint_init_struct);
-
-  /**
-   * Users need to configure EXINT0 interrupt functions according to the actual application.
-   * 1. Call the below function to enable the corresponding EXINT0 interrupt.
-   *     --exint_interrupt_enable(EXINT_LINE_0, TRUE);
-   * 2. Add the user's interrupt handler code into the below function in the at32f402_405_int.c file.
-   *     --void EXINT0_IRQHandler(void)
-   */
 
   /* add user code begin exint_config 2 */
 
@@ -597,13 +586,6 @@ void wk_dma1_channel1_init(void)
   dmamux_enable(DMA1, TRUE);
   dmamux_init(DMA1MUX_CHANNEL1, DMAMUX_DMAREQ_ID_SPI1_RX);
 
-  /**
-   * Users need to configure DMA1 interrupt functions according to the actual application.
-   * 1. Call the below function to enable the corresponding DMA1 interrupt.
-   *     --dma_interrupt_enable(...)
-   * 2. Add the user's interrupt handler code into the below function in the at32f402_405_int.c file.
-   *     --void DMA1_Channel1_IRQHandler(void)
-   */ 
   /* add user code begin dma1_channel1 1 */
 
   /* add user code end dma1_channel1 1 */
@@ -703,13 +685,6 @@ void wk_dma2_channel2_init(void)
   dmamux_enable(DMA2, TRUE);
   dmamux_init(DMA2MUX_CHANNEL2, DMAMUX_DMAREQ_ID_USART1_TX);
 
-  /**
-   * Users need to configure DMA2 interrupt functions according to the actual application.
-   * 1. Call the below function to enable the corresponding DMA2 interrupt.
-   *     --dma_interrupt_enable(...)
-   * 2. Add the user's interrupt handler code into the below function in the at32f402_405_int.c file.
-   *     --void DMA2_Channel2_IRQHandler(void)
-   */ 
   /* add user code begin dma2_channel2 1 */
 
   /* add user code end dma2_channel2 1 */

@@ -64,8 +64,8 @@ void cduart_rx_handle(cduart_dev_t *dev, const uint8_t *buf, unsigned len)
         dev->rx_byte_cnt += cpy_len;
 
         if (dev->rx_byte_cnt == 3 &&
-                    (frame->dat[2] > CD_FRAME_SIZE - 5 ||
-                            (frame->dat[1] != 0xff && frame->dat[1] != dev->local_mac))) {
+                    frame->dat[2] > CD_FRAME_SIZE - 5) {
+                // (frame->dat[2] > CD_FRAME_SIZE - 5 || (frame->dat[1] != 0xff && frame->dat[1] != dev->local_mac))) {
             printf("bus: drop [%x %x %x]\n", frame->dat[0], frame->dat[1], frame->dat[2]);
             dev->rx_drop = true;
         }

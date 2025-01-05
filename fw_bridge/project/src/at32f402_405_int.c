@@ -225,51 +225,6 @@ void SysTick_Handler(void)
 }
 
 /**
-  * @brief  this function handles EXINT Line 0 handler.
-  * @param  none
-  * @retval none
-  */
-void EXINT0_IRQHandler(void)
-{
-  /* add user code begin EXINT0_IRQ 0 */
-
-  /* add user code end EXINT0_IRQ 0 */
-  /* add user code begin EXINT0_IRQ 1 */
-
-  /* add user code end EXINT0_IRQ 1 */
-}
-
-/**
-  * @brief  this function handles DMA1 Channel 1 handler.
-  * @param  none
-  * @retval none
-  */
-void DMA1_Channel1_IRQHandler(void)
-{
-  /* add user code begin DMA1_Channel1_IRQ 0 */
-
-  /* add user code end DMA1_Channel1_IRQ 0 */
-  /* add user code begin DMA1_Channel1_IRQ 1 */
-
-  /* add user code end DMA1_Channel1_IRQ 1 */
-}
-
-/**
-  * @brief  this function handles DMA2 Channel 2 handler.
-  * @param  none
-  * @retval none
-  */
-void DMA2_Channel2_IRQHandler(void)
-{
-  /* add user code begin DMA2_Channel2_IRQ 0 */
-
-  /* add user code end DMA2_Channel2_IRQ 0 */
-  /* add user code begin DMA2_Channel2_IRQ 1 */
-
-  /* add user code end DMA2_Channel2_IRQ 1 */
-}
-
-/**
   * @brief  this function handles OTGHS handler.
   * @param  none
   * @retval none

@@ -10,6 +10,8 @@
 #ifndef __CD_CONFIG_H__
 #define __CD_CONFIG_H__
 
+#define CDCTL_SYS_CLK       150000000UL // 150MHz for CDCTL01A
+
 //#define ARCH_SPI
 #define CD_LIST_IT
 #define CD_FRAME_SIZE       258
@@ -19,11 +21,11 @@
 //#define VERBOSE
 //#define LIST_DEBUG
 
+#define CRC_IRQ_SAFE        // printf also invoke crc
 #define CDUART_IRQ_SAFE
 #define CDUART_IDLE_TIME    (500000 / SYSTICK_US_DIV) // 500 ms
 
-#include "wk_system.h"
-//#include "at32f402_405.h"
+#include "at32f402_405_wk_config.h"
 #include "debug_config.h"
 
 #endif

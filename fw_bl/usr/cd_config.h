@@ -19,11 +19,11 @@
 //#define VERBOSE
 //#define LIST_DEBUG
 
+#define CRC_IRQ_SAFE        // printf also invoke crc
 #define CDUART_IRQ_SAFE
 #define CDUART_IDLE_TIME    (500000 / SYSTICK_US_DIV) // 500 ms
 
-#include "wk_system.h"
-//#include "at32f402_405.h"
+#include "at32f402_405_wk_config.h"
 #include "debug_config.h"
 
 #endif

@@ -22,7 +22,6 @@
 #include "usbd_int.h"
 #include "cdc_class.h"
 #include "cdc_desc.h"
-#include "at32f402_405_wk_config.h"
 
 #define APP_CONF_ADDR       0x0803F800 // last page
 #define APP_CONF_VER        0x0200
@@ -49,9 +48,7 @@ typedef struct {
     uint8_t         _keep[256]; // covers the areas in the app csa that need to be saved
 
     // end of flash
-    #define         _end_save usb_online
-
-    bool            usb_online;
+    bool            _end_save;
 
 } csa_t; // config status area
 

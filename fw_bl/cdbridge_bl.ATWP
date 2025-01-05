@@ -67,6 +67,7 @@
     <NVIC>
         <PriorityGroup>NVIC_PRIORITY_GROUP_2</PriorityGroup>
         <SVC_Handler>1;3;0;0;0</SVC_Handler>
+        <PendSV_Handler>1;3;0;0;0</PendSV_Handler>
         <SysTick_Handler>1;1;0;0;0</SysTick_Handler>
         <FLASH_IRQHandler>0;0;0;0;0</FLASH_IRQHandler>
         <CRM_IRQHandler>0;0;0;0;0</CRM_IRQHandler>

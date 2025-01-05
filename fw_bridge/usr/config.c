@@ -15,7 +15,8 @@
 const csa_t csa_dft = {
         .magic_code = 0xcdcd,
         .conf_ver = APP_CONF_VER,
-        .dbg_en = false
+        .dbg_en = false,
+        .bus_cfg = CDCTL_CFG_DFT(0x00)
 };
 
 csa_t csa;
@@ -94,4 +95,57 @@ int flash_write(uint32_t addr, uint32_t len, const uint8_t *buf)
     flash_lock();
     d_verbose("flash write: %08lx %ld, ret: %d\n", addr, len, ret);
     return ret;
+}
+
+
+#define t_name(expr)  \
+        (_Generic((expr), \
+                int8_t: "b", uint8_t: "B", \
+                int16_t: "h", uint16_t: "H", \
+                int32_t: "i", uint32_t: "I", \
+                int: "i", \
+                bool: "b", \
+                float: "f", \
+                char *: "[c]", \
+                uint8_t *: "[B]", \
+                regr_t: "H,H", \
+                regr_t *: "{H,H}", \
+                default: "-"))
+
+
+#define CSA_SHOW(_p, _x, _desc) \
+        d_debug("  [ 0x%04x, %d, \"%s\", " #_p ", \"" #_x "\", \"%s\" ],\n", \
+                offsetof(csa_t, _x), sizeof(csa._x), t_name(csa._x), _desc);
+
+#define CSA_SHOW_SUB(_p, _x, _y_t, _y, _desc) \
+        d_debug("  [ 0x%04x, %d, \"%s\", " #_p ", \"" #_x "_" #_y "\", \"%s\" ],\n", \
+                offsetof(csa_t, _x) + offsetof(_y_t, _y), sizeof(csa._x._y), t_name(csa._x._y), _desc);
+
+void csa_list_show(void)
+{
+    d_debug("csa_list_show:\n");
+    d_debug("\n");
+
+    CSA_SHOW(1, magic_code, "Magic code: 0xcdcd");
+    CSA_SHOW(1, conf_ver, "Config version");
+    CSA_SHOW(1, conf_from, "0: default config, 1: all from flash, 2: partly from flash");
+    CSA_SHOW(0, do_reboot, "Write 1 to reboot");
+    CSA_SHOW(0, save_conf, "Write 1 to save current config to flash");
+    d_debug("\n");
+
+    CSA_SHOW(0, dbg_en, "1: Report debug message to host, 0: do not report");
+    d_debug("\n");
+
+    CSA_SHOW_SUB(1, bus_cfg, cdctl_cfg_t, mac, "RS-485 port id, range: 0~254");
+    CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, baud_l, "RS-485 baud rate for first byte");
+    CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, baud_h, "RS-485 baud rate for follow bytes");
+    CSA_SHOW_SUB(1, bus_cfg, cdctl_cfg_t, filter_m, "Multicast address");
+    CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, mode, "0: Arbitration, 1: Break Sync");
+    CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, tx_permit_len, "Allow send wait time");
+    CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, max_idle_len, "Max idle wait time for BS mode");
+    CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, tx_pre_len, " Active TX_EN before TX");
+    d_debug("\n");
+
+    CSA_SHOW(0, ttl_baudrate, "TTL baudrate");
+    d_debug("\n");
 }

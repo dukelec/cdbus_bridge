@@ -61,10 +61,11 @@
 
 /* private function prototypes --------------------------------------------*/
 /* add user code begin function prototypes */
-
+void try_jump_to_app(void);
+void app_main(void);
 /* add user code end function prototypes */
 
-static otg_core_type otg_core_struct_hs;
+otg_core_type otg_core_struct_hs;
 
 uint32_t usbd_app_buffer_hs[128];
 
@@ -81,7 +82,7 @@ uint32_t usbd_app_buffer_hs[128];
 void wk_usb_app_init(void)
 {
   /* add user code begin usb_app_init 0 */
-
+  try_jump_to_app();
   /* add user code end usb_app_init 0 */
 
   /*hs device cdc*/
@@ -104,7 +105,8 @@ void wk_usb_app_init(void)
 void wk_usb_app_task(void)
 {
   /* add user code begin usb_app_task 0 */
-
+  app_main();
+  return;
   /* add user code end usb_app_task 0 */
 
   uint32_t length = 0;

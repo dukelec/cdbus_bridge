@@ -58,17 +58,13 @@ project/src/main.c \
 project/src/wk_system.c \
 project/src/cdc_class.c \
 project/src/cdc_desc.c \
-project/src/usb_app.c
-
-#cdnet/core/cdnet_core.c \
-#cdnet/parser/cdnet_l0.c \
-#cdnet/parser/cdnet_l1.c \
-#cdnet/dev/cdctl.c \
-#cdnet/utils/cd_list.c \
-#cdnet/utils/cd_debug.c \
-#usr/config.c \
-#usr/common_services.c \
-#usr/app_main.c
+project/src/usb_app.c \
+utils/cd_list.c \
+utils/cdbus_uart.c \
+utils/crc_fast.c \
+usr/config.c \
+usr/common_services.c \
+usr/app_main.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -133,14 +129,9 @@ C_INCLUDES =  \
 -Ilibraries/cmsis/cm4/core_support \
 -Ilibraries/cmsis/cm4/device_support \
 -Imiddlewares/usb_drivers/inc \
--Iproject/inc
-
-#-Icdnet/parser \
-#-Icdnet/core \
-#-Icdnet/utils \
-#-Icdnet/dev \
-#-Icdnet/arch/stm32 \
-#-Iusr
+-Iproject/inc \
+-Iutils \
+-Iusr
 
 
 # compile gcc flags

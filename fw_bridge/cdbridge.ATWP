@@ -241,6 +241,6 @@
         <MinHeapSize>0x200</MinHeapSize>
         <MinStackSize>0x400</MinStackSize>
         <UseFirmware>true</UseFirmware>
-        <PackageVersion>V2.1.1_ZH</PackageVersion>
+        <PackageVersion>V2.1.1</PackageVersion>
     </ProjectInfomation>
 </Root>

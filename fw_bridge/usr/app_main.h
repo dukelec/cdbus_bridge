@@ -13,7 +13,7 @@
 #include "cd_utils.h"
 #include "cd_list.h"
 #include "cdbus_uart.h"
-#include "cdctl_it.h"
+#include "cdctl.h"
 #include "modbus_crc.h"
 
 #include "usb_conf.h"

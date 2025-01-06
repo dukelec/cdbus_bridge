@@ -17,6 +17,10 @@ static gpio_t led_rx = { .group = LED_G_GPIO_PORT, .num = LED_G_PIN };
 static gpio_t sw1 = { .group = SW1_GPIO_PORT, .num = SW1_PIN };
 static gpio_t sw2 = { .group = SW2_GPIO_PORT, .num = SW2_PIN };
 
+static gpio_t cd_cs = { .group = CD_SS_GPIO_PORT, .num = CD_SS_PIN };
+static spi_t cd_spi = { .hspi = SPI1, .ns_pin = &cd_cs };
+#define CD_INT_RD()     (CD_INT_GPIO_PORT->idt & CD_INT_PIN)
+
 static cd_frame_t frame_alloc[FRAME_MAX];
 list_head_t frame_free_head = {0};
 
@@ -112,12 +116,13 @@ void app_main(void)
     gpio_set_val(&led_b, 1);
     gpio_set_val(&led_g, 0);
 
-    cdctl_spi_wr_init();
-    cdctl_dev_init(&csa.bus_cfg);
+    //cdctl_spi_wr_init();
+    //cdctl_dev_init(&csa.bus_cfg);
+    cdctl_dev_init(&csa.bus_cfg, &cd_spi);
 
-    nvic_irq_enable(EXINT0_IRQn, 2, 0);
-    nvic_irq_enable(DMA1_Channel1_IRQn, 2, 0);
-    exint_interrupt_enable(EXINT_LINE_0, TRUE);
+    //nvic_irq_enable(EXINT0_IRQn, 2, 0);
+    //nvic_irq_enable(DMA1_Channel1_IRQn, 2, 0);
+    //exint_interrupt_enable(EXINT_LINE_0, TRUE);
 
     while (true) {
         if (frame_free_head.len > 5) {
@@ -154,6 +159,7 @@ void app_main(void)
 
         data_led_task();
         dump_hw_status();
+        cdctl_routine();
 
         if (csa.force_115200 != !gpio_get_val(&sw2)) {
             printf("sw2 changed, reboot...\n");
@@ -176,6 +182,7 @@ void app_main(void)
     }
 }
 
+#if 0
 void EXINT0_IRQHandler(void)
 {
     EXINT->intsts = EXINT_LINE_0;
@@ -186,3 +193,4 @@ void DMA1_Channel1_IRQHandler(void)
 {
     cdctl_spi_wr_isr();
 }
+#endif

@@ -12,7 +12,7 @@
 
 #define CDCTL_SYS_CLK       150000000UL // 150MHz for CDCTL01A
 
-//#define ARCH_SPI
+#define ARCH_SPI
 #define ARCH_CRC_HW
 #define CDUART_CRC          crc16_hw
 #define CDUART_CRC_SUB      crc16_hw_sub

@@ -68,48 +68,61 @@ static inline void gpio_set_value(gpio_t *gpio, bool value)
 // spi wrapper
 
 typedef struct {
-    SPI_HandleTypeDef *hspi;
+    spi_type          *hspi;
     gpio_t            *ns_pin;
 } spi_t;
 
-static inline int spi_mem_write(spi_t *spi, uint8_t mem_addr,
-        const uint8_t *buf, int len)
+
+static inline int HAL_SPI_Transmit(spi_type *dev, uint8_t *buf, int len)
+{
+    for (int i = 0; i < len; i++) {
+        while(spi_i2s_flag_get(dev, SPI_I2S_TDBE_FLAG) == RESET);
+        spi_i2s_data_transmit(dev, *(buf + i));
+        while(spi_i2s_flag_get(dev, SPI_I2S_RDBF_FLAG) == RESET);
+        volatile uint8_t rx_dummy = spi_i2s_data_receive(dev);
+        (void)rx_dummy;
+    }
+    return 0;
+}
+
+static inline int HAL_SPI_Receive(spi_type *dev, uint8_t *buf, int len)
+{
+    for (int i = 0; i < len; i++) {
+        while(spi_i2s_flag_get(dev, SPI_I2S_TDBE_FLAG) == RESET);
+        spi_i2s_data_transmit(dev, 0);
+        while(spi_i2s_flag_get(dev, SPI_I2S_RDBF_FLAG) == RESET);
+        *(buf + i) = spi_i2s_data_receive(dev);
+    }
+    return 0;
+}
+
+
+static inline int spi_mem_write(spi_t *spi, uint8_t mem_addr, const uint8_t *buf, int len)
 {
     int ret = 0;
     gpio_set_value(spi->ns_pin, 0);
-    ret = HAL_SPI_Transmit(spi->hspi, &mem_addr, 1, HAL_MAX_DELAY);
-    ret = HAL_SPI_Transmit(spi->hspi, (uint8_t *)buf, len, HAL_MAX_DELAY);
+    ret = HAL_SPI_Transmit(spi->hspi, &mem_addr, 1);
+    ret = HAL_SPI_Transmit(spi->hspi, (uint8_t *)buf, len);
     gpio_set_value(spi->ns_pin, 1);
     return ret;
 }
 
-static inline int spi_mem_read(spi_t *spi, uint8_t mem_addr,
-        uint8_t *buf, int len)
+static inline int spi_mem_read(spi_t *spi, uint8_t mem_addr, uint8_t *buf, int len)
 {
     int ret = 0;
     gpio_set_value(spi->ns_pin, 0);
-    ret = HAL_SPI_Transmit(spi->hspi, &mem_addr, 1, HAL_MAX_DELAY);
-    ret = HAL_SPI_Receive(spi->hspi, buf, len, HAL_MAX_DELAY);
+    ret = HAL_SPI_Transmit(spi->hspi, &mem_addr, 1);
+    ret = HAL_SPI_Receive(spi->hspi, buf, len);
     gpio_set_value(spi->ns_pin, 1);
     return ret;
 }
 
-static inline int spi_dma_write(spi_t *spi, const uint8_t *buf, int len)
+#if 0
+static inline int spi_dma_write_read(spi_t *spi, const uint8_t *wr_buf, uint8_t *rd_buf, int len)
 {
-    return HAL_SPI_Transmit_DMA(spi->hspi, (uint8_t *)buf, len);
+    return HAL_SPI_TransmitReceive_DMA(spi->hspi, (uint8_t *)wr_buf, rd_buf, len);
 }
-
-static inline int spi_dma_read(spi_t *spi, uint8_t *buf, int len)
-{
-    return HAL_SPI_Receive_DMA(spi->hspi, buf, len);
-}
-
-static inline int spi_dma_write_read(spi_t *spi, const uint8_t *wr_buf,
-        uint8_t *rd_buf, int len)
-{
-    return HAL_SPI_TransmitReceive_DMA(spi->hspi,
-            (uint8_t *)wr_buf, rd_buf, len);
-}
+#endif
 
 #endif
 
@@ -122,18 +135,14 @@ typedef struct {
     uint8_t            dev_addr; // 8 bit, equal to i2c write address
 } i2c_t;
 
-static inline int i2c_mem_write(i2c_t *i2c, uint8_t mem_addr,
-        const uint8_t *buf, int len)
+static inline int i2c_mem_write(i2c_t *i2c, uint8_t mem_addr, const uint8_t *buf, int len)
 {
-    return HAL_I2C_Mem_Write(i2c->hi2c, i2c->dev_addr, mem_addr, 1,
-            (uint8_t *)buf, len, HAL_MAX_DELAY);
+    return HAL_I2C_Mem_Write(i2c->hi2c, i2c->dev_addr, mem_addr, 1, (uint8_t *)buf, len, HAL_MAX_DELAY);
 }
 
-static inline int i2c_mem_read(i2c_t *i2c, uint8_t mem_addr,
-        uint8_t *buf, int len)
+static inline int i2c_mem_read(i2c_t *i2c, uint8_t mem_addr, uint8_t *buf, int len)
 {
-    return HAL_I2C_Mem_Read(i2c->hi2c, i2c->dev_addr, mem_addr, 1,
-            buf, len, HAL_MAX_DELAY);
+    return HAL_I2C_Mem_Read(i2c->hi2c, i2c->dev_addr, mem_addr, 1, buf, len, HAL_MAX_DELAY);
 }
 #endif
 

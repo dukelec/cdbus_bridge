@@ -119,7 +119,6 @@ void app_main(void)
     nvic_irq_enable(EXINT0_IRQn, 2, 0);
     nvic_irq_enable(DMA1_Channel1_IRQn, 2, 0);
     exint_interrupt_enable(EXINT_LINE_0, TRUE);
-    //cdctl_int_isr(); // trigger dma hotfix
 
     while (true) {
         if (frame_free_head.len > 5) {
@@ -159,11 +158,11 @@ void app_main(void)
 
         if (csa.force_115200 != !gpio_get_value(&sw2)) {
             printf("sw2 changed, reboot...\n");
-            csa.do_reboot = true;
+            NVIC_SystemReset();
         }
         if (!gpio_get_value(&sw1)) {
             printf("sw1 switch on, reboot...\n");
-            csa.do_reboot = true;
+            NVIC_SystemReset();
         }
         if (pcdc->linecoding.bitrate != cdc_rate_bk) {
             bool app_mode = (pcdc->linecoding.bitrate == 0xcdcd);

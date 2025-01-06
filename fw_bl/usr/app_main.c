@@ -93,7 +93,7 @@ void app_main(void)
 
         if (gpio_get_value(&sw1)) {
             printf("sw1 switch off, reboot...\n");
-            csa.do_reboot = true;
+            NVIC_SystemReset();
         }
 
         if (get_systick() - t_last > 300000 / SYSTICK_US_DIV) {

@@ -34,16 +34,6 @@ uint8_t cdctl_buf[2];
 
 static void cdctl_spi_wr(const uint8_t *w_buf, uint8_t *r_buf, int len)
 {
-    uint32_t flags;
-    local_irq_save(flags);
-    
-
-    CD_DMA_W->CCR &= ~DMA_CCR_EN;
-    CD_DMA_W->CNDTR = len;
-    //CD_DMA_W->CPAR = (uint32_t)&CD_SPI->DR;
-    CD_DMA_W->CMAR = (uint32_t)w_buf;
-    CD_DMA_W->CCR |= DMA_CCR_EN;
-
     // clear spi rx fifo
     CD_DMA_R->CCR &= ~DMA_CCR_EN;
     CD_DMA_R->CNDTR = len;
@@ -51,19 +41,18 @@ static void cdctl_spi_wr(const uint8_t *w_buf, uint8_t *r_buf, int len)
     CD_DMA_R->CMAR = (uint32_t)r_buf;
     CD_DMA_R->CCR |= DMA_CCR_EN;
 
-    local_irq_restore(flags);
-    while (CD_SPI->SR & SPI_FLAG_BSY);
-    __DMB();
-}
-
-void cdctl_spi_wr_it(const uint8_t *w_buf, uint8_t *r_buf, int len)
-{
     CD_DMA_W->CCR &= ~DMA_CCR_EN;
     CD_DMA_W->CNDTR = len;
     //CD_DMA_W->CPAR = (uint32_t)&CD_SPI->DR;
     CD_DMA_W->CMAR = (uint32_t)w_buf;
     CD_DMA_W->CCR |= DMA_CCR_EN;
 
+    while (!(CD_DMA->ISR & CD_DMA_MASK));
+    CD_DMA->IFCR = CD_DMA_MASK;
+}
+
+void cdctl_spi_wr_it(const uint8_t *w_buf, uint8_t *r_buf, int len)
+{
     // clear spi rx fifo
     CD_DMA_R->CCR &= ~DMA_CCR_EN;
     CD_DMA_R->CNDTR = len;
@@ -71,20 +60,21 @@ void cdctl_spi_wr_it(const uint8_t *w_buf, uint8_t *r_buf, int len)
     CD_DMA_R->CMAR = (uint32_t)r_buf;
     CD_DMA_R->CCR |= DMA_CCR_TCIE | DMA_CCR_EN;
 
-    //while (CD_SPI->SR & SPI_FLAG_BSY);
+    CD_DMA_W->CCR &= ~DMA_CCR_EN;
+    CD_DMA_W->CNDTR = len;
+    //CD_DMA_W->CPAR = (uint32_t)&CD_SPI->DR;
+    CD_DMA_W->CMAR = (uint32_t)w_buf;
+    CD_DMA_W->CCR |= DMA_CCR_EN;
 }
 
 
 void cdctl_spi_wr_isr(void)
 {
-    while (CD_SPI->SR & SPI_FLAG_BSY)
-        printf("dma hotfix\n");
     volatile uint32_t flag_it = CD_DMA->ISR;
     if (flag_it & CD_DMA_MASK) {
         CD_DMA->IFCR = CD_DMA_MASK;
         CD_DMA_W->CCR &= ~DMA_CCR_EN;
         CD_DMA_R->CCR &= ~(DMA_CCR_EN | DMA_CCR_TCIE);
-        __DMB();
         cdctl_spi_isr();
     }
 }

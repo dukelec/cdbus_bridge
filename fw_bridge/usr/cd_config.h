@@ -12,7 +12,7 @@
 
 #define CDCTL_OSC_CLK       12000000UL // 12MHz
 
-//#define ARCH_SPI
+#define ARCH_SPI
 #define ARCH_CRC_HW
 #define CDUART_CRC          crc16_hw
 #define CDUART_CRC_SUB      crc16_hw_sub

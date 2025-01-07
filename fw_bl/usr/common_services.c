@@ -189,7 +189,7 @@ int _write(int file, char *data, int len)
            frm->dat[4] = 0x40;
            memcpy(frm->dat + 5, data, len);
            list_put_it(&d_dev.tx_head, &frm->node);
-           return len;
+           //return len;
        }
    }
 

@@ -70,13 +70,12 @@ void cdctl_spi_wr_it(const uint8_t *w_buf, uint8_t *r_buf, int len)
 
 void cdctl_spi_wr_isr(void)
 {
-    volatile uint32_t flag_it = CD_DMA->ISR;
-    if (flag_it & CD_DMA_MASK) {
+    //uint32_t flag_it = CD_DMA->ISR;
+    //if (flag_it & CD_DMA_MASK) {
         CD_DMA->IFCR = CD_DMA_MASK;
-        CD_DMA_W->CCR &= ~DMA_CCR_EN;
         CD_DMA_R->CCR &= ~(DMA_CCR_EN | DMA_CCR_TCIE);
         cdctl_spi_isr();
-    }
+    //}
 }
 
 

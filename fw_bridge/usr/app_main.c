@@ -57,11 +57,10 @@ static void dump_hw_status(void)
     if (get_systick() - t_l > 8000) {
         t_l = get_systick();
 
-        d_debug("ctl: st: %d, t_len %ld, r_len %ld, irq %d\n",
+        d_debug("ctl: %d, pend t %ld r %ld, irq %d\n",
                 cdctl_state, cdctl_tx_head.len, cdctl_rx_head.len, !CD_INT_RD());
-        d_debug("  r_cnt %ld (lost %ld, err %ld, no-free %ld), t_cnt %ld (cd %ld, err %ld)\n",
-                cdctl_rx_cnt, cdctl_rx_lost_cnt, cdctl_rx_error_cnt,
-                cdctl_rx_no_free_node_cnt,
+        d_debug("  r %ld (lost %ld err %ld full %ld), t %ld (cd %ld err %ld)\n",
+                cdctl_rx_cnt, cdctl_rx_lost_cnt, cdctl_rx_error_cnt, cdctl_rx_no_free_node_cnt,
                 cdctl_tx_cnt, cdctl_tx_cd_cnt, cdctl_tx_error_cnt);
         //d_debug("usb: r_cnt %d, t_cnt %d, t_buf %p, t_len %d, t_state %x\n",
         //        usb_rx_cnt, usb_tx_cnt, cdc_tx_buf, cdc_tx_head.len, hcdc->TxState);

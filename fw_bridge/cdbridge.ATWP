@@ -162,9 +162,20 @@
         </Signal>
         <Signal SignalName="GPIO_Output" PinName="PA4">
             <Parameters name="GPIO_Outputlevel" value="GPIO_OUTPUTLEVEL_HIGH"/>
+            <Parameters name="GPIO_DriverCapability" value="GPIO_DRIVE_STRENGTH_STRONGER"/>
             <Parameters name="Label" value="CD_SS"/>
         </Signal>
+        <Signal SignalName="SPI1_SCK" PinName="PA5">
+            <Parameters name="GPIO_DriverCapability" value="GPIO_DRIVE_STRENGTH_STRONGER"/>
+        </Signal>
+        <Signal SignalName="SPI1_MISO" PinName="PA6">
+            <Parameters name="GPIO_DriverCapability" value="GPIO_DRIVE_STRENGTH_STRONGER"/>
+        </Signal>
+        <Signal SignalName="SPI1_MOSI" PinName="PA7">
+            <Parameters name="GPIO_DriverCapability" value="GPIO_DRIVE_STRENGTH_STRONGER"/>
+        </Signal>
         <Signal SignalName="EXINT0" PinName="PB0">
+            <Parameters name="GPIO_PullType_Set" value="GPIO_PULL_UP"/>
             <Parameters name="Label" value="CD_INT"/>
         </Signal>
         <Signal SignalName="GPIO_Input" PinName="PB4">

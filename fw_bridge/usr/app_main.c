@@ -12,7 +12,6 @@
 extern ADC_HandleTypeDef hadc1;
 extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart5;
-extern SPI_HandleTypeDef hspi1;
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
 int CDCTL_SYS_CLK = 150000000; // 150MHz for cdctl01a
@@ -29,9 +28,6 @@ uart_t debug_uart = { .huart = &huart5 };
 uart_t ttl_uart = { .huart = &huart3 };
 
 static gpio_t r_rst = { .group = OLD_CD_RST_GPIO_Port, .num = OLD_CD_RST_Pin };
-static gpio_t r_int = { .group = CD_INT_GPIO_Port, .num = CD_INT_Pin };
-static gpio_t r_ss = { .group = CD_SS_GPIO_Port, .num = CD_SS_Pin };
-static spi_t r_spi = { .hspi = &hspi1, .ns_pin = &r_ss };
 
 #define CDC_RX_MAX  240
 #define CDC_TX_MAX   80
@@ -90,22 +86,9 @@ static void device_init(void)
         csa.bus_cfg.baud_h = 115200;
         printf("force baudrate to 115200 by sw2!\n");
     }
-    cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, &r_rst);
+    cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, NULL, &r_rst);
 
     if (r_dev.version >= 0x10) {
-        // 24MHz / (2 + 2) * (48 + 2) / 2^1 = 150MHz
-        cdctl_write_reg(&r_dev, REG_PLL_N, 0x2);
-        d_info("pll_n: %02x\n", cdctl_read_reg(&r_dev, REG_PLL_N));
-        cdctl_write_reg(&r_dev, REG_PLL_ML, 0x30); // 0x30: 48
-        d_info("pll_ml: %02x\n", cdctl_read_reg(&r_dev, REG_PLL_ML));
-
-        d_info("pll_ctrl: %02x\n", cdctl_read_reg(&r_dev, REG_PLL_CTRL));
-        cdctl_write_reg(&r_dev, REG_PLL_CTRL, 0x10); // enable pll
-        d_info("clk_status: %02x\n", cdctl_read_reg(&r_dev, REG_CLK_STATUS));
-        cdctl_write_reg(&r_dev, REG_CLK_CTRL, 0x01); // select pll
-
-        d_info("clk_status after select pll: %02x\n", cdctl_read_reg(&r_dev, REG_CLK_STATUS));
-        d_info("version after select pll: %02x\n", cdctl_read_reg(&r_dev, REG_VERSION));
     }
 
     cduart_dev_init(&d_dev, &frame_free_head);
@@ -113,8 +96,6 @@ static void device_init(void)
     //                    uart / usb
     cdn_add_intf(&dft_ns, &c_dev.cd_dev, 0, 0xfe);
 
-    // enable interrupt
-    cdctl_write_reg(&r_dev, REG_INT_MASK, CDCTL_MASK);
     HAL_NVIC_SetPriority(EXTI0_1_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
 }
@@ -151,11 +132,10 @@ static void dump_hw_status(void)
         USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
         t_l = get_systick();
 
-        d_debug("ctl: t_len %d, r_len %d, irq %d\n",
-                r_dev.tx_head.len, r_dev.rx_head.len, !gpio_get_value(&r_int));
-        d_debug("  r_cnt %d (lost %d, err %d, no-free %d), t_cnt %d (cd %d, err %d)\n",
-                r_dev.rx_cnt, r_dev.rx_lost_cnt, r_dev.rx_error_cnt,
-                r_dev.rx_no_free_node_cnt,
+        d_debug("ctl: pend t %ld r %ld, irq %d\n",
+                r_dev.tx_head.len, r_dev.rx_head.len, !CD_INT_RD());
+        d_debug("  r %ld (lost %ld err %ld full %ld), t %ld (cd %ld err %ld)\n",
+                r_dev.rx_cnt, r_dev.rx_lost_cnt, r_dev.rx_error_cnt, r_dev.rx_no_free_node_cnt,
                 r_dev.tx_cnt, r_dev.tx_cd_cnt, r_dev.tx_error_cnt);
         d_debug("usb: r_cnt %d, t_cnt %d, t_buf %p, t_len %d, t_state %x\n",
                 usb_rx_cnt, usb_tx_cnt, cdc_tx_buf, cdc_tx_head.len, hcdc->TxState);

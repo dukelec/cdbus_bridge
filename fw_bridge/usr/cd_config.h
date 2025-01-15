@@ -13,7 +13,6 @@
 #define CDCTL_SYS_CLK       150000000UL // 150MHz for CDCTL01A
 
 //#define ARCH_SPI
-#define CD_LIST_IT
 #define CD_FRAME_SIZE       258
 #define CDN_MAX_DAT         253
 
@@ -22,6 +21,7 @@
 //#define LIST_DEBUG
 
 #define CRC_IRQ_SAFE        // printf also invoke crc
+#define CD_LIST_IT
 #define CDUART_IRQ_SAFE
 #define CDUART_IDLE_TIME    (500000 / SYSTICK_US_DIV) // 500 ms
 

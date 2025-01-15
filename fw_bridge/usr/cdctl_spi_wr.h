@@ -33,7 +33,6 @@ uint8_t cdctl_reg_r(uint8_t reg);
 void cdctl_reg_w(uint8_t reg, uint8_t val);
 
 
-// only read int_flag
 static inline void cdctl_reg_r_it(uint8_t reg)
 {
     cdctl_buf[0] = reg;
@@ -41,7 +40,6 @@ static inline void cdctl_reg_r_it(uint8_t reg)
     cdctl_spi_wr_it(cdctl_buf, cdctl_buf, 2);
 }
 
-// only write int_mask
 static inline void cdctl_reg_w_it(uint8_t reg, uint8_t val)
 {
     cdctl_buf[0] = reg | 0x80;

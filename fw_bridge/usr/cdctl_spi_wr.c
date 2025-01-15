@@ -34,16 +34,13 @@ uint8_t cdctl_buf[2];
 
 static void cdctl_spi_wr(const uint8_t *w_buf, uint8_t *r_buf, int len)
 {
-    // clear spi rx fifo
-    CD_DMA_R->CCR &= ~DMA_CCR_EN;
+    CD_DMA_R->CCR &= ~(DMA_CCR_EN | DMA_CCR_TCIE);
     CD_DMA_R->CNDTR = len;
-    //CD_DMA_R->CPAR = (uint32_t)&CD_SPI->DR;
     CD_DMA_R->CMAR = (uint32_t)r_buf;
     CD_DMA_R->CCR |= DMA_CCR_EN;
 
     CD_DMA_W->CCR &= ~DMA_CCR_EN;
     CD_DMA_W->CNDTR = len;
-    //CD_DMA_W->CPAR = (uint32_t)&CD_SPI->DR;
     CD_DMA_W->CMAR = (uint32_t)w_buf;
     CD_DMA_W->CCR |= DMA_CCR_EN;
 
@@ -53,16 +50,13 @@ static void cdctl_spi_wr(const uint8_t *w_buf, uint8_t *r_buf, int len)
 
 void cdctl_spi_wr_it(const uint8_t *w_buf, uint8_t *r_buf, int len)
 {
-    // clear spi rx fifo
     CD_DMA_R->CCR &= ~DMA_CCR_EN;
     CD_DMA_R->CNDTR = len;
-    //CD_DMA_R->CPAR = (uint32_t)&CD_SPI->DR;
     CD_DMA_R->CMAR = (uint32_t)r_buf;
     CD_DMA_R->CCR |= DMA_CCR_TCIE | DMA_CCR_EN;
 
     CD_DMA_W->CCR &= ~DMA_CCR_EN;
     CD_DMA_W->CNDTR = len;
-    //CD_DMA_W->CPAR = (uint32_t)&CD_SPI->DR;
     CD_DMA_W->CMAR = (uint32_t)w_buf;
     CD_DMA_W->CCR |= DMA_CCR_EN;
 }
@@ -73,7 +67,6 @@ void cdctl_spi_wr_isr(void)
     //uint32_t flag_it = CD_DMA->ISR;
     //if (flag_it & CD_DMA_MASK) {
         CD_DMA->IFCR = CD_DMA_MASK;
-        CD_DMA_R->CCR &= ~(DMA_CCR_EN | DMA_CCR_TCIE);
         cdctl_spi_isr();
     //}
 }
@@ -82,9 +75,10 @@ void cdctl_spi_wr_isr(void)
 void cdctl_spi_wr_init(void)
 {
     BITS_SET(CD_SPI->CR1, SPI_CR1_SPE); // enable spi
-
     BITS_SET(CD_SPI->CR2, SPI_CR2_RXDMAEN);
     BITS_SET(CD_SPI->CR2, SPI_CR2_TXDMAEN);
+    CD_DMA_R->CCR &= ~DMA_CCR_EN;
+    CD_DMA_W->CCR &= ~DMA_CCR_EN;
     CD_DMA_W->CPAR = (uint32_t)&CD_SPI->DR;
     CD_DMA_R->CPAR = (uint32_t)&CD_SPI->DR;
 }

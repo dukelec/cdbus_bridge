@@ -12,8 +12,7 @@
 
 #include "arch_wrapper.h"
 
-static inline
-void dbg_transmit(const uint8_t *buf, uint16_t len)
+static inline void dbg_transmit(const uint8_t *buf, uint16_t len)
 {
     for (uint16_t i = 0; i < len; i++) {
         while (!(UART7->sts & USART_TDBE_FLAG));

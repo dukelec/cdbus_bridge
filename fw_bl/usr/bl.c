@@ -22,12 +22,12 @@ void try_jump_to_app(void)
     uint32_t stack = *(uint32_t*)APP_ADDR;
     uint32_t func = *(uint32_t*)(APP_ADDR + 4);
     
-    if (!gpio_get_value(&sw1)) {
+    if (!gpio_get_val(&sw1)) {
         printf("stay in bl...\n");
         return;
     }
 
-    gpio_set_value(&led_g, 1);
+    gpio_set_val(&led_g, 1);
     printf("jump to app...\n");
     while (!__HAL_UART_GET_FLAG(debug_uart.huart, UART_FLAG_TC));
     HAL_UART_DeInit(debug_uart.huart);
@@ -67,7 +67,7 @@ void bl_routine(void)
 {
     if (get_systick() - t_last > 300000 / SYSTICK_US_DIV) {
         t_last = get_systick();
-        gpio_set_value(&led_g, !gpio_get_value(&led_g));
+        gpio_set_val(&led_g, !gpio_get_val(&led_g));
     }
     //if (!csa.keep_in_bl && get_systick() - boot_time > 3000000 / SYSTICK_US_DIV)
     //    jump_to_app();

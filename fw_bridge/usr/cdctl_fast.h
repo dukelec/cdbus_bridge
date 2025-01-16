@@ -14,10 +14,10 @@
 #include "cdctl_regs.h"
 
 #define CD_SPI          SPI1
-#define CD_DMA_R        DMA1_Channel2
-#define CD_DMA_W        DMA1_Channel3
+#define CD_DMA_R        DMA1_Channel1
+#define CD_DMA_W        DMA1_Channel2
 #define CD_DMA          DMA1
-#define CD_DMA_MASK     (2 << 4) // DMA_ISR.TCIF2
+#define CD_DMA_MASK     (2 << 0) // DMA_ISR.TCIF1
 
 #define CD_SS_HIGH()    {CD_SS_GPIO_Port->BSRR = CD_SS_Pin;}
 #define CD_SS_LOW()     {CD_SS_GPIO_Port->BRR = CD_SS_Pin;}

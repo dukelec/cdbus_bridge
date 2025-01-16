@@ -51,7 +51,7 @@ uint32_t rd_pos = 0;
 static void device_init(void)
 {
     int i;
-    cdn_init_ns(&dft_ns, &packet_free_head);
+    cdn_init_ns(&dft_ns, &packet_free_head, &frame_free_head);
 
     for (i = 0; i < CDC_RX_MAX; i++)
         list_put(&cdc_rx_free_head, &cdc_rx_alloc[i].node);
@@ -79,21 +79,21 @@ void set_led_state(led_state_t state)
 
     switch (state) {
     case LED_POWERON:
-        gpio_set_value(&led_r, 1);
-        gpio_set_value(&led_g, 0);
-        gpio_set_value(&led_b, 1);
+        gpio_set_val(&led_r, 1);
+        gpio_set_val(&led_g, 0);
+        gpio_set_val(&led_b, 1);
         break;
     case LED_WARN:
-        gpio_set_value(&led_r, 0);
-        gpio_set_value(&led_g, 0);
-        gpio_set_value(&led_b, 1);
+        gpio_set_val(&led_r, 0);
+        gpio_set_val(&led_g, 0);
+        gpio_set_val(&led_b, 1);
         break;
     default:
     case LED_ERROR:
         is_err = true;
-        gpio_set_value(&led_r, 0);
-        gpio_set_value(&led_g, 1);
-        gpio_set_value(&led_b, 1);
+        gpio_set_val(&led_r, 0);
+        gpio_set_val(&led_g, 1);
+        gpio_set_val(&led_b, 1);
         break;
     }
 }
@@ -153,7 +153,7 @@ void app_main(void)
         bl_routine();
         debug_flush(false);
 
-        if (gpio_get_value(&sw1)) {
+        if (gpio_get_val(&sw1)) {
             printf("sw1 switch off, reboot...\n");
             csa.do_reboot = true;
         }

@@ -11,21 +11,16 @@
 #include "cd_debug.h"
 #include "app_main.h"
 
-extern SPI_HandleTypeDef hspi1;
-
 
 static inline void cdctl_spi_wr(const uint8_t *w_buf, uint8_t *r_buf, int len)
 {
-    // clear spi rx fifo
     CD_DMA_R->CCR &= ~DMA_CCR_EN;
     CD_DMA_R->CNDTR = len;
-    //CD_DMA_R->CPAR = (uint32_t)&CD_SPI->DR;
     CD_DMA_R->CMAR = (uint32_t)r_buf;
     CD_DMA_R->CCR |= DMA_CCR_EN;
 
     CD_DMA_W->CCR &= ~DMA_CCR_EN;
     CD_DMA_W->CNDTR = len;
-    //CD_DMA_W->CPAR = (uint32_t)&CD_SPI->DR;
     CD_DMA_W->CMAR = (uint32_t)w_buf;
     CD_DMA_W->CCR |= DMA_CCR_EN;
 
@@ -104,28 +99,16 @@ static inline void cdctl_flush(void)
 
 // member functions
 
-cd_frame_t *cdctl_get_free_frame(cd_dev_t *cd_dev)
-{
-    cdctl_dev_t *dev = container_of(cd_dev, cdctl_dev_t, cd_dev);
-    return list_get_entry(dev->free_head, cd_frame_t);
-}
-
 cd_frame_t *cdctl_get_rx_frame(cd_dev_t *cd_dev)
 {
     cdctl_dev_t *dev = container_of(cd_dev, cdctl_dev_t, cd_dev);
-    return list_get_entry(&dev->rx_head, cd_frame_t);
-}
-
-void cdctl_put_free_frame(cd_dev_t *cd_dev, cd_frame_t *frame)
-{
-    cdctl_dev_t *dev = container_of(cd_dev, cdctl_dev_t, cd_dev);
-    list_put(dev->free_head, &frame->node);
+    return list_get_entry_it(&dev->rx_head, cd_frame_t);
 }
 
 void cdctl_put_tx_frame(cd_dev_t *cd_dev, cd_frame_t *frame)
 {
     cdctl_dev_t *dev = container_of(cd_dev, cdctl_dev_t, cd_dev);
-    list_put(&dev->tx_head, &frame->node);
+    list_put_it(&dev->tx_head, &frame->node);
 }
 
 void cdctl_set_baud_rate(uint32_t low, uint32_t high)
@@ -152,15 +135,15 @@ void cdctl_get_baud_rate(uint32_t *low, uint32_t *high)
 void cdctl_dev_init(cdctl_dev_t *dev, list_head_t *free_head, cdctl_cfg_t *init, spi_t *spi, gpio_t *rst_n)
 {
     SET_BIT(CD_SPI->CR1, SPI_CR1_SPE); // enable spi
-    SET_BIT(hspi1.Instance->CR2, SPI_CR2_RXDMAEN);
-    SET_BIT(hspi1.Instance->CR2, SPI_CR2_TXDMAEN);
-    DMA1_Channel2->CPAR = (uint32_t)&SPI1->DR;
-    DMA1_Channel3->CPAR = (uint32_t)&SPI1->DR;
+    SET_BIT(CD_SPI->CR2, SPI_CR2_RXDMAEN);
+    SET_BIT(CD_SPI->CR2, SPI_CR2_TXDMAEN);
+    //CD_DMA_R->CCR &= ~DMA_CCR_EN;
+    //CD_DMA_W->CCR &= ~DMA_CCR_EN;
+    CD_DMA_R->CPAR = (uint32_t)&CD_SPI->DR;
+    CD_DMA_W->CPAR = (uint32_t)&CD_SPI->DR;
 
     dev->free_head = free_head;
-    dev->cd_dev.get_free_frame = cdctl_get_free_frame;
     dev->cd_dev.get_rx_frame = cdctl_get_rx_frame;
-    dev->cd_dev.put_free_frame = cdctl_put_free_frame;
     dev->cd_dev.put_tx_frame = cdctl_put_tx_frame;
 
 #ifdef USE_DYNAMIC_INIT
@@ -171,9 +154,9 @@ void cdctl_dev_init(cdctl_dev_t *dev, list_head_t *free_head, cdctl_cfg_t *init,
 
     d_info("cdctl: init...\n");
     if (rst_n) {
-        gpio_set_value(rst_n, 0);
+        gpio_set_val(rst_n, 0);
         delay_systick(2000/SYSTICK_US_DIV);
-        gpio_set_value(rst_n, 1);
+        gpio_set_val(rst_n, 1);
         delay_systick(2000/SYSTICK_US_DIV);
     }
 

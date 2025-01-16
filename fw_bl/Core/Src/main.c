@@ -42,7 +42,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart5;
-DMA_HandleTypeDef hdma_usart5_tx;
 
 /* USER CODE BEGIN PV */
 
@@ -51,7 +50,6 @@ DMA_HandleTypeDef hdma_usart5_tx;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_DMA_Init(void);
 static void MX_USART5_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -91,7 +89,6 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
   MX_USART5_UART_Init();
   try_jump_to_app(); //
   MX_USB_Device_Init();
@@ -174,7 +171,7 @@ static void MX_USART5_UART_Init(void)
 
   /* USER CODE END USART5_Init 1 */
   huart5.Instance = USART5;
-  huart5.Init.BaudRate = 115200;
+  huart5.Init.BaudRate = 2000000;
   huart5.Init.WordLength = UART_WORDLENGTH_8B;
   huart5.Init.StopBits = UART_STOPBITS_1;
   huart5.Init.Parity = UART_PARITY_NONE;
@@ -191,22 +188,6 @@ static void MX_USART5_UART_Init(void)
   /* USER CODE BEGIN USART5_Init 2 */
 
   /* USER CODE END USART5_Init 2 */
-
-}
-
-/**
-  * Enable DMA controller clock
-  */
-static void MX_DMA_Init(void)
-{
-
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA1_CLK_ENABLE();
-
-  /* DMA interrupt init */
-  /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 3, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
 }
 

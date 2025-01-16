@@ -14,19 +14,22 @@
 extern int CDCTL_SYS_CLK;
 
 #define ARCH_SPI
-#define CD_LIST_IT
+#define ARCH_CRC_HW
+#define CDUART_CRC          crc16_hw
+#define CDUART_CRC_SUB      crc16_hw_sub
+#define CRC_HW_IRQ_SAFE
+
 #define CD_FRAME_SIZE       258
 
 #define DEBUG
 //#define VERBOSE
-#define DBG_STR_LEN         160
-#define DBG_TX_IT
 //#define LIST_DEBUG
+#define DBG_STR_LEN         160
 
-#define CDUART_IRQ_SAFE // free_head requires irq safe
+#define CD_LIST_IT
+#define CD_IRQ_SAFE
 #define CDN_IRQ_SAFE
 
-//#define CDN_RB_TREE
 //#define CDN_L0_C
 
 #define CDUART_IDLE_TIME (100000 / SYSTICK_US_DIV) // 100 ms

@@ -23,7 +23,6 @@
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
-extern DMA_HandleTypeDef hdma_usart5_tx;
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
@@ -104,29 +103,11 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     PD3     ------> USART5_TX
     */
     GPIO_InitStruct.Pin = GPIO_PIN_3;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
     GPIO_InitStruct.Alternate = GPIO_AF3_USART5;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-    /* USART5 DMA Init */
-    /* USART5_TX Init */
-    hdma_usart5_tx.Instance = DMA1_Channel1;
-    hdma_usart5_tx.Init.Request = DMA_REQUEST_USART5_TX;
-    hdma_usart5_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
-    hdma_usart5_tx.Init.PeriphInc = DMA_PINC_DISABLE;
-    hdma_usart5_tx.Init.MemInc = DMA_MINC_ENABLE;
-    hdma_usart5_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-    hdma_usart5_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-    hdma_usart5_tx.Init.Mode = DMA_NORMAL;
-    hdma_usart5_tx.Init.Priority = DMA_PRIORITY_LOW;
-    if (HAL_DMA_Init(&hdma_usart5_tx) != HAL_OK)
-    {
-      Error_Handler();
-    }
-
-    __HAL_LINKDMA(huart,hdmatx,hdma_usart5_tx);
 
   /* USER CODE BEGIN USART5_MspInit 1 */
 
@@ -157,8 +138,6 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
     */
     HAL_GPIO_DeInit(GPIOD, GPIO_PIN_3);
 
-    /* USART5 DMA DeInit */
-    HAL_DMA_DeInit(huart->hdmatx);
   /* USER CODE BEGIN USART5_MspDeInit 1 */
 
   /* USER CODE END USART5_MspDeInit 1 */

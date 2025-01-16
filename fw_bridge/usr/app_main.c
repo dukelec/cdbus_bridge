@@ -67,7 +67,7 @@ uint32_t rd_pos = 0;
 static void device_init(void)
 {
     int i;
-    cdn_init_ns(&dft_ns, &packet_free_head);
+    cdn_init_ns(&dft_ns, &packet_free_head, &frame_free_head);
 
     for (i = 0; i < CDC_RX_MAX; i++)
         list_put(&cdc_rx_free_head, &cdc_rx_alloc[i].node);
@@ -80,16 +80,13 @@ static void device_init(void)
 
     cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_rx_buf_t);
 
-    csa.force_115200 = !gpio_get_value(&sw2);
+    csa.force_115200 = !gpio_get_val(&sw2);
     if (csa.force_115200) {
         csa.bus_cfg.baud_l = 115200;
         csa.bus_cfg.baud_h = 115200;
         printf("force baudrate to 115200 by sw2!\n");
     }
     cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, NULL, &r_rst);
-
-    if (r_dev.version >= 0x10) {
-    }
 
     cduart_dev_init(&d_dev, &frame_free_head);
     cduart_dev_init(&c_dev, &frame_free_head);
@@ -110,18 +107,18 @@ static void data_led_task(void)
     if (rx_cnt_last != r_dev.rx_cnt) {
         rx_cnt_last = r_dev.rx_cnt;
         rx_t_last = get_systick();
-        gpio_set_value(&led_rx, 1);
+        gpio_set_val(&led_rx, 1);
     }
     if (tx_cnt_last != r_dev.tx_cnt) {
         tx_cnt_last = r_dev.tx_cnt;
         tx_t_last = get_systick();
-        gpio_set_value(&led_tx, 1);
+        gpio_set_val(&led_tx, 1);
     }
 
-    if (gpio_get_value(&led_rx) == 1 && get_systick() - rx_t_last > 10)
-        gpio_set_value(&led_rx, 0);
-    if (gpio_get_value(&led_tx) == 1 && get_systick() - tx_t_last > 10)
-        gpio_set_value(&led_tx, 0);
+    if (gpio_get_val(&led_rx) == 1 && get_systick() - rx_t_last > 10)
+        gpio_set_val(&led_rx, 0);
+    if (gpio_get_val(&led_tx) == 1 && get_systick() - tx_t_last > 10)
+        gpio_set_val(&led_tx, 0);
 }
 
 
@@ -148,11 +145,11 @@ void app_main(void)
     uint64_t *stack_check = (uint64_t *)((uint32_t)&end + 256);
     USBD_CDC_HandleTypeDef *hcdc = NULL;
     
-    gpio_set_value(&led_tx, 1);
-    gpio_set_value(&led_rx, 1);
+    gpio_set_val(&led_tx, 1);
+    gpio_set_val(&led_rx, 1);
     delay_systick(1);
-    gpio_set_value(&led_tx, 0);
-    gpio_set_value(&led_rx, 0);
+    gpio_set_val(&led_tx, 0);
+    gpio_set_val(&led_rx, 0);
 
     printf("\nstart app_main (bridge)...\n");
     *stack_check = 0xababcdcd12123434;
@@ -167,13 +164,13 @@ void app_main(void)
     HAL_UART_Receive_DMA(ttl_uart.huart, circ_buf, CIRC_BUF_SZ);
     csa_list_show();
     delay_systick(100);
-    gpio_set_value(&led_r, 0);
+    gpio_set_val(&led_r, 0);
     delay_systick(200);
-    gpio_set_value(&led_r, 1);
-    gpio_set_value(&led_b, 0);
+    gpio_set_val(&led_r, 1);
+    gpio_set_val(&led_b, 0);
     delay_systick(200);
-    gpio_set_value(&led_b, 1);
-    gpio_set_value(&led_g, 0);
+    gpio_set_val(&led_b, 1);
+    gpio_set_val(&led_g, 0);
 
     while (true) {
         if (csa.usb_online) {
@@ -236,11 +233,11 @@ void app_main(void)
         app_bridge();
         debug_flush(false);
 
-        if (csa.force_115200 != !gpio_get_value(&sw2)) {
+        if (csa.force_115200 != !gpio_get_val(&sw2)) {
             printf("sw2 changed, reboot...\n");
             csa.do_reboot = true;
         }
-        if (!gpio_get_value(&sw1)) {
+        if (!gpio_get_val(&sw1)) {
             printf("sw1 switch on, reboot...\n");
             csa.do_reboot = true;
         }

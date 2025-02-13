@@ -29,12 +29,12 @@ void try_jump_to_app(void)
     uint32_t stack = *(uint32_t*)APP_ADDR;
     uint32_t func = *(uint32_t*)(APP_ADDR + 4);
 
-    if (!gpio_get_value(&sw1)) {
+    if (!gpio_get_val(&sw1)) {
         printf("stay in bl...\n");
         return;
     }
 
-    gpio_set_value(&led_g, 1);
+    gpio_set_val(&led_g, 1);
     SysTick->CTRL = 0;
     printf("jump to app...\n");
     while (!(UART7->sts & USART_TDC_FLAG));
@@ -56,7 +56,7 @@ void app_main(void)
 
     *stack_check = 0xababcdcd12123434;
     for (int i = 0; i < FRAME_MAX; i++)
-        list_put(&frame_free_head, &frame_alloc[i].node);
+        cd_list_put(&frame_free_head, &frame_alloc[i]);
 
     load_conf();
 
@@ -66,7 +66,7 @@ void app_main(void)
     common_service_init();
 
     printf("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
-    gpio_set_value(&led_g, 0);
+    gpio_set_val(&led_g, 0);
 
     while (true) {
         uint16_t len = usb_vcp_get_rxdata(&otg_core_struct_hs.dev, usb_rx_buf);
@@ -74,11 +74,11 @@ void app_main(void)
 
         if (pcdc->g_tx_completed) {
             if (tx_frame) {
-                list_put_it(&frame_free_head, &tx_frame->node);
+                cd_list_put(&frame_free_head, tx_frame);
                 tx_frame = NULL;
             }
 
-            tx_frame = list_get_entry_it(&d_dev.tx_head, cd_frame_t);
+            tx_frame = cd_list_get(&d_dev.tx_head);
             if (tx_frame) {
                 cduart_fill_crc(tx_frame->dat);
                 usb_vcp_send_data(&otg_core_struct_hs.dev, tx_frame->dat, tx_frame->dat[2] + 5);
@@ -91,14 +91,14 @@ void app_main(void)
 
         common_service_routine();
 
-        if (gpio_get_value(&sw1)) {
+        if (gpio_get_val(&sw1)) {
             printf("sw1 switch off, reboot...\n");
             NVIC_SystemReset();
         }
 
         if (get_systick() - t_last > 300000 / SYSTICK_US_DIV) {
             t_last = get_systick();
-            gpio_set_value(&led_g, !gpio_get_value(&led_g));
+            gpio_set_val(&led_g, !gpio_get_val(&led_g));
         }
 
         if (*stack_check != 0xababcdcd12123434) {

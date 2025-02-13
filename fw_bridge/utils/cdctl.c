@@ -30,7 +30,7 @@ uint32_t cdctl_rx_len_err_cnt = 0;
 
 void cdctl_put_tx_frame(cd_frame_t *frame)
 {
-    list_put_it(&cdctl_tx_head, &frame->node);
+    cd_list_put(&cdctl_tx_head, frame);
     cdctl_tx_cnt++;
 }
 
@@ -144,7 +144,7 @@ void cdctl_routine(void)
 
     if (flags & BIT_FLAG_RX_PENDING) {
         // if get free list: copy to rx list
-        cd_frame_t *frame = list_get_entry_it(&frame_free_head, cd_frame_t);
+        cd_frame_t *frame = cd_list_get(&frame_free_head);
         if (frame) {
             int ret = cdctl_read_frame(frame);
             cdctl_reg_w(REG_RX_CTRL, BIT_RX_CLR_PENDING | BIT_RX_RST_POINTER);
@@ -155,10 +155,10 @@ void cdctl_routine(void)
 #endif
             if (ret) {
                 d_error("cdctl: rx frame len err\n");
-                list_put_it(&frame_free_head, &frame->node);
+                cd_list_put(&frame_free_head, frame);
                 cdctl_rx_len_err_cnt++;
             } else {
-                list_put_it(&cdctl_rx_head, &frame->node);
+                cd_list_put(&cdctl_rx_head, frame);
                 cdctl_rx_cnt++;
             }
         } else {
@@ -169,7 +169,7 @@ void cdctl_routine(void)
 
     if (!is_pending) {
         if (cdctl_tx_head.first) {
-            cd_frame_t *frame = list_get_entry_it(&cdctl_tx_head, cd_frame_t);
+            cd_frame_t *frame = cd_list_get(&cdctl_tx_head);
             cdctl_write_frame(frame);
 
             if (flags & BIT_FLAG_TX_BUF_CLEAN)
@@ -181,7 +181,7 @@ void cdctl_routine(void)
             hex_dump_small(pbuf, frame->dat, frame->dat[2] + 3, 16);
             d_verbose("cdctl: <- [%s]%s\n", pbuf, dev->is_pending ? " (p)" : "");
 #endif
-            list_put_it(&frame_free_head, &frame->node);
+            cd_list_put(&frame_free_head, frame);
         }
     } else {
         if (flags & BIT_FLAG_TX_BUF_CLEAN) {

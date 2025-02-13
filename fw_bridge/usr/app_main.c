@@ -37,18 +37,18 @@ static void data_led_task(void)
     if (rx_cnt_last != cdctl_rx_cnt) {
         rx_cnt_last = cdctl_rx_cnt;
         rx_t_last = get_systick();
-        gpio_set_value(&led_rx, 1);
+        gpio_set_val(&led_rx, 1);
     }
     if (tx_cnt_last != cdctl_tx_cnt) {
         tx_cnt_last = cdctl_tx_cnt;
         tx_t_last = get_systick();
-        gpio_set_value(&led_tx, 1);
+        gpio_set_val(&led_tx, 1);
     }
 
-    if (gpio_get_value(&led_rx) == 1 && get_systick() - rx_t_last > 10)
-        gpio_set_value(&led_rx, 0);
-    if (gpio_get_value(&led_tx) == 1 && get_systick() - tx_t_last > 10)
-        gpio_set_value(&led_tx, 0);
+    if (gpio_get_val(&led_rx) == 1 && get_systick() - rx_t_last > 10)
+        gpio_set_val(&led_rx, 0);
+    if (gpio_get_val(&led_tx) == 1 && get_systick() - tx_t_last > 10)
+        gpio_set_val(&led_tx, 0);
 }
 
 static void dump_hw_status(void)
@@ -75,20 +75,20 @@ void app_main(void)
     cd_frame_t *tx_frame = NULL;
     static int cdc_rate_bk = 0;
 
-    gpio_set_value(&led_tx, 1);
-    gpio_set_value(&led_rx, 1);
+    gpio_set_val(&led_tx, 1);
+    gpio_set_val(&led_rx, 1);
     delay_systick(1);
-    gpio_set_value(&led_tx, 0);
-    gpio_set_value(&led_rx, 0);
+    gpio_set_val(&led_tx, 0);
+    gpio_set_val(&led_rx, 0);
 
     printf("\nstart app_main ...\n");
 
     *stack_check = 0xababcdcd12123434;
     for (int i = 0; i < FRAME_MAX; i++)
-        list_put(&frame_free_head, &frame_alloc[i].node);
+        cd_list_put(&frame_free_head, &frame_alloc[i]);
 
     load_conf();
-    csa.force_115200 = !gpio_get_value(&sw2);
+    csa.force_115200 = !gpio_get_val(&sw2);
     if (csa.force_115200) {
         csa.bus_cfg.baud_l = 115200;
         csa.bus_cfg.baud_h = 115200;
@@ -104,13 +104,13 @@ void app_main(void)
     csa_list_show();
 
     delay_systick(100);
-    gpio_set_value(&led_r, 0);
+    gpio_set_val(&led_r, 0);
     delay_systick(200);
-    gpio_set_value(&led_r, 1);
-    gpio_set_value(&led_b, 0);
+    gpio_set_val(&led_r, 1);
+    gpio_set_val(&led_b, 0);
     delay_systick(200);
-    gpio_set_value(&led_b, 1);
-    gpio_set_value(&led_g, 0);
+    gpio_set_val(&led_b, 1);
+    gpio_set_val(&led_g, 0);
 
     cdctl_spi_wr_init();
     cdctl_dev_init(&csa.bus_cfg);
@@ -127,11 +127,11 @@ void app_main(void)
 
         if (pcdc->g_tx_completed) {
             if (tx_frame) {
-                list_put_it(&frame_free_head, &tx_frame->node);
+                cd_list_put(&frame_free_head, tx_frame);
                 tx_frame = NULL;
             }
 
-            tx_frame = list_get_entry_it(&d_dev.tx_head, cd_frame_t);
+            tx_frame = cd_list_get(&d_dev.tx_head);
             if (tx_frame) {
                 cduart_fill_crc(tx_frame->dat);
                 usb_vcp_send_data(&otg_core_struct_hs.dev, tx_frame->dat, tx_frame->dat[2] + 5);
@@ -146,20 +146,20 @@ void app_main(void)
             common_service_routine();
         } else {
             cd_frame_t *frame;
-            while ((frame = list_get_entry_it(&d_dev.rx_head, cd_frame_t)) != NULL)
+            while ((frame = cd_list_get(&d_dev.rx_head)) != NULL)
                 cdctl_put_tx_frame(frame);
-            while ((frame = list_get_entry_it(&cdctl_rx_head, cd_frame_t)) != NULL)
-                list_put_it(&d_dev.tx_head, &frame->node);
+            while ((frame = cd_list_get(&cdctl_rx_head)) != NULL)
+                cd_list_put(&d_dev.tx_head, frame);
         }
 
         data_led_task();
         dump_hw_status();
 
-        if (csa.force_115200 != !gpio_get_value(&sw2)) {
+        if (csa.force_115200 != !gpio_get_val(&sw2)) {
             printf("sw2 changed, reboot...\n");
             NVIC_SystemReset();
         }
-        if (!gpio_get_value(&sw1)) {
+        if (!gpio_get_val(&sw1)) {
             printf("sw1 switch on, reboot...\n");
             NVIC_SystemReset();
         }
@@ -186,4 +186,3 @@ void DMA1_Channel1_IRQHandler(void)
 {
     cdctl_spi_wr_isr();
 }
-

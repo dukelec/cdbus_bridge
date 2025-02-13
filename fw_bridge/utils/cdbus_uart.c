@@ -14,7 +14,7 @@
 
 void cduart_dev_init(cduart_dev_t *dev, list_head_t *free_head)
 {
-    dev->rx_frame = cduart_frame_get(free_head);
+    dev->rx_frame = cd_list_get(free_head);
     dev->free_head = free_head;
     dev->t_last = get_systick();
     dev->rx_crc = 0xffff;
@@ -27,7 +27,6 @@ void cduart_dev_init(cduart_dev_t *dev, list_head_t *free_head)
 #endif
 }
 
-// handler
 
 void cduart_rx_handle(cduart_dev_t *dev, const uint8_t *buf, unsigned len)
 {
@@ -71,7 +70,7 @@ void cduart_rx_handle(cduart_dev_t *dev, const uint8_t *buf, unsigned len)
         }
 
         if (!dev->rx_drop)
-            dev->rx_crc = crc16_sub(rd, cpy_len, dev->rx_crc);
+            dev->rx_crc = CDUART_CRC_SUB(rd, cpy_len, dev->rx_crc);
         rd += cpy_len;
 
         if (dev->rx_byte_cnt == frame->dat[2] + 5) {
@@ -80,9 +79,9 @@ void cduart_rx_handle(cduart_dev_t *dev, const uint8_t *buf, unsigned len)
                     printf("bus: !crc [%x %x %x]\n", frame->dat[0], frame->dat[1], frame->dat[2]);
 
                 } else {
-                    cd_frame_t *frm = cduart_frame_get(dev->free_head);
+                    cd_frame_t *frm = cd_list_get(dev->free_head);
                     if (frm) {
-                        cduart_list_put(&dev->rx_head, &dev->rx_frame->node);
+                        cd_list_put(&dev->rx_head, dev->rx_frame);
                         dev->rx_frame = frm;
                     } else {
                         printf("bus: rx lost\n");

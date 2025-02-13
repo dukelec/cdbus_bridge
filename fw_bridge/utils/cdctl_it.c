@@ -36,13 +36,12 @@ uint32_t cdctl_rx_len_err_cnt = 0;
 
 void cdctl_put_tx_frame(cd_frame_t *frame)
 {
-    uint32_t flags;
-    local_irq_save(flags);
     cdctl_tx_cnt++;
-    list_put(&cdctl_tx_head, &frame->node);
+    cd_list_put(&cdctl_tx_head, frame);
+    irq_disable(CD_IRQ);
     if (cdctl_state == CDCTL_IDLE)
         cdctl_int_isr();
-    local_irq_restore(flags);
+    irq_enable(CD_IRQ);
 }
 
 
@@ -70,7 +69,7 @@ void cdctl_get_baud_rate(uint32_t *low, uint32_t *high)
 
 void cdctl_dev_init(cdctl_cfg_t *init)
 {
-    rx_frame = list_get_entry_it(&frame_free_head, cd_frame_t);
+    rx_frame = cd_list_get(&frame_free_head);
 
     d_info("cdctl: init...\n");
     uint8_t ver = cdctl_reg_r(REG_VERSION);
@@ -168,7 +167,7 @@ void cdctl_spi_isr(void)
                 return;
             }
         } else if (cdctl_tx_head.first) {
-            tx_frame = list_get_entry(&cdctl_tx_head, cd_frame_t);
+            tx_frame = cd_list_get(&cdctl_tx_head);
             uint8_t *buf = tx_frame->dat - 1;
             *buf = REG_TX | 0x80; // borrow space from the "node" item
             cdctl_state = CDCTL_TX_FRAME;
@@ -214,9 +213,9 @@ void cdctl_spi_isr(void)
     // end of CDCTL_RX_BODY
     if (cdctl_state == CDCTL_RX_BODY) {
         CD_SS_HIGH();
-        cd_frame_t *frame = list_get_entry(&frame_free_head, cd_frame_t);
+        cd_frame_t *frame = cd_list_get(&frame_free_head);
         if (frame) {
-            list_put(&cdctl_rx_head, &rx_frame->node);
+            cd_list_put(&cdctl_rx_head, rx_frame);
             rx_frame = frame;
             cdctl_rx_cnt++;
         } else {
@@ -230,7 +229,7 @@ void cdctl_spi_isr(void)
     // end of CDCTL_TX_FRAME
     if (cdctl_state == CDCTL_TX_FRAME) {
         CD_SS_HIGH();
-        list_put(&frame_free_head, &tx_frame->node);
+        cd_list_put(&frame_free_head, tx_frame);
         tx_frame = NULL;
         tx_wait_trigger = true;
 

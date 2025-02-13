@@ -61,7 +61,7 @@ project/src/cdc_desc.c \
 project/src/usb_app.c \
 utils/cd_list.c \
 utils/cdbus_uart.c \
-utils/crc_fast.c \
+utils/crc_hw.c \
 usr/config.c \
 usr/common_services.c \
 usr/app_main.c

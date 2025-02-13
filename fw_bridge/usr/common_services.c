@@ -17,7 +17,7 @@ void send_frame(cd_frame_t *frame)
 {
     frame->dat[1] = frame->dat[0];
     frame->dat[0] = 0xfe;
-    list_put_it(&d_dev.tx_head, &frame->node);
+    cd_list_put(&d_dev.tx_head, frame);
 }
 
 static void get_uid(char *buf)
@@ -55,7 +55,7 @@ static void p1_hander(cd_frame_t *frame)
         send_frame(frame);
 
     } else {
-        list_put_it(&frame_free_head, &frame->node);
+        cd_list_put(&frame_free_head, frame);
     }
 }
 
@@ -91,7 +91,7 @@ static void p8_hander(cd_frame_t *frame)
         send_frame(frame);
 
     } else {
-        list_put_it(&frame_free_head, &frame->node);
+        cd_list_put(&frame_free_head, frame);
     }
 }
 
@@ -134,14 +134,14 @@ static void p5_hander(cd_frame_t *frame)
         send_frame(frame);
 
     } else {
-        list_put_it(&frame_free_head, &frame->node);
+        cd_list_put(&frame_free_head, frame);
     }
 }
 
 
 static inline void serial_cmd_dispatch(void)
 {
-    cd_frame_t *frame = list_get_entry_it(&d_dev.rx_head, cd_frame_t);
+    cd_frame_t *frame = cd_list_get(&d_dev.rx_head);
 
     if (frame) {
         uint8_t server_num = frame->dat[3];
@@ -152,7 +152,7 @@ static inline void serial_cmd_dispatch(void)
         case 8: p8_hander(frame); break;
         default:
             printf("cmd err\n");
-            list_put_it(&frame_free_head, &frame->node);
+            cd_list_put(&frame_free_head, frame);
         }
     }
 }
@@ -179,7 +179,7 @@ void common_service_routine(void)
 int _write(int file, char *data, int len)
 {
    if (csa.dbg_en) {
-       cd_frame_t *frm = list_get_entry_it(&frame_free_head, cd_frame_t);
+       cd_frame_t *frm = cd_list_get(&frame_free_head);
        if (frm) {
            len = min(CDN_MAX_DAT - 2, len);
            frm->dat[0] = 0xfe;
@@ -188,7 +188,7 @@ int _write(int file, char *data, int len)
            frm->dat[3] = 0x9;
            frm->dat[4] = 0x40;
            memcpy(frm->dat + 5, data, len);
-           list_put_it(&d_dev.tx_head, &frm->node);
+           cd_list_put(&d_dev.tx_head, frm);
            return len;
        }
    }

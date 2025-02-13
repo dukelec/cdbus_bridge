@@ -22,6 +22,7 @@
 #define CD_SS_HIGH()    {CD_SS_GPIO_PORT->scr = CD_SS_PIN;}
 #define CD_SS_LOW()     {CD_SS_GPIO_PORT->clr = CD_SS_PIN;}
 #define CD_INT_RD()     (CD_INT_GPIO_PORT->idt & CD_INT_PIN)
+#define CD_IRQ          EXINT0_IRQn
 
 extern uint8_t cdctl_buf[];
 

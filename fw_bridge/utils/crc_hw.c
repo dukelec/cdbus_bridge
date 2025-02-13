@@ -14,10 +14,10 @@
 #define DR      dt
 
 
-uint16_t crc16_sub(const uint8_t *data, uint32_t length, uint16_t crc_val)
+uint16_t crc16_hw_sub(const uint8_t *data, uint32_t length, uint16_t crc_val)
 {
     uint16_t ret_val;
-#ifdef CRC_IRQ_SAFE
+#ifdef CRC_HW_IRQ_SAFE // not recommended, avoid large critical sections
     uint32_t flags;
     local_irq_save(flags);
 #endif
@@ -41,7 +41,7 @@ uint16_t crc16_sub(const uint8_t *data, uint32_t length, uint16_t crc_val)
         *(volatile uint8_t *)&CRC->DR = *data++;
 
     ret_val = CRC->DR;
-#ifdef CRC_IRQ_SAFE
+#ifdef CRC_HW_IRQ_SAFE
     local_irq_restore(flags);
 #endif
     return ret_val;

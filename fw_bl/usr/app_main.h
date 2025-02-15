@@ -22,6 +22,7 @@
 #include "cdc_class.h"
 #include "cdc_desc.h"
 
+#define BL_ARGS             0x20000000 // first word
 #define APP_CONF_ADDR       0x0803F800 // last page
 #define APP_CONF_VER        0x0200
 
@@ -38,7 +39,7 @@ typedef struct {
     uint16_t        magic_code; // 0xcdcd
     uint16_t        conf_ver;
     uint8_t         conf_from;  // 0: default, 1: load from flash
-    bool            do_reboot;
+    uint8_t         do_reboot;
     bool            _reserved;
     bool            save_conf;
 
@@ -65,6 +66,7 @@ extern list_head_t frame_free_head;
 extern cduart_dev_t d_dev;  // uart / usb
 
 extern uint32_t end; // end of bss
+extern uint32_t *bl_args;
 
 void common_service_init(void);
 void common_service_routine(void);

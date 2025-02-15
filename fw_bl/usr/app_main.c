@@ -20,16 +20,18 @@ cduart_dev_t d_dev = {0};   // uart / usb
 extern otg_core_type otg_core_struct_hs;
 static uint8_t usb_rx_buf[512];
 static bool cdc_need_flush = false;
+uint32_t *bl_args = (uint32_t *)BL_ARGS;
 
 #define APP_ADDR 0x08006000 // 24K offset
 
 
 void try_jump_to_app(void)
 {
-    uint32_t stack = *(uint32_t*)APP_ADDR;
-    uint32_t func = *(uint32_t*)(APP_ADDR + 4);
+    uint32_t stack = *(uint32_t *)APP_ADDR;
+    uint32_t func = *(uint32_t *)(APP_ADDR + 4);
 
-    if (!gpio_get_val(&sw1)) {
+    printf("bl_args: %08lx, sw1: %d\n", *bl_args, !gpio_get_val(&sw1));
+    if (!gpio_get_val(&sw1) || *bl_args == 0xcdcd0001) {
         printf("stay in bl...\n");
         return;
     }
@@ -91,7 +93,7 @@ void app_main(void)
 
         common_service_routine();
 
-        if (gpio_get_val(&sw1)) {
+        if (gpio_get_val(&sw1) && *bl_args != 0xcdcd0001) {
             printf("sw1 switch off, reboot...\n");
             NVIC_SystemReset();
         }

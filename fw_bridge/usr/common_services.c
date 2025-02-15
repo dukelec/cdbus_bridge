@@ -169,8 +169,10 @@ void common_service_routine(void)
         csa.save_conf = false;
         save_conf();
     }
-    if (csa.do_reboot)
+    if (csa.do_reboot) {
+        *(uint32_t *)BL_ARGS = 0xcdcd0000 | csa.do_reboot;
         NVIC_SystemReset();
+    }
     serial_cmd_dispatch();
 }
 

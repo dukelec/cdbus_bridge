@@ -180,21 +180,28 @@ void common_service_routine(void)
 // for printf
 int _write(int file, char *data, int len)
 {
-   if (csa.dbg_en) {
-       cd_frame_t *frm = cd_list_get(&frame_free_head);
-       if (frm) {
-           len = min(CDN_MAX_DAT - 2, len);
-           frm->dat[0] = 0xfe;
-           frm->dat[1] = 0x0;
-           frm->dat[2] = 2 + len;
-           frm->dat[3] = 0x9;
-           frm->dat[4] = 0x40;
-           memcpy(frm->dat + 5, data, len);
-           cd_list_put(&d_dev.tx_head, frm);
-           return len;
-       }
-   }
+    if (csa.dbg_en) {
+        cd_frame_t *frm = cd_list_get(&frame_free_head);
+        if (frm) {
+            len = min(CDN_MAX_DAT - 2, len);
+            frm->dat[0] = 0xfe;
+            frm->dat[1] = 0x0;
+            frm->dat[2] = 2 + len;
+            frm->dat[3] = 0x9;
+            frm->dat[4] = 0x40;
+            memcpy(frm->dat + 5, data, len);
+            cd_list_put(&d_dev.tx_head, frm);
+            return len;
+        }
+    }
 
-   dbg_transmit((uint8_t *)data, len);
-   return len;
+    dbg_transmit((uint8_t *)data, len);
+    return len;
 }
+
+int _read(int file, char *ptr, int len) { return len; }
+int _close(int file)                    { return -1; }
+int _fstat(int file, void *st)          { return -1; }
+int _isatty(int file)                   { return 1; }
+int _lseek(int file, int ptr, int dir)  { return 0; }
+

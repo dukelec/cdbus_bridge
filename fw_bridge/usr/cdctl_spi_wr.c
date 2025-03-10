@@ -87,7 +87,7 @@ void cdctl_spi_wr_init(void)
 // used by init and user configuration, before enable isr
 uint8_t cdctl_reg_r(uint8_t reg)
 {
-    uint16_t dat = 0xffff;
+    volatile uint16_t dat = 0xffff;
     uint8_t tbuf[2] = {reg};
     CD_SS_LOW();
     cdctl_spi_wr(tbuf, (uint8_t *)&dat, 2);

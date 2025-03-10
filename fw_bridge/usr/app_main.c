@@ -70,7 +70,7 @@ static void dump_hw_status(void)
 
 void app_main(void)
 {
-    uint64_t *stack_check = (uint64_t *)((uint32_t)&end + 256);
+    volatile uint64_t *stack_check = (uint64_t *)((uint32_t)&end + 256);
     cdc_struct_type *pcdc = (cdc_struct_type *)otg_core_struct_hs.dev.class_handler->pdata;
     cd_frame_t *tx_frame = NULL;
     static int cdc_rate_bk = 0;

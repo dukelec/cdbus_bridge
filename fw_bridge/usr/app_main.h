@@ -53,7 +53,7 @@ typedef struct {
     uint8_t         _reserved1[4];
 
     cdctl_cfg_t     bus_cfg;
-    uint8_t         _reserved2[4];
+    uint32_t        cdctl_sysclk;
     uint32_t        ttl_baudrate;
 
     // end of flash

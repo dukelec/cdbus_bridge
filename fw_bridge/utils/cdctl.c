@@ -7,8 +7,10 @@
  * Author: Duke Fong <d@d-l.io>
  */
 
+#include <math.h>
 #include "cdctl.h"
 #include "app_main.h"
+#include "cdctl_pll_cal.h"
 
 static spi_t *cdctl_spi = NULL;
 
@@ -65,8 +67,8 @@ static void cdctl_write_frame(const cd_frame_t *frame)
 void cdctl_set_baud_rate(uint32_t low, uint32_t high)
 {
     uint16_t l, h;
-    l = DIV_ROUND_CLOSEST(CDCTL_SYS_CLK, low) - 1;
-    h = DIV_ROUND_CLOSEST(CDCTL_SYS_CLK, high) - 1;
+    l = DIV_ROUND_CLOSEST(csa.cdctl_sysclk, low) - 1;
+    h = DIV_ROUND_CLOSEST(csa.cdctl_sysclk, high) - 1;
     cdctl_reg_w(REG_DIV_LS_L, l & 0xff);
     cdctl_reg_w(REG_DIV_LS_H, l >> 8);
     cdctl_reg_w(REG_DIV_HS_L, h & 0xff);
@@ -79,8 +81,8 @@ void cdctl_get_baud_rate(uint32_t *low, uint32_t *high)
     uint16_t l, h;
     l = cdctl_reg_r(REG_DIV_LS_L) | cdctl_reg_r(REG_DIV_LS_H) << 8;
     h = cdctl_reg_r(REG_DIV_HS_L) | cdctl_reg_r(REG_DIV_HS_H) << 8;
-    *low = DIV_ROUND_CLOSEST(CDCTL_SYS_CLK, l + 1);
-    *high = DIV_ROUND_CLOSEST(CDCTL_SYS_CLK, h + 1);
+    *low = DIV_ROUND_CLOSEST(csa.cdctl_sysclk, l + 1);
+    *high = DIV_ROUND_CLOSEST(csa.cdctl_sysclk, h + 1);
 }
 
 void cdctl_dev_init(cdctl_cfg_t *init, spi_t *spi)
@@ -94,10 +96,17 @@ void cdctl_dev_init(cdctl_cfg_t *init, spi_t *spi)
     cdctl_reg_w(REG_CLK_CTRL, 0x80); // soft reset
     d_info("cdctl: version after soft reset: %02x\n", cdctl_reg_r(REG_VERSION));
 
-    // 12MHz / (0 + 2) * (48 + 2) / 2^1 = 150MHz
-    d_info("pll_n: %02x\n", cdctl_reg_r(REG_PLL_N));
-    cdctl_reg_w(REG_PLL_ML, 0x30); // 0x30: 48
-    d_info("pll_ml: %02x\n", cdctl_reg_r(REG_PLL_ML));
+    // e.g. 12MHz / (0 + 2) * (48 + 2) / 2^1 = 150MHz
+    pllcfg_t pll = cdctl_pll_cal(CDCTL_OSC_CLK, csa.cdctl_sysclk);
+    unsigned actual_freq = cdctl_pll_get(CDCTL_OSC_CLK, pll);
+    d_info("cdctl: sysclk %ld, actual: %d\n", csa.cdctl_sysclk, actual_freq);
+    csa.cdctl_sysclk = actual_freq;
+    cdctl_reg_w(REG_PLL_N, pll.n);
+    cdctl_reg_w(REG_PLL_ML, pll.m & 0xff);
+    cdctl_reg_w(REG_PLL_OD_MH, (pll.d << 4) | (pll.m >> 8));
+    d_info("pll_n: %02x, ml: %02x, od_mh: %02x\n",
+            cdctl_reg_r(REG_PLL_N), cdctl_reg_r(REG_PLL_ML), cdctl_reg_r(REG_PLL_OD_MH));
+
     d_info("pll_ctrl: %02x\n", cdctl_reg_r(REG_PLL_CTRL));
     cdctl_reg_w(REG_PLL_CTRL, 0x10); // enable pll
     d_info("clk_status: %02x\n", cdctl_reg_r(REG_CLK_STATUS));
@@ -121,6 +130,10 @@ void cdctl_dev_init(cdctl_cfg_t *init, spi_t *spi)
     cdctl_set_baud_rate(init->baud_l, init->baud_h);
     cdctl_flush();
 
+    cdctl_get_baud_rate(&init->baud_l, &init->baud_h);
+    d_debug("cdctl: get baud rate: %lu %lu\n", init->baud_l, init->baud_h);
+    d_debug("cdctl: get filter(m): %02x (%02x %02x)\n",
+            cdctl_reg_r(REG_FILTER), cdctl_reg_r(REG_FILTER_M0), cdctl_reg_r(REG_FILTER_M1));
     d_debug("cdctl: flags: %02x\n", cdctl_reg_r(REG_INT_FLAG));
 }
 

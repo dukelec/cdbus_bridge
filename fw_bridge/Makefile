@@ -65,6 +65,7 @@ project/src/usb_app.c \
 utils/cd_list.c \
 utils/cdbus_uart.c \
 utils/cdctl_it.c \
+utils/cdctl_pll_cal.c \
 utils/crc_hw.c \
 usr/cdctl_spi_wr.c \
 usr/config.c \

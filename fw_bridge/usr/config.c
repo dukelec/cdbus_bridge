@@ -33,6 +33,8 @@ void load_conf(void)
         csa.conf_from = 1;
         memset(&csa.do_reboot, 0, 3);
     }
+    if (!csa.cdctl_sysclk)
+        csa.cdctl_sysclk = 150e6;
 }
 
 int save_conf(void)
@@ -146,6 +148,7 @@ void csa_list_show(void)
     CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, tx_pre_len, " Active TX_EN before TX");
     d_debug("\n");
 
+    CSA_SHOW(0, cdctl_sysclk, "CDCTL pll freq (25 ~ 150 MHz)");
     CSA_SHOW(0, ttl_baudrate, "TTL baudrate");
     d_debug("\n");
 }

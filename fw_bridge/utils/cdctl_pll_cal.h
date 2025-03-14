@@ -11,14 +11,14 @@
 #define __CDCTL_PLL_CAL_H__
 
 typedef struct {
-    unsigned n;
-    unsigned m;
-    unsigned d;
-    float error;
-    float deviation;
+    uint8_t     n;
+    uint16_t    m;
+    uint8_t     d;
+    uint32_t    error;
+    uint32_t    deviation;
 } pllcfg_t;
 
-pllcfg_t cdctl_pll_cal(unsigned input, unsigned output);
-unsigned cdctl_pll_get(unsigned input, pllcfg_t cfg);
+pllcfg_t cdctl_pll_cal(uint32_t input, uint32_t output);
+uint32_t cdctl_pll_get(uint32_t input, pllcfg_t cfg);
 
 #endif

@@ -21,4 +21,6 @@ typedef struct {
 pllcfg_t cdctl_pll_cal(uint32_t input, uint32_t output);
 uint32_t cdctl_pll_get(uint32_t input, pllcfg_t cfg);
 
+uint32_t cdctl_sys_cal(uint32_t baud);
+
 #endif

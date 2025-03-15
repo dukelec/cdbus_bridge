@@ -13,8 +13,8 @@
 
 pllcfg_t cdctl_pll_cal(uint32_t input, uint32_t output) {
     pllcfg_t best = {0, 0, 0, 0xffffffff, 0xffffffff};
-    uint32_t min_vco = 100e6, max_vco = 500e6, target_vco = 300e6;
-    uint32_t min_div_freq = 1e6, max_div_freq = 15e6, target_div_freq = 8e6;
+    uint32_t min_vco = 100e6L, max_vco = 500e6L, target_vco = 300e6L;
+    uint32_t min_div_freq = 1e6L, max_div_freq = 15e6L, target_div_freq = 8e6L;
 
     for (int d = 0; d <= 2; d++) {
         uint32_t factor_d = 1 << d; // pow(2, d)
@@ -26,7 +26,7 @@ pllcfg_t cdctl_pll_cal(uint32_t input, uint32_t output) {
             if (div_freq > max_div_freq)
                 break;
 
-            for (int m = 0; m <= 511; m++) {
+            for (int m = 0; m < 512; m++) {
                 uint32_t vco_freq = div_freq * (m + 2);
                 if (vco_freq < min_vco)
                     continue;
@@ -65,4 +65,26 @@ uint32_t cdctl_pll_get(uint32_t input, pllcfg_t cfg)
     uint32_t div_freq = DIV_ROUND_CLOSEST(input, cfg.n + 2);
     uint32_t vco_freq = div_freq * (cfg.m + 2);
     return vco_freq / (1 << cfg.d);
+}
+
+
+uint32_t cdctl_sys_cal(uint32_t baud) {
+    uint32_t best[2] = {0, 0xffffffff};
+    uint32_t clk_max = 150e6L;
+    uint32_t clk_min = 100e6L; // higher sysclk for higher spi clk
+    uint32_t clk_step = 2e5L;
+
+    for (uint32_t c = clk_max; c >= clk_min; c -= clk_step) {
+        uint32_t div = DIV_ROUND_CLOSEST(c, baud);
+        uint32_t error = abs(DIV_ROUND_CLOSEST(c, div) - baud);
+
+        if (error < best[1]) {
+            best[0] = c;
+            best[1] = error;
+            if (error == 0)
+                break;
+        }
+    }
+
+    return best[0];
 }

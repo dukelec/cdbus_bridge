@@ -20,6 +20,7 @@ cdctl_state_t cdctl_state = CDCTL_RST;
 list_head_t cdctl_rx_head = {0};
 list_head_t cdctl_tx_head = {0};
 
+static uint32_t sysclk;
 static cd_frame_t *rx_frame = NULL;
 static cd_frame_t *tx_frame = NULL;
 static bool tx_wait_trigger = false;
@@ -50,8 +51,8 @@ void cdctl_put_tx_frame(cd_frame_t *frame)
 void cdctl_set_baud_rate(uint32_t low, uint32_t high)
 {
     uint16_t l, h;
-    l = DIV_ROUND_CLOSEST(csa.cdctl_sysclk, low) - 1;
-    h = DIV_ROUND_CLOSEST(csa.cdctl_sysclk, high) - 1;
+    l = DIV_ROUND_CLOSEST(sysclk, low) - 1;
+    h = DIV_ROUND_CLOSEST(sysclk, high) - 1;
     cdctl_reg_w(REG_DIV_LS_L, l & 0xff);
     cdctl_reg_w(REG_DIV_LS_H, l >> 8);
     cdctl_reg_w(REG_DIV_HS_L, h & 0xff);
@@ -64,8 +65,8 @@ void cdctl_get_baud_rate(uint32_t *low, uint32_t *high)
     uint16_t l, h;
     l = cdctl_reg_r(REG_DIV_LS_L) | cdctl_reg_r(REG_DIV_LS_H) << 8;
     h = cdctl_reg_r(REG_DIV_HS_L) | cdctl_reg_r(REG_DIV_HS_H) << 8;
-    *low = DIV_ROUND_CLOSEST(csa.cdctl_sysclk, l + 1);
-    *high = DIV_ROUND_CLOSEST(csa.cdctl_sysclk, h + 1);
+    *low = DIV_ROUND_CLOSEST(sysclk, l + 1);
+    *high = DIV_ROUND_CLOSEST(sysclk, h + 1);
 }
 
 
@@ -80,11 +81,11 @@ void cdctl_dev_init(cdctl_cfg_t *init)
     cdctl_reg_w(REG_CLK_CTRL, 0x80); // soft reset
     d_info("cdctl: version after soft reset: %02x\n", cdctl_reg_r(REG_VERSION));
 
-    // e.g. 12MHz / (0 + 2) * (48 + 2) / 2^1 = 150MHz
-    pllcfg_t pll = cdctl_pll_cal(CDCTL_OSC_CLK, csa.cdctl_sysclk);
+    sysclk = cdctl_sys_cal(init->baud_h);
+    pllcfg_t pll = cdctl_pll_cal(CDCTL_OSC_CLK, sysclk);
     unsigned actual_freq = cdctl_pll_get(CDCTL_OSC_CLK, pll);
-    d_info("cdctl: sysclk %ld, actual: %d\n", csa.cdctl_sysclk, actual_freq);
-    csa.cdctl_sysclk = actual_freq;
+    d_info("cdctl: sysclk %ld, actual: %d\n", sysclk, actual_freq);
+    sysclk = actual_freq;
     cdctl_reg_w(REG_PLL_N, pll.n);
     cdctl_reg_w(REG_PLL_ML, pll.m & 0xff);
     cdctl_reg_w(REG_PLL_OD_MH, (pll.d << 4) | (pll.m >> 8));

@@ -234,8 +234,10 @@ void common_service_routine(void)
         csa.save_conf = false;
         save_conf();
     }
-    if (csa.do_reboot)
+    if (csa.do_reboot) {
+        *(uint32_t *)BL_ARGS = 0xcdcd0000 | csa.do_reboot;
         NVIC_SystemReset();
+    }
     p1_service_routine();
     p5_service_routine();
     p8_service_routine();

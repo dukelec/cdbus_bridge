@@ -153,7 +153,7 @@ void app_main(void)
         bl_routine();
         debug_flush(false);
 
-        if (gpio_get_val(&sw1)) {
+        if (gpio_get_val(&sw1) && *bl_args != 0xcdcd0001) {
             printf("sw1 switch off, reboot...\n");
             csa.do_reboot = true;
         }

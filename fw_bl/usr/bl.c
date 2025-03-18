@@ -13,16 +13,18 @@ static cd_frame_t *d_conv_frame = NULL;
 
 static uint32_t t_last;
 static uint32_t boot_time;
+uint32_t *bl_args = (uint32_t *)BL_ARGS;
 
 
 #define APP_ADDR 0x08009000 // 36K offset
 
 void try_jump_to_app(void)
 {
-    uint32_t stack = *(uint32_t*)APP_ADDR;
-    uint32_t func = *(uint32_t*)(APP_ADDR + 4);
+    uint32_t stack = *(uint32_t *)APP_ADDR;
+    uint32_t func = *(uint32_t *)(APP_ADDR + 4);
     
-    if (!gpio_get_val(&sw1)) {
+    printf("bl_args: %08lx, sw1: %d\n", *bl_args, !gpio_get_val(&sw1));
+    if (!gpio_get_val(&sw1) || *bl_args == 0xcdcd0001) {
         printf("stay in bl...\n");
         return;
     }

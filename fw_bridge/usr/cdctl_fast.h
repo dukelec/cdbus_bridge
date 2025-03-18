@@ -30,6 +30,7 @@
 typedef struct {
     cd_dev_t        cd_dev;
     uint8_t         version;
+    uint32_t        sysclk;
 
     list_head_t     *free_head;
     list_head_t     rx_head;

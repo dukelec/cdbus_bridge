@@ -88,6 +88,7 @@ cdnet/parser/cdnet_l1.c \
 cdnet/parser/cdnet.c \
 cdnet/arch/stm32/arch_wrapper.c \
 cdnet/dev/cdbus_uart.c \
+cdnet/dev/cdctl_pll_cal.c \
 cdnet/utils/cd_list.c \
 cdnet/utils/cd_debug.c \
 cdnet/utils/hex_dump.c \

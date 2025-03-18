@@ -10,8 +10,7 @@
 #ifndef __CD_CONFIG_H__
 #define __CD_CONFIG_H__
 
-//#define CDCTL_SYS_CLK       150000000UL // 150MHz for CDCTL01A
-extern int CDCTL_SYS_CLK;
+#define CDCTL_OSC_CLK       24000000UL // 24MHz
 
 #define ARCH_SPI
 #define ARCH_CRC_HW

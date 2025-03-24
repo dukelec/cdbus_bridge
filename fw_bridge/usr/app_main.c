@@ -14,8 +14,6 @@ extern UART_HandleTypeDef huart3;
 extern UART_HandleTypeDef huart5;
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
-int CDCTL_SYS_CLK = 150000000; // 150MHz for cdctl01a
-
 static  gpio_t led_r = { .group = RGB_R_GPIO_Port, .num = RGB_R_Pin };
 static  gpio_t led_g = { .group = RGB_G_GPIO_Port, .num = RGB_G_Pin };
 static  gpio_t led_b = { .group = RGB_B_GPIO_Port, .num = RGB_B_Pin };
@@ -235,11 +233,11 @@ void app_main(void)
 
         if (csa.force_115200 != !gpio_get_val(&sw2)) {
             printf("sw2 changed, reboot...\n");
-            csa.do_reboot = true;
+            NVIC_SystemReset();
         }
         if (!gpio_get_val(&sw1)) {
             printf("sw1 switch on, reboot...\n");
-            csa.do_reboot = true;
+            NVIC_SystemReset();
         }
         if (cdc_rate != cdc_rate_bk) {
             app_mode = (cdc_rate == 0xcdcd);

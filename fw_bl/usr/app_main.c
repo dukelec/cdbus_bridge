@@ -155,7 +155,7 @@ void app_main(void)
 
         if (gpio_get_val(&sw1) && *bl_args != 0xcdcd0001) {
             printf("sw1 switch off, reboot...\n");
-            csa.do_reboot = true;
+            NVIC_SystemReset();
         }
 
         if (*stack_check != 0xababcdcd12123434) {

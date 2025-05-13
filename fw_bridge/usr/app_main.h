@@ -57,9 +57,9 @@ typedef struct {
     uint32_t        ttl_baudrate;
 
     // end of flash
-    #define         _end_save _reserved3
+    #define         _end_save usb_online
 
-    uint8_t         _reserved3[1];
+    bool            usb_online;
     bool            force_115200;
 
 } csa_t; // config status area

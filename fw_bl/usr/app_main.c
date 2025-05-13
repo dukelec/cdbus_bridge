@@ -17,6 +17,7 @@ list_head_t frame_free_head = {0};
 
 cduart_dev_t d_dev = {0};   // uart / usb
 
+extern uint8_t cdc_dtr;
 extern otg_core_type otg_core_struct_hs;
 static uint8_t usb_rx_buf[512];
 static bool cdc_need_flush = false;
@@ -29,9 +30,14 @@ void try_jump_to_app(void)
 {
     uint32_t stack = *(uint32_t *)APP_ADDR;
     uint32_t func = *(uint32_t *)(APP_ADDR + 4);
+    bool sw = !gpio_get_val(&sw1);
 
-    printf("bl_args: %08lx, sw1: %d\n", *bl_args, !gpio_get_val(&sw1));
-    if (!gpio_get_val(&sw1) || *bl_args == 0xcdcd0001) {
+    printf("\nbl_args: %08lx, rst flg: %08lx (por %d), sw1: %d\n",
+            *bl_args, CRM->ctrlsts, CRM->ctrlsts_bit.porrstf, sw);
+    if (CRM->ctrlsts_bit.porrstf)
+        *bl_args = 0xcdcd0002;
+    CRM->ctrlsts_bit.rstfc = 1;
+    if (*bl_args != 0xcdcd0002 || sw) {
         printf("stay in bl...\n");
         return;
     }
@@ -46,6 +52,25 @@ void try_jump_to_app(void)
     while (true);
 }
 
+
+static void usb_detection(void)
+{
+    static uint32_t t_usb = 0;
+    uint32_t t_cur = get_systick();
+
+    if (otg_core_struct_hs.dev.conn_state != USB_CONN_STATE_CONFIGURED)
+        cdc_dtr = 0;
+
+    if (!cdc_dtr) {
+        t_usb = t_cur;
+        if (csa.usb_online)
+            printf("usb: 1 -> 0\n");
+        csa.usb_online = false;
+    } else if (!csa.usb_online && t_cur - t_usb > 5) { // wait for host to turn off echo
+        csa.usb_online = true;
+        printf("usb: 0 -> 1\n");
+    }
+}
 
 void app_main(void)
 {
@@ -71,23 +96,27 @@ void app_main(void)
     gpio_set_val(&led_g, 0);
 
     while (true) {
-        uint16_t len = usb_vcp_get_rxdata(&otg_core_struct_hs.dev, usb_rx_buf);
-        cduart_rx_handle(&d_dev, usb_rx_buf, len);
+        usb_detection();
 
-        if (pcdc->g_tx_completed) {
-            if (tx_frame) {
-                cd_list_put(&frame_free_head, tx_frame);
-                tx_frame = NULL;
-            }
+        if (csa.usb_online) {
+            uint16_t len = usb_vcp_get_rxdata(&otg_core_struct_hs.dev, usb_rx_buf);
+            cduart_rx_handle(&d_dev, usb_rx_buf, len);
 
-            tx_frame = cd_list_get(&d_dev.tx_head);
-            if (tx_frame) {
-                cduart_fill_crc(tx_frame->dat);
-                usb_vcp_send_data(&otg_core_struct_hs.dev, tx_frame->dat, tx_frame->dat[2] + 5);
-                cdc_need_flush = true;
-            } else if (cdc_need_flush) {
-                usb_vcp_send_data(&otg_core_struct_hs.dev, NULL, 0);
-                cdc_need_flush = false;
+            if (pcdc->g_tx_completed) {
+                if (tx_frame) {
+                    cd_list_put(&frame_free_head, tx_frame);
+                    tx_frame = NULL;
+                }
+
+                tx_frame = cd_list_get(&d_dev.tx_head);
+                if (tx_frame) {
+                    cduart_fill_crc(tx_frame->dat);
+                    usb_vcp_send_data(&otg_core_struct_hs.dev, tx_frame->dat, tx_frame->dat[2] + 5);
+                    cdc_need_flush = true;
+                } else if (cdc_need_flush) {
+                    usb_vcp_send_data(&otg_core_struct_hs.dev, NULL, 0);
+                    cdc_need_flush = false;
+                }
             }
         }
 

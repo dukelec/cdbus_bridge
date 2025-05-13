@@ -63,6 +63,8 @@ linecoding_type linecoding =
   8
 };
 
+uint8_t cdc_dtr = 0;
+
 /* cdc data struct */
 cdc_struct_type cdc_struct;
 
@@ -188,6 +190,8 @@ static usb_sts_type class_setup_handler(void *udev, usb_setup_type *setup)
           usbd_ctrl_recv(pudev, pcdc->g_cmd, pcdc->g_len);
 
         }
+      } else if (setup->bRequest == 0x22) { // SET_CONTROL_LINE_STATE
+          cdc_dtr = setup->wValue & 1; // bit1: rts, bit0: dtr
       }
       break;
     /* standard request */

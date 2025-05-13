@@ -191,7 +191,7 @@ int _write(int file, char *data, int len)
             frm->dat[4] = 0x40;
             memcpy(frm->dat + 5, data, len);
             cd_list_put(&d_dev.tx_head, frm);
-            return len;
+            //return len;
         }
     }
 

@@ -45,10 +45,12 @@ typedef struct {
 
     bool            dbg_en;
 
-    uint8_t         _keep[256]; // covers the areas in the app csa that need to be saved
+    uint8_t         _keep[503]; // covers the areas in the app csa that need to be saved
 
     // end of flash
-    bool            _end_save;
+    #define         _end_save usb_online // offset: 512
+
+    bool            usb_online;
 
 } csa_t; // config status area
 

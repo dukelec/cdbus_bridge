@@ -63,7 +63,7 @@ linecoding_type linecoding =
   8
 };
 
-uint8_t cdc_dtr = 0;
+volatile uint8_t cdc_dtr = 0;
 
 /* cdc data struct */
 cdc_struct_type cdc_struct;
@@ -297,6 +297,7 @@ static usb_sts_type class_out_handler(void *udev, uint8_t ept_num)
   /*set recv flag*/
   pcdc->g_rx_completed = 1;
 
+  SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
   return status;
 }
 

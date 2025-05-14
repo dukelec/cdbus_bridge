@@ -17,8 +17,6 @@ list_head_t frame_free_head = {0};
 
 cduart_dev_t d_dev = {0};   // uart / usb
 
-extern uint8_t cdc_dtr;
-extern otg_core_type otg_core_struct_hs;
 static uint8_t usb_rx_buf[512];
 static bool cdc_need_flush = false;
 uint32_t *bl_args = (uint32_t *)BL_ARGS;
@@ -35,9 +33,9 @@ void try_jump_to_app(void)
     printf("\nbl_args: %08lx, rst flg: %08lx (por %d), sw1: %d\n",
             *bl_args, CRM->ctrlsts, CRM->ctrlsts_bit.porrstf, sw);
     if (CRM->ctrlsts_bit.porrstf)
-        *bl_args = 0xcdcd0002;
+        *bl_args = 0xcdcd0000;
     CRM->ctrlsts_bit.rstfc = 1;
-    if (*bl_args != 0xcdcd0002 || sw) {
+    if (*bl_args == 0xcdcd0001 || sw) {
         printf("stay in bl...\n");
         return;
     }

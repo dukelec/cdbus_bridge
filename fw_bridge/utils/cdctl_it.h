@@ -71,19 +71,19 @@ void cdctl_int_isr(void);
 void cdctl_spi_isr(void);
 
 
-extern cdctl_state_t cdctl_state;
+extern volatile cdctl_state_t cdctl_state;
 
 extern list_head_t cdctl_rx_head;
 extern list_head_t cdctl_tx_head;
 
-extern uint32_t cdctl_rx_cnt;
-extern uint32_t cdctl_tx_cnt;
-extern uint32_t cdctl_rx_lost_cnt;
-extern uint32_t cdctl_rx_error_cnt;
-extern uint32_t cdctl_rx_break_cnt;
-extern uint32_t cdctl_tx_cd_cnt;
-extern uint32_t cdctl_tx_error_cnt;
-extern uint32_t cdctl_rx_no_free_node_cnt;
-extern uint32_t cdctl_rx_len_err_cnt;
+extern volatile uint32_t cdctl_rx_cnt;
+extern volatile uint32_t cdctl_tx_cnt;
+extern volatile uint32_t cdctl_rx_lost_cnt;
+extern volatile uint32_t cdctl_rx_error_cnt;
+extern volatile uint32_t cdctl_rx_break_cnt;
+extern volatile uint32_t cdctl_tx_cd_cnt;
+extern volatile uint32_t cdctl_tx_error_cnt;
+extern volatile uint32_t cdctl_rx_no_free_node_cnt;
+extern volatile uint32_t cdctl_rx_len_err_cnt;
 
 #endif

@@ -84,21 +84,26 @@ void cdctl_spi_wr_init(void)
 }
 
 
-// used by init and user configuration, before enable isr
 uint8_t cdctl_reg_r(uint8_t reg)
 {
     volatile uint16_t dat = 0xffff;
     uint8_t tbuf[2] = {reg};
+    irq_disable(CD_IRQ);
+    while (cdctl_state > CDCTL_IDLE) {}
     CD_SS_LOW();
     cdctl_spi_wr(tbuf, (uint8_t *)&dat, 2);
     CD_SS_HIGH();
+    irq_enable(CD_IRQ);
     return dat >> 8;
 }
 
 void cdctl_reg_w(uint8_t reg, uint8_t val)
 {
     uint8_t tbuf[2] = {reg | 0x80, val};
+    irq_disable(CD_IRQ);
+    while (cdctl_state > CDCTL_IDLE) {}
     CD_SS_LOW();
     cdctl_spi_wr(tbuf, tbuf, 2);
     CD_SS_HIGH();
+    irq_enable(CD_IRQ);
 }

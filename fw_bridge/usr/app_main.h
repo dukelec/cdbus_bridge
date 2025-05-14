@@ -72,6 +72,8 @@ int flash_write(uint32_t addr, uint32_t len, const uint8_t *buf);
 
 extern list_head_t frame_free_head;
 extern cduart_dev_t d_dev;  // uart / usb
+extern volatile uint8_t cdc_dtr;
+extern otg_core_type otg_core_struct_hs;
 
 extern uint32_t end; // end of bss
 

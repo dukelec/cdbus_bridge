@@ -10,7 +10,7 @@ The `CDBUS Bridge HS` is a USB-to-RS485 (CDBUS) adapter. The USB port supports `
 Switchs Defination：
  - S1.1: Force bootloader mode.
  - S1.2: In arbitration mode, the maximum limit of `baud_l`:  
-         ON: Default 2 Mbps; OFF: Default 1 Mbps. (modifiable)
+         OFF: Default 1 Mbps; ON: Default 2 Mbps. (modifiable)
  - S2.1: Enable pull-up resistor.
  - S2.2: Enable termination resistor.
  - S2.3: Enable pull-down resistor.

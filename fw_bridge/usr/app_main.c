@@ -22,10 +22,10 @@ list_head_t frame_free_head = {0};
 
 cduart_dev_t d_dev = {0};   // uart / usb
 
-extern uint8_t cdc_dtr;
-extern otg_core_type otg_core_struct_hs;
 static uint8_t usb_rx_buf[512];
 static bool cdc_need_flush = false;
+static uint32_t cdc_rate;
+static uint32_t cdc_rate_final = 115200;
 
 
 static void data_led_task(void)
@@ -90,13 +90,55 @@ static void usb_detection(void)
 }
 
 
+void PendSV_Handler(void)
+{
+    cdc_struct_type *pcdc = (cdc_struct_type *)otg_core_struct_hs.dev.class_handler->pdata;
+    cdc_rate = pcdc->linecoding.bitrate;
+    static cd_frame_t *tx_frame = NULL;
+
+    if (csa.usb_online) {
+        if (cdc_rate != 0xcdcd)
+            cdc_rate_final = cdc_rate;
+
+        if (frame_free_head.len > 5) {
+            uint16_t len = usb_vcp_get_rxdata(&otg_core_struct_hs.dev, usb_rx_buf);
+            cduart_rx_handle(&d_dev, usb_rx_buf, len);
+        }
+
+        if (pcdc->g_tx_completed) {
+            if (tx_frame) {
+                cd_list_put(&frame_free_head, tx_frame);
+                tx_frame = NULL;
+            }
+
+            tx_frame = cd_list_get(&d_dev.tx_head);
+            if (tx_frame) {
+                cduart_fill_crc(tx_frame->dat);
+                usb_vcp_send_data(&otg_core_struct_hs.dev, tx_frame->dat, tx_frame->dat[2] + 5);
+                cdc_need_flush = true;
+            } else if (cdc_need_flush) {
+                usb_vcp_send_data(&otg_core_struct_hs.dev, NULL, 0);
+                cdc_need_flush = false;
+            }
+        }
+    }
+
+    if (cdc_rate == 0xcdcd) {
+        common_service_routine();
+    } else {
+        cd_frame_t *frame;
+        while ((frame = cd_list_get(&d_dev.rx_head)) != NULL)
+            cdctl_put_tx_frame(frame);
+        while ((frame = cd_list_get(&cdctl_rx_head)) != NULL)
+            cd_list_put(&d_dev.tx_head, frame);
+    }
+}
+
+
 void app_main(void)
 {
     volatile uint64_t *stack_check = (uint64_t *)((uint32_t)&end + 256);
-    cdc_struct_type *pcdc = (cdc_struct_type *)otg_core_struct_hs.dev.class_handler->pdata;
-    cd_frame_t *tx_frame = NULL;
     uint32_t cdc_rate_bk = 0;
-    uint32_t cdc_rate_final = 115200;
     uint32_t cdctl_baud_l = 115200;
     uint32_t cdctl_baud_h = 115200;
 
@@ -140,44 +182,7 @@ void app_main(void)
 
     while (true) {
         usb_detection();
-        uint32_t cdc_rate = pcdc->linecoding.bitrate;
-
-        if (csa.usb_online) {
-            if (cdc_rate != 0xcdcd)
-                cdc_rate_final = cdc_rate;
-
-            if (frame_free_head.len > 5) {
-                uint16_t len = usb_vcp_get_rxdata(&otg_core_struct_hs.dev, usb_rx_buf);
-                cduart_rx_handle(&d_dev, usb_rx_buf, len);
-            }
-
-            if (pcdc->g_tx_completed) {
-                if (tx_frame) {
-                    cd_list_put(&frame_free_head, tx_frame);
-                    tx_frame = NULL;
-                }
-
-                tx_frame = cd_list_get(&d_dev.tx_head);
-                if (tx_frame) {
-                    cduart_fill_crc(tx_frame->dat);
-                    usb_vcp_send_data(&otg_core_struct_hs.dev, tx_frame->dat, tx_frame->dat[2] + 5);
-                    cdc_need_flush = true;
-                } else if (cdc_need_flush) {
-                    usb_vcp_send_data(&otg_core_struct_hs.dev, NULL, 0);
-                    cdc_need_flush = false;
-                }
-            }
-        }
-
-        if (cdc_rate == 0xcdcd) {
-            common_service_routine();
-        } else {
-            cd_frame_t *frame;
-            while ((frame = cd_list_get(&d_dev.rx_head)) != NULL)
-                cdctl_put_tx_frame(frame);
-            while ((frame = cd_list_get(&cdctl_rx_head)) != NULL)
-                cd_list_put(&d_dev.tx_head, frame);
-        }
+        SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
 
         data_led_task();
         dump_hw_status();
@@ -205,10 +210,12 @@ void app_main(void)
         if (cdctl_baud_l != baud_l || cdctl_baud_h != baud_h) {
             cdctl_baud_l = baud_l;
             cdctl_baud_h = baud_h;
+            __set_BASEPRI(0xc0); // disable pendsv
             cdctl_set_clk(cdctl_baud_h);
             cdctl_set_baud_rate(cdctl_baud_l, cdctl_baud_h);
             cdctl_flush();
             cdctl_get_baud_rate(&csa.bus_cfg.baud_l, &csa.bus_cfg.baud_h);
+            __set_BASEPRI(0); // enable pendsv
             d_debug("cdctl: get baud rate: %lu %lu\n", csa.bus_cfg.baud_l, csa.bus_cfg.baud_h);
         }
     }

@@ -15,7 +15,7 @@
 #define CDCTL_MASK (BIT_FLAG_RX_PENDING | BIT_FLAG_RX_LOST | BIT_FLAG_RX_ERROR |  \
                     BIT_FLAG_TX_CD | BIT_FLAG_TX_ERROR)
 
-cdctl_state_t cdctl_state = CDCTL_RST;
+volatile cdctl_state_t cdctl_state = CDCTL_RST;
 
 list_head_t cdctl_rx_head = {0};
 list_head_t cdctl_tx_head = {0};
@@ -26,15 +26,15 @@ static cd_frame_t *tx_frame = NULL;
 static bool tx_wait_trigger = false;
 static bool tx_buf_clean_mask = false;
 
-uint32_t cdctl_rx_cnt = 0;
-uint32_t cdctl_tx_cnt = 0;
-uint32_t cdctl_rx_lost_cnt = 0;
-uint32_t cdctl_rx_error_cnt = 0;
-uint32_t cdctl_rx_break_cnt = 0;
-uint32_t cdctl_tx_cd_cnt = 0;
-uint32_t cdctl_tx_error_cnt = 0;
-uint32_t cdctl_rx_no_free_node_cnt = 0;
-uint32_t cdctl_rx_len_err_cnt = 0;
+volatile uint32_t cdctl_rx_cnt = 0;
+volatile uint32_t cdctl_tx_cnt = 0;
+volatile uint32_t cdctl_rx_lost_cnt = 0;
+volatile uint32_t cdctl_rx_error_cnt = 0;
+volatile uint32_t cdctl_rx_break_cnt = 0;
+volatile uint32_t cdctl_tx_cd_cnt = 0;
+volatile uint32_t cdctl_tx_error_cnt = 0;
+volatile uint32_t cdctl_rx_no_free_node_cnt = 0;
+volatile uint32_t cdctl_rx_len_err_cnt = 0;
 
 
 void cdctl_put_tx_frame(cd_frame_t *frame)
@@ -242,6 +242,7 @@ void cdctl_spi_isr(void)
         }
         cdctl_state = CDCTL_REG_W;
         cdctl_reg_w_it(REG_RX_CTRL, BIT_RX_CLR_PENDING | BIT_RX_RST_POINTER);
+        SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
         return;
     }
 

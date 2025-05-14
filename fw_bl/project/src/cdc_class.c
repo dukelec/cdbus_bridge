@@ -63,7 +63,7 @@ linecoding_type linecoding =
   8
 };
 
-uint8_t cdc_dtr = 0;
+volatile uint8_t cdc_dtr = 0;
 
 /* cdc data struct */
 cdc_struct_type cdc_struct;

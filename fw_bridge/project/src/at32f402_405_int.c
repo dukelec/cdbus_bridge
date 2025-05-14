@@ -196,7 +196,7 @@ void DebugMon_Handler(void)
   * @param  none
   * @retval none
   */
-void PendSV_Handler(void)
+void PendSV_Handler_bk(void)
 {
   /* add user code begin PendSV_IRQ 0 */
 

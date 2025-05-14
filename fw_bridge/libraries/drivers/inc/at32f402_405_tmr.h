@@ -815,7 +815,7 @@ typedef struct
       __IO uint32_t brkv                 : 1; /* [13] */
       __IO uint32_t aoen                 : 1; /* [14] */
       __IO uint32_t oen                  : 1; /* [15] */
-      __IO uint32_t bkf                  : 4; /* [19:16] */
+      __IO uint32_t brkf                 : 4; /* [19:16] */
       __IO uint32_t reserved1            : 12;/* [31:20] */
     } brk_bit;
   };

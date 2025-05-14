@@ -1143,7 +1143,7 @@ void tmr_primary_mode_select(tmr_type *tmr_x, tmr_primary_select_type primary_mo
   * @brief  select tmr subordinate mode
   * @param  tmr_x: select the tmr peripheral.
   *         this parameter can be one of the following values:
-  *         TMR1, TMR2, TMR3, TMR4, TMR9
+  *         TMR1, TMR2, TMR3, TMR4
   * @param  sub_mode
   *         this parameter can be one of the following values:
   *         - TMR_SUB_MODE_DIABLE
@@ -1624,7 +1624,7 @@ void tmr_external_clock_mode2_config(tmr_type *tmr_x, tmr_external_signal_divide
   * @brief  config tmr encoder mode
   * @param  tmr_x: select the tmr peripheral.
   *         this parameter can be one of the following values:
-  *         TMR1, TMR2, TMR3, TMR4, TMR9
+  *         TMR1, TMR2, TMR3, TMR4
   * @param  encoder_mode
   *         this parameter can be one of the following values:
   *         - TMR_ENCODER_MODE_A
@@ -1782,7 +1782,7 @@ void tmr_brkdt_config(tmr_type *tmr_x, tmr_brkdt_config_type *brkdt_struct)
   */
 void tmr_brk_filter_value_set(tmr_type *tmr_x, uint8_t filter_value)
 {
-  tmr_x->brk_bit.bkf = filter_value;
+  tmr_x->brk_bit.brkf = filter_value;
 }
 
 /**

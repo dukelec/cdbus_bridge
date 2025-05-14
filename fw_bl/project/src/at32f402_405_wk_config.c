@@ -132,6 +132,7 @@ void wk_system_clock_config(void)
   while(crm_flag_get(CRM_PLL_STABLE_FLAG) != SET)
   {
   }
+
   /* config ahbclk */
   crm_ahb_div_set(CRM_AHB_DIV_1);
 

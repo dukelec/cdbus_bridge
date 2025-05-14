@@ -262,7 +262,8 @@ void usbh_hch_in_handler(usbh_core_type *uhost, uint8_t chn)
     }
     else if(uhost->hch[chn].state == HCH_NAK)
     {
-      if(usb_chh->hcchar_bit.eptype != EPT_INT_TYPE)
+      if(usb_chh->hcchar_bit.eptype == EPT_CONTROL_TYPE || 
+        usb_chh->hcchar_bit.eptype == EPT_BULK_TYPE)
       {
         usb_chh->hcchar_bit.chdis = FALSE;
         usb_chh->hcchar_bit.chena = TRUE;

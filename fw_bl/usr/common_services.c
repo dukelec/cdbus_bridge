@@ -16,7 +16,7 @@ static char info_str[100];
 void send_frame(cd_frame_t *frame)
 {
     frame->dat[1] = frame->dat[0];
-    frame->dat[0] = 0xfe;
+    frame->dat[0] = 0xff;
     cd_list_put(&d_dev.tx_head, frame);
 }
 
@@ -184,7 +184,7 @@ int _write(int file, char *data, int len)
         cd_frame_t *frm = cd_list_get(&frame_free_head);
         if (frm) {
             len = min(CDN_MAX_DAT - 2, len);
-            frm->dat[0] = 0xfe;
+            frm->dat[0] = 0xff;
             frm->dat[1] = 0x0;
             frm->dat[2] = 2 + len;
             frm->dat[3] = 0x9;

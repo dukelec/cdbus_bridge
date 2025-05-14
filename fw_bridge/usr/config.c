@@ -16,7 +16,9 @@ const csa_t csa_dft = {
         .magic_code = 0xcdcd,
         .conf_ver = APP_CONF_VER,
         .dbg_en = false,
-        .bus_cfg = CDCTL_CFG_DFT(0x00)
+        .bus_cfg = CDCTL_CFG_DFT(0x00),
+        .limit_baudrate0 = 1000000,
+        .limit_baudrate1 = 2000000
 };
 
 csa_t csa;
@@ -28,11 +30,16 @@ void load_conf(void)
     uint16_t conf_ver = *(uint16_t *)(APP_CONF_ADDR + 2);
     csa = csa_dft;
 
-    if (magic_code == 0xcdcd && (conf_ver >> 8) == (APP_CONF_VER >> 8)) {
+    if (magic_code == 0xcdcd && conf_ver == APP_CONF_VER) {
         memcpy(&csa, (void *)APP_CONF_ADDR, offsetof(csa_t, _end_save));
         csa.conf_from = 1;
-        memset(&csa.do_reboot, 0, 3);
+    } else if (magic_code == 0xcdcd && (conf_ver >> 8) == (APP_CONF_VER >> 8)) {
+        memcpy(&csa, (void *)APP_CONF_ADDR, offsetof(csa_t, _end_common));
+        csa.conf_from = 2;
+        csa.conf_ver = APP_CONF_VER;
     }
+    if (csa.conf_from)
+        memset(&csa.do_reboot, 0, 3);
 }
 
 int save_conf(void)
@@ -146,6 +153,7 @@ void csa_list_show(void)
     CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, tx_pre_len, " Active TX_EN before TX");
     d_debug("\n");
 
-    CSA_SHOW(0, ttl_baudrate, "TTL baudrate");
+    CSA_SHOW(0, limit_baudrate0, "Low baudrate limit (sw1 off)");
+    CSA_SHOW(0, limit_baudrate1, "Low baudrate limit (sw1 on)");
     d_debug("\n");
 }

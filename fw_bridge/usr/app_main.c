@@ -84,7 +84,8 @@ static void usb_detection(void)
         csa.usb_online = false;
     } else if (!csa.usb_online && t_cur - t_usb > 5) { // wait for host to turn off echo
         csa.usb_online = true;
-        printf("usb: 0 -> 1\n");
+        cdc_struct_type *pcdc = (cdc_struct_type *)otg_core_struct_hs.dev.class_handler->pdata;
+        printf("usb: 0 -> 1 (baudrate %ld)\n", pcdc->linecoding.bitrate);
     }
 }
 
@@ -94,7 +95,10 @@ void app_main(void)
     volatile uint64_t *stack_check = (uint64_t *)((uint32_t)&end + 256);
     cdc_struct_type *pcdc = (cdc_struct_type *)otg_core_struct_hs.dev.class_handler->pdata;
     cd_frame_t *tx_frame = NULL;
-    static int cdc_rate_bk = 0;
+    uint32_t cdc_rate_bk = 0;
+    uint32_t cdc_rate_final = 115200;
+    uint32_t cdctl_baud_l = 115200;
+    uint32_t cdctl_baud_h = 115200;
 
     gpio_set_val(&led_tx, 1);
     gpio_set_val(&led_rx, 1);
@@ -109,15 +113,9 @@ void app_main(void)
         cd_list_put(&frame_free_head, &frame_alloc[i]);
 
     load_conf();
-    csa.force_115200 = !gpio_get_val(&sw2);
-    if (csa.force_115200) {
-        csa.bus_cfg.baud_l = 115200;
-        csa.bus_cfg.baud_h = 115200;
-        printf("force baudrate to 115200 by sw2!\n");
-    }
-
+    csa.bus_cfg.baud_l = csa.bus_cfg.baud_h = 115200;
     cduart_dev_init(&d_dev, &frame_free_head);
-    d_dev.local_mac = 0xfe;
+    d_dev.local_mac = 0xff;
 
     common_service_init();
 
@@ -142,8 +140,12 @@ void app_main(void)
 
     while (true) {
         usb_detection();
+        uint32_t cdc_rate = pcdc->linecoding.bitrate;
 
         if (csa.usb_online) {
+            if (cdc_rate != 0xcdcd)
+                cdc_rate_final = cdc_rate;
+
             if (frame_free_head.len > 5) {
                 uint16_t len = usb_vcp_get_rxdata(&otg_core_struct_hs.dev, usb_rx_buf);
                 cduart_rx_handle(&d_dev, usb_rx_buf, len);
@@ -167,7 +169,7 @@ void app_main(void)
             }
         }
 
-        if (pcdc->linecoding.bitrate == 0xcdcd) {
+        if (cdc_rate == 0xcdcd) {
             common_service_routine();
         } else {
             cd_frame_t *frame;
@@ -180,23 +182,34 @@ void app_main(void)
         data_led_task();
         dump_hw_status();
 
-        if (csa.force_115200 != !gpio_get_val(&sw2)) {
-            printf("sw2 changed, reboot...\n");
-            NVIC_SystemReset();
-        }
         if (!gpio_get_val(&sw1)) {
             printf("sw1 switch on, reboot...\n");
             NVIC_SystemReset();
-        }
-        if (pcdc->linecoding.bitrate != cdc_rate_bk) {
-            bool app_mode = (pcdc->linecoding.bitrate == 0xcdcd);
-            d_info("rate: %ld, mode: %s!\n", pcdc->linecoding.bitrate, app_mode ? "config" : "data");
-            cdc_rate_bk = pcdc->linecoding.bitrate;
         }
 
         if (*stack_check != 0xababcdcd12123434) {
             printf("stack overflow\n");
             while (true);
+        }
+
+        if (cdc_rate != cdc_rate_bk) {
+            d_info("rate: %ld, mode: %s!\n", cdc_rate, cdc_rate == 0xcdcd ? "config" : "data");
+            cdc_rate_bk = cdc_rate;
+        }
+
+        bool sw2_val = !gpio_get_val(&sw2);
+        uint32_t baud_limit = sw2_val ? csa.limit_baudrate1 : csa.limit_baudrate0;
+        uint32_t baud_h = cdc_rate_final;
+        uint32_t baud_l = csa.bus_cfg.mode ? baud_h : min(baud_h, baud_limit);
+
+        if (cdctl_baud_l != baud_l || cdctl_baud_h != baud_h) {
+            cdctl_baud_l = baud_l;
+            cdctl_baud_h = baud_h;
+            cdctl_set_clk(cdctl_baud_h);
+            cdctl_set_baud_rate(cdctl_baud_l, cdctl_baud_h);
+            cdctl_flush();
+            cdctl_get_baud_rate(&csa.bus_cfg.baud_l, &csa.bus_cfg.baud_h);
+            d_debug("cdctl: get baud rate: %lu %lu\n", csa.bus_cfg.baud_l, csa.bus_cfg.baud_h);
         }
     }
 }

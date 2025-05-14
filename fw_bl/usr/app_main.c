@@ -88,7 +88,7 @@ void app_main(void)
     load_conf();
 
     cduart_dev_init(&d_dev, &frame_free_head);
-    d_dev.local_mac = 0xfe;
+    d_dev.local_mac = 0xff;
 
     common_service_init();
 

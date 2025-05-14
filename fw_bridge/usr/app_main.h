@@ -29,7 +29,7 @@
 
 #define BL_ARGS             0x20000000 // first word
 #define APP_CONF_ADDR       0x0803F800 // last page
-#define APP_CONF_VER        0x0200
+#define APP_CONF_VER        0x0201
 
 #define FRAME_MAX           80
 
@@ -53,14 +53,13 @@ typedef struct {
     uint8_t         _reserved1[4];
 
     cdctl_cfg_t     bus_cfg;
-    uint8_t         _reserved2[4];
-    uint32_t        ttl_baudrate;
+    uint32_t        limit_baudrate0;
+    uint32_t        limit_baudrate1;
 
     // end of flash
     #define         _end_save usb_online
 
     bool            usb_online;
-    bool            force_115200;
 
 } csa_t; // config status area
 

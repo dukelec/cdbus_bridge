@@ -56,6 +56,7 @@ typedef struct {
 
 void cdctl_dev_init(cdctl_cfg_t *init);
 
+void cdctl_set_clk(uint32_t target_baud);
 void cdctl_set_baud_rate(uint32_t low, uint32_t high);
 void cdctl_get_baud_rate(uint32_t *low, uint32_t *high);
 

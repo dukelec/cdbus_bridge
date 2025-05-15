@@ -25,8 +25,6 @@ static  gpio_t sw2 = { .group = SW2_GPIO_Port, .num = SW2_Pin };
 uart_t debug_uart = { .huart = &huart5 };
 uart_t ttl_uart = { .huart = &huart3 };
 
-static gpio_t r_rst = { .group = OLD_CD_RST_GPIO_Port, .num = OLD_CD_RST_Pin };
-
 #define CDC_RX_MAX  240
 #define CDC_TX_MAX   80
 static cdc_rx_buf_t cdc_rx_alloc[CDC_RX_MAX];
@@ -84,7 +82,7 @@ static void device_init(void)
         csa.bus_cfg.baud_h = 115200;
         printf("force baudrate to 115200 by sw2!\n");
     }
-    cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, NULL, &r_rst);
+    cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, NULL);
 
     cduart_dev_init(&d_dev, &frame_free_head);
     cduart_dev_init(&c_dev, &frame_free_head);

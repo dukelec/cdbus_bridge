@@ -24,12 +24,11 @@
 #define CD_INT_RD()     (CD_INT_GPIO_Port->IDR & CD_INT_Pin)
 
 
-#define CDCTL_MASK (BIT_FLAG_RX_PENDING | BIT_FLAG_RX_LOST | BIT_FLAG_RX_ERROR |  \
-                    BIT_FLAG_TX_CD | BIT_FLAG_TX_ERROR)
+#define CDCTL_MASK (CDBIT_FLAG_RX_PENDING | CDBIT_FLAG_RX_LOST | CDBIT_FLAG_RX_ERROR |  \
+                    CDBIT_FLAG_TX_CD | CDBIT_FLAG_TX_ERROR)
 
 typedef struct {
     cd_dev_t        cd_dev;
-    uint8_t         version;
     uint32_t        sysclk;
 
     list_head_t     *free_head;
@@ -72,7 +71,7 @@ typedef struct {
 }
 
 
-void cdctl_dev_init(cdctl_dev_t *dev, list_head_t *free_head, cdctl_cfg_t *init, spi_t *spi, gpio_t *rst_n);
+void cdctl_dev_init(cdctl_dev_t *dev, list_head_t *free_head, cdctl_cfg_t *init, spi_t *unused);
 
 cd_frame_t *cdctl_get_free_frame(cd_dev_t *cd_dev);
 cd_frame_t *cdctl_get_rx_frame(cd_dev_t *cd_dev);

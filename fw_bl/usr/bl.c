@@ -67,7 +67,7 @@ static void read_from_host(const uint8_t *buf, int size,
 
 void bl_routine(void)
 {
-    if (get_systick() - t_last > 300000 / SYSTICK_US_DIV) {
+    if (get_systick() - t_last > 300000 / CD_SYSTICK_US_DIV) {
         t_last = get_systick();
         gpio_set_val(&led_g, !gpio_get_val(&led_g));
     }

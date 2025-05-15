@@ -10,19 +10,19 @@
 #ifndef __CD_CONFIG_H__
 #define __CD_CONFIG_H__
 
-//#define ARCH_SPI
+//#define CD_ARCH_SPI
 #define CD_FRAME_SIZE       258
 
-#define DEBUG
-//#define VERBOSE
-//#define LIST_DEBUG
-#define DBG_STR_LEN         160
+#define CD_DEBUG
+//#define CD_VERBOSE
+//#define CD_LIST_DEBUG
+#define CD_DBG_STR_LEN      160
 
 #define CD_LIST_IT
 #define CD_IRQ_SAFE
 #define CDN_IRQ_SAFE
 
-#define CDUART_IDLE_TIME    (500000 / SYSTICK_US_DIV) // 500 ms
+#define CDUART_IDLE_TIME    (500000 / CD_SYSTICK_US_DIV) // 500 ms
 
 //#define CDN_L0_C
 

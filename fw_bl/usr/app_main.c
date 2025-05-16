@@ -9,92 +9,76 @@
 
 #include "app_main.h"
 
-extern UART_HandleTypeDef huart5;
-extern USBD_HandleTypeDef hUsbDeviceFS;
-
-gpio_t led_r = { .group = RGB_R_GPIO_Port, .num = RGB_R_Pin };
 gpio_t led_g = { .group = RGB_G_GPIO_Port, .num = RGB_G_Pin };
-gpio_t led_b = { .group = RGB_B_GPIO_Port, .num = RGB_B_Pin };
 gpio_t sw1 = { .group = SW1_GPIO_Port, .num = SW1_Pin };
-//gpio_t sw2 = { .group = SW2_GPIO_Port, .num = SW2_Pin };
-
-uart_t debug_uart = { .huart = &huart5 };
 
 #define CDC_RX_MAX 6
-#define CDC_TX_MAX 6
-static cdc_buf_t cdc_rx_alloc[CDC_RX_MAX];
-static cdc_buf_t cdc_tx_alloc[CDC_TX_MAX];
+static cdc_rx_buf_t cdc_rx_alloc[CDC_RX_MAX];
 list_head_t cdc_rx_free_head = {0};
-list_head_t cdc_tx_free_head = {0};
 list_head_t cdc_rx_head = {0};
-list_head_t cdc_tx_head = {0};
-cdc_buf_t *cdc_rx_buf = NULL;
-cdc_buf_t *cdc_tx_buf = NULL;
+cdc_rx_buf_t * volatile cdc_rx_buf = NULL;
 
 static cd_frame_t frame_alloc[FRAME_MAX];
 list_head_t frame_free_head = {0};
 
-static cdn_pkt_t packet_alloc[PACKET_MAX];
-list_head_t packet_free_head = {0};
-
 cduart_dev_t d_dev = {0};   // uart / usb
-cdn_ns_t dft_ns = {0};      // CDNET
 
-int usb_rx_cnt = 0;
-int usb_tx_cnt = 0;
+volatile int usb_rx_cnt = 0;
+volatile int usb_tx_cnt = 0;
 static bool cdc_need_flush = false;
+volatile uint8_t cdc_dtr;
+uint32_t *bl_args = (uint32_t *)BL_ARGS;
 
-uint8_t circ_buf[CIRC_BUF_SZ];
-uint32_t rd_pos = 0;
+#define APP_ADDR 0x08009000 // 36K offset
 
 
-static void device_init(void)
+void try_jump_to_app(void)
 {
-    int i;
-    cdn_init_ns(&dft_ns, &packet_free_head, &frame_free_head);
+    static uint32_t app_func; // not on stack (MSP switches before use)
+    uint32_t stack = *(uint32_t *)APP_ADDR;
+    app_func = *(uint32_t *)(APP_ADDR + 4);
+    bool sw = !gpio_get_val(&sw1);
 
-    for (i = 0; i < CDC_RX_MAX; i++)
-        list_put(&cdc_rx_free_head, &cdc_rx_alloc[i].node);
-    for (i = 0; i < CDC_TX_MAX; i++)
-        list_put(&cdc_tx_free_head, &cdc_tx_alloc[i].node);
-    for (i = 0; i < FRAME_MAX; i++)
-        list_put(&frame_free_head, &frame_alloc[i].node);
-    for (i = 0; i < PACKET_MAX; i++)
-        list_put(&packet_free_head, &packet_alloc[i].node);
+    uint32_t rcc_csr = RCC->CSR;
+    bool por = !!(rcc_csr & RCC_CSR_PWRRSTF);
+    printf("\nbl_args: %08lx, rst flg: %08lx (por %d), sw1: %d\n", *bl_args, rcc_csr, por, sw);
+    if (por)
+        *bl_args = 0xcdcd0000;
+    RCC->CSR |= RCC_CSR_RMVF;
+    if (*bl_args == 0xcdcd0001 || sw) {
+        printf("stay in bl...\n");
+        return;
+    }
 
-    cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_buf_t);
+    gpio_set_val(&led_g, 1);
+    printf("jump to app...\n");
+    while (!__HAL_UART_GET_FLAG(&huart5, UART_FLAG_TC));
+    HAL_UART_DeInit(&huart5);
+    HAL_RCC_DeInit();
+    HAL_NVIC_DisableIRQ(SysTick_IRQn);
 
-    cduart_dev_init(&d_dev, &frame_free_head);
-    
-    //                    uart / usb
-    cdn_add_intf(&dft_ns, &d_dev.cd_dev, 0, 0xfe);
-    ///hw_uart = &ttl_uart;
+    __set_MSP(stack); // init stack pointer
+    ((void(*)()) app_func)();
+    while (true);
 }
 
-void set_led_state(led_state_t state)
-{
-    static bool is_err = false;
-    if (is_err)
-        return;
 
-    switch (state) {
-    case LED_POWERON:
-        gpio_set_val(&led_r, 1);
-        gpio_set_val(&led_g, 0);
-        gpio_set_val(&led_b, 1);
-        break;
-    case LED_WARN:
-        gpio_set_val(&led_r, 0);
-        gpio_set_val(&led_g, 0);
-        gpio_set_val(&led_b, 1);
-        break;
-    default:
-    case LED_ERROR:
-        is_err = true;
-        gpio_set_val(&led_r, 0);
-        gpio_set_val(&led_g, 1);
-        gpio_set_val(&led_b, 1);
-        break;
+static void usb_detection(void)
+{
+    static uint32_t t_usb = 0;
+    uint32_t t_cur = get_systick();
+
+    if (hUsbDeviceFS.dev_state != USBD_STATE_CONFIGURED)
+        cdc_dtr = 0;
+
+    if (!cdc_dtr) {
+        t_usb = t_cur;
+        if (csa.usb_online)
+            printf("usb: 1 -> 0\n");
+        csa.usb_online = false;
+    } else if (!csa.usb_online && t_cur - t_usb > 5) { // wait for host to turn off echo
+        csa.usb_online = true;
+        printf("usb: 0 -> 1\n");
     }
 }
 
@@ -102,60 +86,75 @@ void set_led_state(led_state_t state)
 void app_main(void)
 {
     uint64_t *stack_check = (uint64_t *)((uint32_t)&end + 256);
-    USBD_CDC_HandleTypeDef *hcdc = NULL;
+    cd_frame_t *tx_frame = NULL;
+    static uint32_t t_last = 0;
 
     printf("\nstart app_main (bl)...\n");
+
     *stack_check = 0xababcdcd12123434;
+    for (int i = 0; i < FRAME_MAX; i++)
+        cd_list_put(&frame_free_head, &frame_alloc[i]);
+    for (int i = 0; i < CDC_RX_MAX; i++)
+        list_put(&cdc_rx_free_head, &cdc_rx_alloc[i].node);
+    cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_rx_buf_t);
+
     load_conf();
-    debug_init(&dft_ns, &csa.dbg_dst, &csa.dbg_en);
-    device_init();
+
+    cduart_dev_init(&d_dev, &frame_free_head);
+    d_dev.local_mac = 0xff;
+
     common_service_init();
+
     printf("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
-    set_led_state(LED_POWERON);
-    bl_init();
+    gpio_set_val(&led_g, 0);
 
     while (true) {
+        usb_detection();
+
         if (csa.usb_online) {
-            if (cdc_tx_buf && hcdc->TxState == 0) {
-                list_put(&cdc_tx_free_head, &cdc_tx_buf->node);
-                cdc_tx_buf = NULL;
-            }
-            if (cdc_tx_head.first) {
-                if (!cdc_tx_buf && hcdc->TxState == 0) {
-                    cdc_buf_t *bf = list_entry(cdc_tx_head.first, cdc_buf_t);
-                    if (bf->len != 0) {
-                        local_irq_disable();
-                        CDC_Transmit_FS(bf->dat, bf->len);
-                        local_irq_enable();
-                        cdc_need_flush = true;
+            USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
 
-                        list_get(&cdc_tx_head);
-                        cdc_tx_buf = bf;
+            cdc_rx_buf_t *bf = list_get_entry_it(&cdc_rx_head, cdc_rx_buf_t);
+            if (bf) {
+                cduart_rx_handle(&d_dev, bf->dat, bf->len);
+                list_put_it(&cdc_rx_free_head, &bf->node);
 
-                    } else if (cdc_need_flush) {
-                        local_irq_disable();
-                        CDC_Transmit_FS(NULL, 0);
-                        local_irq_enable();
-                        cdc_need_flush = false;
-                    }
+                if (!cdc_rx_buf) {
+                    cdc_rx_buf = list_get_entry_it(&cdc_rx_free_head, cdc_rx_buf_t);
+                    d_verbose("continue CDC Rx\n");
+                    USBD_CDC_SetRxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat);
+                    USBD_CDC_ReceivePacket(&hUsbDeviceFS);
                 }
             }
-        } else {
-            if (hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) {
-                printf("usb connected\n");
-                csa.usb_online = true;
-                hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
+
+            if (hcdc->TxState == 0) {
+                if (tx_frame) {
+                    cd_list_put(&frame_free_head, tx_frame);
+                    tx_frame = NULL;
+                }
+
+                tx_frame = cd_list_get(&d_dev.tx_head);
+                if (tx_frame) {
+                    cduart_fill_crc(tx_frame->dat);
+                    CDC_Transmit_FS(tx_frame->dat, tx_frame->dat[2] + 5);
+                    cdc_need_flush = true;
+                } else if (cdc_need_flush) {
+                    CDC_Transmit_FS(NULL, 0);
+                    cdc_need_flush = false;
+                }
             }
         }
 
-        cdn_routine(&dft_ns); // handle cdnet
         common_service_routine();
-        bl_routine();
-        debug_flush(false);
 
         if (gpio_get_val(&sw1) && *bl_args != 0xcdcd0001) {
             printf("sw1 switch off, reboot...\n");
             NVIC_SystemReset();
+        }
+
+        if (get_systick() - t_last > 300000 / CD_SYSTICK_US_DIV) {
+            t_last = get_systick();
+            gpio_set_val(&led_g, !gpio_get_val(&led_g));
         }
 
         if (*stack_check != 0xababcdcd12123434) {

@@ -82,21 +82,15 @@ Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
 Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 Core/Src/sysmem.c \
 Core/Src/syscalls.c \
-cdnet/core/cdnet_core.c \
-cdnet/parser/cdnet_l0.c \
-cdnet/parser/cdnet_l1.c \
-cdnet/parser/cdnet.c \
 cdnet/arch/stm32/arch_wrapper.c \
 cdnet/dev/cdbus_uart.c \
+cdnet/dev/cdctl_it.c \
 cdnet/dev/cdctl_pll_cal.c \
 cdnet/utils/cd_list.c \
-cdnet/utils/cd_debug.c \
 cdnet/utils/hex_dump.c \
 usr/config.c \
 usr/common_services.c \
-usr/app_main.c \
-usr/app_bridge.c \
-usr/cdctl_fast.c
+usr/app_main.c
 
 # ASM sources
 ASM_SOURCES =  \

@@ -12,8 +12,7 @@
 const csa_t csa_dft = {
         .magic_code = 0xcdcd,
         .conf_ver = APP_CONF_VER,
-        .dbg_en = false,
-        .dbg_dst = { .addr = {0x80, 0x00, 0x00}, .port = 9 }
+        .dbg_en = false
 };
 
 csa_t csa;
@@ -25,6 +24,7 @@ void load_conf(void)
     uint16_t conf_ver = *(uint16_t *)(APP_CONF_ADDR + 2);
     csa = csa_dft;
 
+    //d_info("end_save: %d\n", offsetof(csa_t, _end_save)); // 512
     if (magic_code == 0xcdcd && (conf_ver >> 8) == (APP_CONF_VER >> 8)) {
         memcpy(&csa, (void *)APP_CONF_ADDR, offsetof(csa_t, _end_save));
         csa.conf_from = 1;
@@ -67,7 +67,7 @@ int flash_erase(uint32_t addr, uint32_t len)
     if (ret == HAL_OK)
         ret = HAL_FLASHEx_Erase(&f, &err_sector);
     ret |= HAL_FLASH_Lock();
-    d_debug("nvm erase: %08x +%08x (%d %d), %08x, ret: %d\n", addr, len, f.Page, f.NbPages, err_sector, ret);
+    d_debug("nvm erase: %08lx +%08lx (%ld %ld), %08lx, ret: %d\n", addr, len, f.Page, f.NbPages, err_sector, ret);
     return ret;
 }
 

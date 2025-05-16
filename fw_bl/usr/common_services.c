@@ -12,10 +12,13 @@
 static char cpu_id[25];
 static char info_str[100];
 
-static cdn_sock_t sock1 = { .port = 1, .ns = &dft_ns };
-static cdn_sock_t sock5 = { .port = 5, .ns = &dft_ns };
-static cdn_sock_t sock8 = { .port = 8, .ns = &dft_ns };
 
+void send_frame(cd_frame_t *frame)
+{
+    frame->dat[1] = frame->dat[0];
+    frame->dat[0] = 0xff;
+    cd_list_put(&d_dev.tx_head, frame);
+}
 
 static void get_uid(char *buf)
 {
@@ -40,147 +43,123 @@ static void init_info_str(void)
 
 
 // device info
-static void p1_service_routine(void)
+static void p1_hander(cd_frame_t *frame)
 {
-    cdn_pkt_t *pkt = cdn_sock_recvfrom(&sock1);
-    if (!pkt)
-        return;
-    uint8_t *rx_dat = pkt->dat;
-    pkt->dst = pkt->src;
-    cdn_pkt_prepare(&sock1, pkt);
+    uint8_t subs = frame->dat[4];
+    uint8_t frame_len = frame->dat[2];
 
-    if (pkt->len == 1 && rx_dat[0] == 0) {
-        pkt->dat[0] = 0x80;
-        strcpy((char *)pkt->dat + 1, info_str);
-        pkt->len = strlen(info_str) + 1;
-        cdn_sock_sendto(&sock1, pkt);
-        return;
-    }
-    d_debug("p1 ser: ignore\n");
-    cdn_pkt_free(&dft_ns, pkt);
-}
-
-
-// csa manipulation
-static void p5_service_routine(void)
-{
-    // read:        0x00, offset_16, len_8   | return [0x80, data]
-    // read_dft:    0x01, offset_16, len_8   | return [0x80, data]
-    // write:       0x20, offset_16 + [data] | return [0x80] on success
-
-    cdn_pkt_t *pkt = cdn_sock_recvfrom(&sock5);
-    if (!pkt)
-        return;
-    uint8_t *rx_dat = pkt->dat;
-    pkt->dst = pkt->src;
-    cdn_pkt_prepare(&sock5, pkt);
-
-    if (rx_dat[0] == 0x00 && pkt->len == 4) {
-        uint16_t offset = get_unaligned16(rx_dat + 1);
-        uint8_t len = min(rx_dat[3], CDN_MAX_DAT - 1);
-
-        memcpy(pkt->dat + 1, ((void *) &csa) + offset, len);
-
-        d_debug("csa read: %04x %d\n", offset, len);
-        pkt->dat[0] = 0x80;
-        pkt->len = len + 1;
-
-    } else if (rx_dat[0] == 0x20 && pkt->len > 3) {
-        uint16_t offset = get_unaligned16(rx_dat + 1);
-        uint8_t len = pkt->len - 3;
-        uint8_t *src_dat = rx_dat + 3;
-
-        uint16_t start = clip(offset, 0, sizeof(csa_t));
-        uint16_t end = clip(offset + len, 0, sizeof(csa_t));
-        if (start != end)
-            memcpy(((void *) &csa) + start, src_dat + (start - offset), end - start);
-
-        d_debug("csa write: %04x %d\n", offset, len);
-        pkt->len = 1;
-        pkt->dat[0] = 0x80;
-
-    } else if (rx_dat[0] == 0x01 && pkt->len == 4) {
-            uint16_t offset = get_unaligned16(rx_dat + 1);
-            uint8_t len = min(rx_dat[3], CDN_MAX_DAT - 1);
-            memcpy(pkt->dat + 1, ((void *) &csa_dft) + offset, len);
-            //d_debug("csa read_dft: %04x %d\n", offset, len);
-            pkt->dat[0] = 0x80;
-            pkt->len = len + 1;
+    if (subs == 0 && frame_len == 2) {
+        frame->dat[3] = 0x40;
+        strcpy((char *)frame->dat + 4, info_str);
+        frame->dat[2] = strlen(info_str) + 1;
+        send_frame(frame);
 
     } else {
-        d_warn("csa: wrong cmd, len: %d\n", pkt->len);
-        cdn_pkt_free(&dft_ns, pkt);
-        return;
+        cd_list_put(&frame_free_head, frame);
     }
-
-    cdn_sock_sendto(&sock5, pkt);
-    return;
 }
-
 
 // flash memory manipulation
-static void p8_service_routine(void)
+static void p8_hander(cd_frame_t *frame)
 {
-    // erase:   0x2f, addr_32, len_32  | return [0x80] on success
-    // write:   0x20, addr_32 + [data] | return [0x80] on success
-    // read:    0x00, addr_32, len_8   | return [0x80, data]
-    // cal crc: 0x10, addr_32, len_32  | return [0x80, crc_16]
+    uint8_t subs = frame->dat[4];
+    uint8_t frame_len = frame->dat[2];
 
-    cdn_pkt_t *pkt = cdn_sock_recvfrom(&sock8);
-    if (!pkt)
-        return;
-    uint8_t *rx_dat = pkt->dat;
-    pkt->dst = pkt->src;
-    cdn_pkt_prepare(&sock8, pkt);
+    if (subs == 0x2f && frame_len == 10) {
+        uint32_t addr = get_unaligned32(frame->dat + 5);
+        uint32_t len = get_unaligned32(frame->dat + 9);
+        uint8_t ret = flash_erase(addr, len);
+        frame->dat[3] = ret ? 0x41 : 0x40;
+        frame->dat[2] = 1;
+        send_frame(frame);
 
-    if (rx_dat[0] == 0x2f && pkt->len == 9) {
-        uint32_t addr = get_unaligned32(rx_dat + 1);
-        uint32_t len = get_unaligned32(rx_dat + 5);
-        int ret = flash_erase(addr, len);
-        pkt->len = 1;
-        pkt->dat[0] = ret == HAL_OK ? 0x80 : 0x81;
+    } else if (subs == 0x00 && frame_len == 7) {
+        uint32_t addr = get_unaligned32(frame->dat + 5);
+        uint8_t *dst_addr = (uint8_t *) addr;
+        uint8_t len = min(frame->dat[9], CDN_MAX_DAT - 1);
+        memcpy(frame->dat + 4, dst_addr, len);
+        frame->dat[3] = 0x40;
+        frame->dat[2] = len + 1;
+        send_frame(frame);
 
-    } else if (rx_dat[0] == 0x00 && pkt->len == 6) {
-        uint8_t *src_dat = (uint8_t *) get_unaligned32(rx_dat + 1);
-        uint8_t len = min(rx_dat[5], CDN_MAX_DAT - 1);
-        memcpy(pkt->dat + 1, src_dat, len);
-        d_verbose("nvm read: %08x %d\n", src_dat, len);
-        pkt->dat[0] = 0x80;
-        pkt->len = len + 1;
+    } else if (subs == 0x20 && frame_len > 9) {
+        uint32_t addr = get_unaligned32(frame->dat + 5);
+        uint8_t len = frame->dat[2] - 6;
+        uint8_t ret = flash_write(addr, len, frame->dat + 9);
+        frame->dat[3] = ret ? 0x41 : 0x40;
+        frame->dat[2] = 1;
+        send_frame(frame);
 
-    } else if (rx_dat[0] == 0x20 && pkt->len > 5) {
-        uint32_t addr = get_unaligned32(rx_dat + 1);
-        uint8_t len = pkt->len - 5;
-        int ret = flash_write(addr, len, rx_dat + 5);
-        pkt->len = 1;
-        pkt->dat[0] = ret == HAL_OK ? 0x80 : 0x81;
-#if 0
-    } else if (pkt->len == 9 && rx_dat[0] == 0x10) {
-        uint32_t f_addr = get_unaligned32(rx_dat + 1);
-        uint32_t f_len = get_unaligned32(rx_dat + 5);
-        uint16_t crc = crc16((const uint8_t *)f_addr, f_len);
-
-        d_debug("nvm crc addr: %x, len: %x, crc: %02x", f_addr, f_len, crc);
-        *(uint16_t *)(pkt->dat + 1) = crc;
-        pkt->dat[0] = 0x80;
-        pkt->len = 3;
-#endif
     } else {
-        d_warn("nvm: wrong cmd, len: %d\n", pkt->len);
-        cdn_pkt_free(&dft_ns, pkt);
-        return;
+        cd_list_put(&frame_free_head, frame);
     }
+}
 
-    cdn_sock_sendto(&sock8, pkt);
-    return;
+// csa manipulation
+static void p5_hander(cd_frame_t *frame)
+{
+    uint32_t flags;
+    uint8_t subs = frame->dat[4];
+    uint8_t frame_len = frame->dat[2];
+
+    if (subs == 0x00 && frame_len == 5) {
+        uint16_t offset = get_unaligned16(frame->dat + 5);
+        uint8_t len = min(frame->dat[7], CDN_MAX_DAT - 1);
+        local_irq_save(flags);
+        memcpy(frame->dat + 4, ((void *) &csa) + offset, len);
+        local_irq_restore(flags);
+        frame->dat[3] = 0x40;
+        frame->dat[2] = len + 1;
+        send_frame(frame);
+
+    } else if (subs == 0x20 && frame_len > 4) {
+        uint16_t offset = get_unaligned16(frame->dat + 5);
+        uint8_t len = frame_len - 4;
+        uint8_t *src_addr = frame->dat + 7;
+        uint16_t start = clip(offset, 0, sizeof(csa_t));
+        uint16_t end = clip(offset + len, 0, sizeof(csa_t));
+        local_irq_save(flags);
+        memcpy(((void *) &csa) + start, src_addr + (start - offset), end - start);
+        local_irq_restore(flags);
+        frame->dat[3] = 0x40;
+        frame->dat[2] = 1;
+        send_frame(frame);
+
+    } else if (subs == 0x01 && frame_len == 5) {
+        uint16_t offset = get_unaligned16(frame->dat + 5);
+        uint8_t len = min(frame->dat[7], CDN_MAX_DAT - 1);
+        memcpy(frame->dat + 4, ((void *) &csa_dft) + offset, len);
+        frame->dat[3] = 0x40;
+        frame->dat[2] = len + 1;
+        send_frame(frame);
+
+    } else {
+        cd_list_put(&frame_free_head, frame);
+    }
+}
+
+
+static inline void serial_cmd_dispatch(void)
+{
+    cd_frame_t *frame = cd_list_get(&d_dev.rx_head);
+
+    if (frame) {
+        uint8_t server_num = frame->dat[3];
+
+        switch (server_num) {
+        case 1: p1_hander(frame); break;
+        case 5: p5_hander(frame); break;
+        case 8: p8_hander(frame); break;
+        default:
+            printf("cmd err\n");
+            cd_list_put(&frame_free_head, frame);
+        }
+    }
 }
 
 
 void common_service_init(void)
 {
-    cdn_sock_bind(&sock8);
-    cdn_sock_bind(&sock5);
-    cdn_sock_bind(&sock1);
     init_info_str();
 }
 
@@ -194,8 +173,29 @@ void common_service_routine(void)
         *bl_args = 0xcdcd0000 | csa.do_reboot;
         NVIC_SystemReset();
     }
-
-    p1_service_routine();
-    p5_service_routine();
-    p8_service_routine();
+    serial_cmd_dispatch();
 }
+
+
+// for printf
+int _write(int file, char *data, int len)
+{
+    if (csa.dbg_en) {
+        cd_frame_t *frm = cd_list_get(&frame_free_head);
+        if (frm) {
+            len = min(CDN_MAX_DAT - 2, len);
+            frm->dat[0] = 0xff;
+            frm->dat[1] = 0x0;
+            frm->dat[2] = 2 + len;
+            frm->dat[3] = 0x9;
+            frm->dat[4] = 0x40;
+            memcpy(frm->dat + 5, data, len);
+            cd_list_put(&d_dev.tx_head, frm);
+            //return len;
+        }
+    }
+
+    arch_dbg_tx((uint8_t *)data, len);
+    return len;
+}
+

@@ -9,26 +9,13 @@
 
 #include "app_main.h"
 
-regr_t csa_w_allow[] = {
-        { .offset = offsetof(csa_t, magic_code), .size = offsetof(csa_t, _end_save) }
-};
-
-csa_hook_t csa_w_hook[] = {};
-csa_hook_t csa_r_hook[] = {};
-
-int csa_w_allow_num = sizeof(csa_w_allow) / sizeof(regr_t);
-int csa_w_hook_num = sizeof(csa_w_hook) / sizeof(csa_hook_t);
-int csa_r_hook_num = sizeof(csa_r_hook) / sizeof(csa_hook_t);
-
-
 const csa_t csa_dft = {
         .magic_code = 0xcdcd,
         .conf_ver = APP_CONF_VER,
         .dbg_en = false,
-        .dbg_dst = { .addr = {0x80, 0x00, 0x00}, .port = 9 },
-
         .bus_cfg = CDCTL_CFG_DFT(0x00),
-        .ttl_baudrate = 115200
+        .limit_baudrate0 = 1000000,
+        .limit_baudrate1 = 2000000
 };
 
 csa_t csa;
@@ -87,7 +74,7 @@ int flash_erase(uint32_t addr, uint32_t len)
     if (ret == HAL_OK)
         ret = HAL_FLASHEx_Erase(&f, &err_sector);
     ret |= HAL_FLASH_Lock();
-    d_debug("nvm erase: %08x +%08x (%d %d), %08x, ret: %d\n", addr, len, f.Page, f.NbPages, err_sector, ret);
+    d_debug("nvm erase: %08lx +%08lx (%ld %ld), %08lx, ret: %d\n", addr, len, f.Page, f.NbPages, err_sector, ret);
     return ret;
 }
 
@@ -138,19 +125,17 @@ int flash_write(uint32_t addr, uint32_t len, const uint8_t *buf)
 void csa_list_show(void)
 {
     d_debug("csa_list_show:\n");
-    d_debug("\n"); debug_flush(true);
+    d_debug("\n");
 
     CSA_SHOW(1, magic_code, "Magic code: 0xcdcd");
     CSA_SHOW(1, conf_ver, "Config version");
     CSA_SHOW(1, conf_from, "0: default config, 1: all from flash, 2: partly from flash");
     CSA_SHOW(0, do_reboot, "1: reboot to bl, 2: reboot to app");
     CSA_SHOW(0, save_conf, "Write 1 to save current config to flash");
-    d_debug("\n"); debug_flush(true);
+    d_debug("\n");
 
     CSA_SHOW(0, dbg_en, "1: Report debug message to host, 0: do not report");
-    CSA_SHOW_SUB(2, dbg_dst, cdn_sockaddr_t, addr, "Send debug message to this address");
-    CSA_SHOW_SUB(1, dbg_dst, cdn_sockaddr_t, port, "Send debug message to this port");
-    d_debug("\n"); debug_flush(true);
+    d_debug("\n");
 
     CSA_SHOW_SUB(1, bus_cfg, cdctl_cfg_t, mac, "RS-485 port id, range: 0~254");
     CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, baud_l, "RS-485 baud rate for first byte");
@@ -160,8 +145,9 @@ void csa_list_show(void)
     CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, tx_permit_len, "Allow send wait time");
     CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, max_idle_len, "Max idle wait time for BS mode");
     CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, tx_pre_len, " Active TX_EN before TX");
-    d_debug("\n"); debug_flush(true);
+    d_debug("\n");
 
-    CSA_SHOW(0, ttl_baudrate, "TTL baudrate");
-    d_debug("\n"); debug_flush(true);
+    CSA_SHOW(0, limit_baudrate0, "Low baudrate limit (sw1 off)");
+    CSA_SHOW(0, limit_baudrate1, "Low baudrate limit (sw1 on)");
+    d_debug("\n");
 }

@@ -76,12 +76,10 @@ cdnet/parser/cdnet.c \
 cdnet/dev/cdbus_uart.c \
 cdnet/utils/cd_list.c \
 cdnet/utils/modbus_crc.c \
-cdnet/utils/cd_debug.c \
 cdnet/utils/hex_dump.c \
 usr/config.c \
 usr/common_services.c \
-usr/app_main.c \
-usr/bl.c
+usr/app_main.c
 
 # ASM sources
 ASM_SOURCES =  \

@@ -24,8 +24,6 @@
 /* USER CODE BEGIN INCLUDE */
 #include "app_main.h"
 
-extern int usb_rx_cnt;
-extern int usb_tx_cnt;
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -161,7 +159,7 @@ static int8_t CDC_Init_FS(void)
   }
 
   /* Set Application Buffers */
-  USBD_CDC_SetTxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat, 0);
+  USBD_CDC_SetTxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat, 0); // borrow rx buf for init
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat);
   return (USBD_OK);
   /* USER CODE END 3 */
@@ -236,6 +234,7 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
     break;
 
     case CDC_SET_CONTROL_LINE_STATE:
+    cdc_dtr = hUsbDeviceFS.request.wValue & 0x01;
 
     break;
 
@@ -276,14 +275,10 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
       while (true);
   }
   cdc_rx_buf->len = *Len;
-  if (!cdc_rx_buf->len) {
-      printf("CDC_Receive_FS: !len\n");
-      while (true);
-  }
   usb_rx_cnt++;
-  list_put_it(&cdc_rx_head, &cdc_rx_buf->node);
+  list_put(&cdc_rx_head, &cdc_rx_buf->node); // already in isr context
 
-  cdc_rx_buf = list_get_entry_it(&cdc_rx_free_head, cdc_buf_t);
+  cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_rx_buf_t);
   if (!cdc_rx_buf) {
       d_verbose("CDC_Receive_FS: no free buf\n");
       return USBD_OK;

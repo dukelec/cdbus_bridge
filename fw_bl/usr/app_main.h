@@ -10,10 +10,8 @@
 #ifndef __APP_MAIN_H__
 #define __APP_MAIN_H__
 
-#include "cdnet_core.h"
 #include "cd_debug.h"
 #include "cdbus_uart.h"
-
 #include "modbus_crc.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
@@ -23,7 +21,6 @@
 #define APP_CONF_VER        0x0200
 
 #define FRAME_MAX           80
-#define PACKET_MAX          80
 
 typedef enum {
     LED_POWERON = 0,
@@ -34,8 +31,8 @@ typedef enum {
 typedef struct {
     list_node_t node;
     uint16_t    len;
-    uint8_t     dat[512]; // CDC_DATA_HS_MAX_PACKET_SIZE
-} cdc_buf_t;
+    uint8_t     dat[64]; // CDC_DATA_FS_MAX_PACKET_SIZE
+} cdc_rx_buf_t;
 
 typedef struct {
     uint16_t        offset;
@@ -52,12 +49,11 @@ typedef struct {
     bool            save_conf;
 
     bool            dbg_en;
-    cdn_sockaddr_t  dbg_dst;
 
-    uint8_t         _keep[256]; // covers the areas in the app csa that need to be saved
+    uint8_t         _keep[503]; // covers the areas in the app csa that need to be saved
 
     // end of flash
-    #define         _end_save usb_online
+    #define         _end_save usb_online // offset: 512
 
     bool            usb_online;
 
@@ -66,38 +62,27 @@ typedef struct {
 extern csa_t csa;
 extern const csa_t csa_dft;
 
-extern regr_t csa_w_allow[]; // writable list
-extern int csa_w_allow_num;
 
 int flash_erase(uint32_t addr, uint32_t len);
 int flash_write(uint32_t addr, uint32_t len, const uint8_t *buf);
 
+extern UART_HandleTypeDef huart5;
 extern USBD_HandleTypeDef hUsbDeviceFS;
-extern uart_t debug_uart;
 extern gpio_t led_g;
 extern gpio_t sw1;
 
 extern list_head_t cdc_rx_free_head;
-extern list_head_t cdc_tx_free_head;
 extern list_head_t cdc_rx_head;
-extern list_head_t cdc_tx_head;
-extern cdc_buf_t *cdc_rx_buf;
-extern cdc_buf_t *cdc_tx_buf;
+extern cdc_rx_buf_t * volatile cdc_rx_buf;
+extern volatile int usb_rx_cnt;
+extern volatile int usb_tx_cnt;
 
 extern list_head_t frame_free_head;
-
 extern cduart_dev_t d_dev;  // uart / usb
-extern cdn_ns_t dft_ns;
-
-#define CIRC_BUF_SZ 1024
-extern uint8_t circ_buf[];
-extern uint32_t rd_pos;
+extern volatile uint8_t cdc_dtr;
 
 extern uint32_t end; // end of bss
 extern uint32_t *bl_args;
-
-void bl_init(void);
-void bl_routine(void);
 
 void common_service_init(void);
 void common_service_routine(void);
@@ -105,7 +90,6 @@ void common_service_routine(void);
 void app_main(void);
 void load_conf(void);
 int save_conf(void);
-void csa_list_show(void);
 void try_jump_to_app(void);
 
 #endif

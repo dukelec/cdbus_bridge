@@ -12,10 +12,13 @@
 
 #include "arch_wrapper.h"
 
+#define d_printf(fmt, ...) printf(fmt, ## __VA_ARGS__)
+
+#define DBG_UART USART5
+
+
 static inline void arch_dbg_tx(const uint8_t *buf, uint16_t len)
 {
-#define DBG_UART         USART5
-
     for (uint16_t i = 0; i < len; i++) {
         while (!(DBG_UART->ISR & UART_FLAG_TXE)); // UART_FLAG_TXFE
         DBG_UART->TDR = *buf++;

@@ -12,36 +12,17 @@
 
 #include "arch_wrapper.h"
 
+#define d_printf(fmt, ...) printf(fmt, ## __VA_ARGS__)
+
+#define DBG_UART USART5
+
+
 static inline void arch_dbg_tx(const uint8_t *buf, uint16_t len)
 {
-#if 1
-
-#define DBG_UART         USART5
-
     for (uint16_t i = 0; i < len; i++) {
         while (!(DBG_UART->ISR & UART_FLAG_TXE)); // UART_FLAG_TXFE
         DBG_UART->TDR = *buf++;
     }
-
-#else
-
-#define DBG_DMA         DMA2
-#define DBG_DMA_CH      DMA2_Channel5
-#define DBG_DMA_MASK    (2 << 16)       // DMA_ISR.TCIF5
-
-    // init once:
-    //DBG_UART->CR3 |= USART_CR3_DMAT;
-    //DBG_DMA_CH->CPAR = (uint32_t)&DBG_UART->TDR;
-
-    DBG_DMA_CH->CNDTR = len;
-    DBG_DMA_CH->CMAR = (uint32_t)buf;
-    DBG_DMA_CH->CCR |= DMA_CCR_EN;
-
-    while (!(DBG_DMA->ISR & DBG_DMA_MASK));
-    DBG_DMA->IFCR = DBG_DMA_MASK;
-    DBG_DMA_CH->CCR &= ~DMA_CCR_EN;
-
-#endif
 }
 
 #endif

@@ -72,20 +72,30 @@ static void dump_hw_status(void)
 static void usb_detection(void)
 {
     static uint32_t t_usb = 0;
+    static uint8_t cdc_dtr_final = 0;
     uint32_t t_cur = get_systick();
 
-    if (otg_core_struct_hs.dev.conn_state != USB_CONN_STATE_CONFIGURED)
+    if (otg_core_struct_hs.dev.conn_state < USB_CONN_STATE_CONFIGURED)
         cdc_dtr = 0;
 
     if (!cdc_dtr) {
         t_usb = t_cur;
         if (csa.usb_online)
-            printf("usb: 1 -> 0\n");
+            printf("usb: 1 -> 0 (!dtr)\n");
+        cdc_dtr_final = 0;
         csa.usb_online = false;
-    } else if (!csa.usb_online && t_cur - t_usb > 5) { // wait for host to turn off echo
+    } else if (!cdc_dtr_final && t_cur - t_usb > 5) { // wait for host to turn off echo
+        cdc_dtr_final = 1;
+        printf("usb: dtr on\n");
+    }
+
+    if (otg_core_struct_hs.dev.conn_state != USB_CONN_STATE_CONFIGURED) {
+        if (csa.usb_online)
+            printf("usb: 1 -> 0 (!state)\n");
+        csa.usb_online = false;
+    } else if (!csa.usb_online && cdc_dtr_final) {
         csa.usb_online = true;
-        cdc_struct_type *pcdc = (cdc_struct_type *)otg_core_struct_hs.dev.class_handler->pdata;
-        printf("usb: 0 -> 1 (baudrate %ld)\n", pcdc->linecoding.bitrate);
+        printf("usb: 0 -> 1 (baudrate %ld)\n", cdc_rate);
     }
 }
 

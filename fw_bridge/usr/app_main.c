@@ -183,6 +183,7 @@ void app_main(void)
     uint32_t cdc_rate_bk = 0;
     uint32_t cdctl_baud_l = 115200;
     uint32_t cdctl_baud_h = 115200;
+    uint32_t t_update_baud = 0;
 
     gpio_set_val(&led_tx, 1);
     gpio_set_val(&led_rx, 1);
@@ -257,6 +258,9 @@ void app_main(void)
         uint32_t baud_l = csa.bus_cfg.mode ? baud_h : min(baud_h, baud_limit);
 
         if (cdctl_baud_l != baud_l || cdctl_baud_h != baud_h) {
+            gpio_set_val(&led_g, 1);
+            gpio_set_val(&led_b, 0);
+            t_update_baud = get_systick();
             cdctl_baud_l = baud_l;
             cdctl_baud_h = baud_h;
             pendsv_val = 0; // disable pendsv
@@ -266,6 +270,11 @@ void app_main(void)
             cdctl_get_baud_rate(&r_dev, &csa.bus_cfg.baud_l, &csa.bus_cfg.baud_h);
             pendsv_val = SCB_ICSR_PENDSVSET_Msk; // enable pendsv
             d_debug("cdctl: get baud rate: %lu %lu\n", csa.bus_cfg.baud_l, csa.bus_cfg.baud_h);
+        }
+
+        if (gpio_get_val(&led_g) && get_systick() - t_update_baud > 100) {
+            gpio_set_val(&led_b, 1);
+            gpio_set_val(&led_g, 0);
         }
     }
 }

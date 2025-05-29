@@ -14,10 +14,17 @@ Switchs Defination：
  - S2.1: Enable pull-up resistor.
  - S2.2: Enable termination resistor.
  - S2.3: Enable pull-down resistor.
- - S2.4: Enable 5V output.
+ - S2.4: Enable 5V output (disable when using external power supply ≤24V).
 
+## Transparent Mode
 
-## GUI Configuration
+ - The PC sends complete CDBUS packets (with CRC) via USB serial to the CDBUS Bridge, which forwards them unchanged to the RS-485 bus.
+ - Data received from RS-485 is sent unchanged back to the PC via USB serial.
+ - The baud rate set by the PC when opening the USB serial port is used for RS-485 (`baud_l` is automatically limited in arbitration mode).
+ - The PC must enable the DTR option on the USB serial port.
+ - The default RS-485 address of the Bridge is 0. To change it, see the next section.
+
+## Configuration Mode
 
 CDBUS GUI Tool: https://github.com/dukelec/cdbus_gui
 
@@ -50,4 +57,11 @@ git clone --recursive https://github.com/dukelec/cdbus_tools
 cd cdbus_tools/
 ./cdbus_terminal.py --help
 ```
+
+We can also use a generic serial debugging tool for loopback testing. For example, to simulate node 02 sending a packet to node 00 (with CRC):
+```
+02 00 01  cd  c1 99
+```
+
+If the hardware works properly, the same packet should be received.
 

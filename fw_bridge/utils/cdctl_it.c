@@ -7,7 +7,6 @@
  * Author: Duke Fong <d@d-l.io>
  */
 
-#include <math.h>
 #include "cdctl_it.h"
 #include "app_main.h"
 #include "cdctl_pll_cal.h"
@@ -72,6 +71,7 @@ void cdctl_get_baud_rate(uint32_t *low, uint32_t *high)
 void cdctl_set_clk(uint32_t target_baud)
 {
     cdctl_reg_w(REG_CLK_CTRL, 0x00); // select osc
+    while (!(cdctl_reg_r(REG_CLK_STATUS) & 0b100)) {}
     d_info("cdctl: version (clk: osc): %02x\n", cdctl_reg_r(REG_VERSION));
 
     sysclk = cdctl_sys_cal(target_baud);
@@ -89,6 +89,7 @@ void cdctl_set_clk(uint32_t target_baud)
     cdctl_reg_w(REG_PLL_CTRL, 0x10); // enable pll
     d_info("clk_status: %02x\n", cdctl_reg_r(REG_CLK_STATUS));
     cdctl_reg_w(REG_CLK_CTRL, 0x01); // select pll
+    while (!(cdctl_reg_r(REG_CLK_STATUS) & 0b100)) {}
     d_info("clk_status (clk: pll): %02x\n", cdctl_reg_r(REG_CLK_STATUS));
     d_info("version (clk: pll): %02x\n", cdctl_reg_r(REG_VERSION));
 }
@@ -133,7 +134,7 @@ void cdctl_dev_init(cdctl_cfg_t *init)
 // int_n pin interrupt isr
 void cdctl_int_isr(void)
 {
-    if ((cdctl_state == CDCTL_IDLE) || cdctl_state == CDCTL_WAIT_TX_CLEAN) {
+    if (cdctl_state == CDCTL_IDLE || cdctl_state == CDCTL_WAIT_TX_CLEAN) {
         cdctl_state = CDCTL_RD_FLAG;
         cdctl_reg_r_it(REG_INT_FLAG);
     }

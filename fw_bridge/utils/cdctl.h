@@ -42,6 +42,7 @@ typedef struct {
 
 uint8_t cdctl_reg_r(uint8_t reg);
 void cdctl_reg_w(uint8_t reg, uint8_t val);
+void cdctl_set_clk(uint32_t target_baud);
 void cdctl_set_baud_rate(uint32_t low, uint32_t high);
 void cdctl_get_baud_rate(uint32_t *low, uint32_t *high);
 

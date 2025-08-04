@@ -7,7 +7,6 @@
  * Author: Duke Fong <d@d-l.io>
  */
 
-#include <math.h>
 #include "cdctl.h"
 #include "app_main.h"
 #include "cdctl_pll_cal.h"
@@ -68,8 +67,8 @@ static void cdctl_write_frame(const cd_frame_t *frame)
 void cdctl_set_baud_rate(uint32_t low, uint32_t high)
 {
     uint16_t l, h;
-    l = DIV_ROUND_CLOSEST(sysclk, low) - 1;
-    h = DIV_ROUND_CLOSEST(sysclk, high) - 1;
+    l = min(65535, max(2, DIV_ROUND_CLOSEST(sysclk, low) - 1));
+    h = min(65535, max(2, DIV_ROUND_CLOSEST(sysclk, high) - 1));
     cdctl_reg_w(REG_DIV_LS_L, l & 0xff);
     cdctl_reg_w(REG_DIV_LS_H, l >> 8);
     cdctl_reg_w(REG_DIV_HS_L, h & 0xff);
@@ -86,18 +85,13 @@ void cdctl_get_baud_rate(uint32_t *low, uint32_t *high)
     *high = DIV_ROUND_CLOSEST(sysclk, h + 1);
 }
 
-void cdctl_dev_init(cdctl_cfg_t *init, spi_t *spi)
+void cdctl_set_clk(uint32_t target_baud)
 {
-    cdctl_spi = spi;
+    cdctl_reg_w(REG_CLK_CTRL, 0x00); // select osc
+    while (!(cdctl_reg_r(REG_CLK_STATUS) & 0b100)) {}
+    d_info("cdctl: version (clk: osc): %02x\n", cdctl_reg_r(REG_VERSION));
 
-    d_info("cdctl: init...\n");
-    uint8_t ver = cdctl_reg_r(REG_VERSION);
-    d_info("cdctl: version: %02x\n", ver);
-
-    cdctl_reg_w(REG_CLK_CTRL, 0x80); // soft reset
-    d_info("cdctl: version after soft reset: %02x\n", cdctl_reg_r(REG_VERSION));
-
-    sysclk = cdctl_sys_cal(init->baud_h);
+    sysclk = cdctl_sys_cal(target_baud);
     pllcfg_t pll = cdctl_pll_cal(CDCTL_OSC_CLK, sysclk);
     unsigned actual_freq = cdctl_pll_get(CDCTL_OSC_CLK, pll);
     d_info("cdctl: sysclk %ld, actual: %d\n", sysclk, actual_freq);
@@ -112,9 +106,22 @@ void cdctl_dev_init(cdctl_cfg_t *init, spi_t *spi)
     cdctl_reg_w(REG_PLL_CTRL, 0x10); // enable pll
     d_info("clk_status: %02x\n", cdctl_reg_r(REG_CLK_STATUS));
     cdctl_reg_w(REG_CLK_CTRL, 0x01); // select pll
-    d_info("clk_status after select pll: %02x\n", cdctl_reg_r(REG_CLK_STATUS));
-    d_info("version after select pll: %02x\n", cdctl_reg_r(REG_VERSION));
+    while (!(cdctl_reg_r(REG_CLK_STATUS) & 0b100)) {}
+    d_info("clk_status (clk: pll): %02x\n", cdctl_reg_r(REG_CLK_STATUS));
+    d_info("version (clk: pll): %02x\n", cdctl_reg_r(REG_VERSION));
+}
 
+
+void cdctl_dev_init(cdctl_cfg_t *init, spi_t *spi)
+{
+    cdctl_spi = spi;
+
+    d_info("cdctl: init...\n");
+    uint8_t ver = cdctl_reg_r(REG_VERSION);
+    d_info("cdctl: version: %02x\n", ver);
+
+    cdctl_reg_w(REG_CLK_CTRL, 0x80); // soft reset
+    cdctl_set_clk(init->baud_h);
     cdctl_reg_w(REG_PIN_RE_CTRL, 0x10); // enable phy rx
 
     uint8_t setting = (cdctl_reg_r(REG_SETTING) & 0xf) | BIT_SETTING_TX_PUSH_PULL;
@@ -137,8 +144,6 @@ void cdctl_dev_init(cdctl_cfg_t *init, spi_t *spi)
             cdctl_reg_r(REG_FILTER), cdctl_reg_r(REG_FILTER_M0), cdctl_reg_r(REG_FILTER_M1));
     d_debug("cdctl: flags: %02x\n", cdctl_reg_r(REG_INT_FLAG));
 }
-
-// handlers
 
 
 void cdctl_routine(void)

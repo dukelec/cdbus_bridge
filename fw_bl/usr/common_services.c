@@ -191,10 +191,3 @@ int _write(int file, char *data, int len)
     dbg_transmit((uint8_t *)data, len);
     return len;
 }
-
-int _read(int file, char *ptr, int len) { return len; }
-int _close(int file)                    { return -1; }
-int _fstat(int file, void *st)          { return -1; }
-int _isatty(int file)                   { return 1; }
-int _lseek(int file, int ptr, int dir)  { return 0; }
-

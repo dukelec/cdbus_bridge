@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Root>
+    <WorkBenchVersion>
+        <Version>V1.2.00</Version>
+    </WorkBenchVersion>
     <MCUInfo>
         <MCUSerials>AT32F405</MCUSerials>
         <MCUName>AT32F405KCU7-4</MCUName>
@@ -128,7 +131,7 @@
     <ProjectInfomation>
         <ProjectName>cdbridge_bl</ProjectName>
         <ProjectLocation>/mnt/TF/company/dukelec/cdbus/fw/cdbus_bridge_at/fw_bl</ProjectLocation>
-        <ToolchainIDE>Eclipse_gcc</ToolchainIDE>
+        <ToolchainIDE>Makefile</ToolchainIDE>
         <ARMCompiler>1</ARMCompiler>
         <KeepUserCode>true</KeepUserCode>
         <NotUsedPinAnalog>false</NotUsedPinAnalog>
@@ -137,6 +140,6 @@
         <MinHeapSize>0x200</MinHeapSize>
         <MinStackSize>0x400</MinStackSize>
         <UseFirmware>true</UseFirmware>
-        <PackageVersion>V2.1.2</PackageVersion>
+        <PackageVersion>V2.1.3</PackageVersion>
     </ProjectInfomation>
 </Root>

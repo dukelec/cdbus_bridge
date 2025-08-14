@@ -87,6 +87,9 @@ int main(void)
   /* timebase config. */
   wk_timebase_init();
 
+  /* init gpio function. */
+  wk_gpio_config();
+
   /* init dma1 channel1 */
   wk_dma1_channel1_init();
   /* config dma channel transfer parameter */
@@ -144,9 +147,6 @@ int main(void)
 
   /* init exint function. */
   wk_exint_config();
-
-  /* init gpio function. */
-  wk_gpio_config();
 
   /* init usb app function. */
   wk_usb_app_init();

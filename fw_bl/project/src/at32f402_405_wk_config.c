@@ -81,6 +81,7 @@
   *         - pll_ns              = 72
   *         - pll_ms              = 1
   *         - pll_fp              = 4
+  *         - flash_wtcyc         = 6 cycle
   * @param  none
   * @retval none
   */

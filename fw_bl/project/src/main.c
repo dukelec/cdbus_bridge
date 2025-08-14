@@ -87,6 +87,9 @@ int main(void)
   /* timebase config. */
   wk_timebase_init();
 
+  /* init gpio function. */
+  wk_gpio_config();
+
   /* init uart7 function. */
   wk_uart7_init();
 
@@ -95,9 +98,6 @@ int main(void)
 
   /* init crc function. */
   wk_crc_init();
-
-  /* init gpio function. */
-  wk_gpio_config();
 
   /* init usb app function. */
   wk_usb_app_init();

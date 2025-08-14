@@ -71,6 +71,7 @@ typedef struct
 
   __IO uint8_t hid_suspend_flag;
   __IO uint8_t g_u8tx_completed;
+  uint8_t send_state;
   uint8_t hid_state;
   uint8_t temp;
 

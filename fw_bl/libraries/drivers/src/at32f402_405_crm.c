@@ -112,7 +112,7 @@ void crm_hext_bypass(confirm_state new_state)
   *         - CRM_PLLU_STABLE_FLAG
   *         - CRM_LEXT_STABLE_FLAG
   *         - CRM_LICK_STABLE_FLAG
-  *         - CRM_PIN_RESET_FLAG
+  *         - CRM_NRST_RESET_FLAG
   *         - CRM_POR_RESET_FLAG
   *         - CRM_SW_RESET_FLAG
   *         - CRM_WDT_RESET_FLAG
@@ -890,7 +890,7 @@ void crm_clocks_freq_get(crm_clocks_freq_type *clocks_struct)
       pll_ms = CRM->pllcfg_bit.pllms;
       pll_fr = pll_fp_table[CRM->pllcfg_bit.pllfp];
 
-      if (pll_clock_source == CRM_PLL_SOURCE_HICK)
+      if(pll_clock_source == CRM_PLL_SOURCE_HICK)
       {
         /* hick selected as pll clock entry */
         pllrcsfreq = HICK_VALUE;

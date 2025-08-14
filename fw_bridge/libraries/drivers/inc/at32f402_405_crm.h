@@ -729,7 +729,7 @@ typedef struct
       __IO uint32_t tmr7rst              : 1; /* [5] */
       __IO uint32_t reserved2            : 1; /* [6] */
       __IO uint32_t tmr13rst             : 1; /* [7] */
-      __IO uint32_t adc14rst             : 1; /* [8] */
+      __IO uint32_t tmr14rst             : 1; /* [8] */
       __IO uint32_t reserved3            : 2; /* [10:9] */
       __IO uint32_t wwdtrst              : 1; /* [11] */
       __IO uint32_t reserved4            : 2; /* [13:12] */
@@ -864,7 +864,7 @@ typedef struct
       __IO uint32_t tmr7en               : 1; /* [5] */
       __IO uint32_t reserved2            : 1; /* [6] */
       __IO uint32_t tmr13en              : 1; /* [7] */
-      __IO uint32_t adc14en              : 1; /* [8] */
+      __IO uint32_t tmr14en              : 1; /* [8] */
       __IO uint32_t reserved3            : 2; /* [10:9] */
       __IO uint32_t wwdten               : 1; /* [11] */
       __IO uint32_t reserved4            : 2; /* [13:12] */
@@ -1002,7 +1002,7 @@ typedef struct
       __IO uint32_t tmr7lpen             : 1; /* [5] */
       __IO uint32_t reserved2            : 1; /* [6] */
       __IO uint32_t tmr13lpen            : 1; /* [7] */
-      __IO uint32_t adc14lpen            : 1; /* [8] */
+      __IO uint32_t tmr14lpen            : 1; /* [8] */
       __IO uint32_t reserved3            : 2; /* [10:9] */
       __IO uint32_t wwdtlpen             : 1; /* [11] */
       __IO uint32_t reserved4            : 2; /* [13:12] */

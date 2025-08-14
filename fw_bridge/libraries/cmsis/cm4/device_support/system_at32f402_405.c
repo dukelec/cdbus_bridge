@@ -154,7 +154,7 @@ void system_core_clock_update(void)
       pll_ms = CRM->pllcfg_bit.pllms;
       pll_fr = pll_fp_table[CRM->pllcfg_bit.pllfp];
 
-      if (pll_clock_source == CRM_PLL_SOURCE_HICK)
+      if(pll_clock_source == CRM_PLL_SOURCE_HICK)
       {
         /* hick selected as pll clock entry */
         pllrcsfreq = HICK_VALUE;
@@ -220,7 +220,6 @@ void reduce_power_consumption(void)
   *(__IO uint32_t *)0x40040038 |= 0x400000;
   *(__IO uint32_t *)0x40040E00 |= 0x1;  
   *(__IO uint32_t *)0x40040038 &= ~0x10000;
-  *(__IO uint32_t *)0x40023878 = 0x0;
   return;
 }
 

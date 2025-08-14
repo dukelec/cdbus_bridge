@@ -385,7 +385,7 @@ void i2s_init(spi_type* spi_x, i2s_init_type* i2s_init_struct)
         pll_ns = CRM->pllcfg_bit.pllns;
         pll_ms = CRM->pllcfg_bit.pllms;
         pll_fr = pll_fp_table[CRM->pllcfg_bit.pllfp];
-        if (pll_clock_source == CRM_PLL_SOURCE_HICK)
+        if(pll_clock_source == CRM_PLL_SOURCE_HICK)
         {
           /* hick selected as pll clock entry */
           pllrcsfreq = HICK_VALUE;

@@ -43,7 +43,7 @@
   * @brief  deinitialize the can peripheral registers to their default reset values.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @retval none.
   */
 void can_reset(can_type* can_x)
@@ -81,7 +81,7 @@ void can_baudrate_default_para_init(can_baudrate_type* can_baudrate_struct)
   * @brief  set the baudrate of the can peripheral
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @param  can_baudrate_struct: pointer to a can_baudrate_type structure which will be set.
   * @note   baudrate calculate method is:
   *         baudrate = fpclk/(baudrate_div *(3 + bts1_size + bts2_size))
@@ -178,7 +178,7 @@ void can_default_para_init(can_base_type* can_base_struct)
   *         parameters in the can_init_struct.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @param  can_base_struct: pointer to a can_base_struct structure that contains the configuration information for the can peripheral.
   * @retval the status of initialization
   *         this parameter can be one of the following values:
@@ -290,7 +290,7 @@ void can_filter_default_para_init(can_filter_init_type* can_filter_init_struct)
   *         parameters in the can_filter_init_struct.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @param  can_filter_init_struct: pointer to a can_filter_init_type structure that contains the configuration information.
   * @retval none.
   */
@@ -380,7 +380,7 @@ void can_filter_init(can_type* can_x, can_filter_init_type* can_filter_init_stru
   * @brief  enable or disable the debug transmission prohibit of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @param  new_state: new state of debug transmission prohibit. 
   *         this parameter can be: TRUE or FALSE.
   * @retval none.
@@ -394,7 +394,7 @@ void can_debug_transmission_prohibit(can_type* can_x, confirm_state new_state)
   * @brief  enable or disable time trigger operation communication mode of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1 or CAN2.
+  *         CAN1.
   * @param  new_state : new state of time trigger operation communication mode.
   *         this parameter can be: TRUE or FALSE.
   * @note   
@@ -421,7 +421,7 @@ void can_ttc_mode_enable(can_type* can_x, confirm_state new_state)
   * @brief  fill the transmission message and transmit of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @param  tx_message_struct: pointer to a structure which contains the message to be trans.
   * @retval the number of the mailbox that is used for transmission:
   *         this parameter can be one of the following values:
@@ -492,7 +492,7 @@ uint8_t can_message_transmit(can_type* can_x, can_tx_message_type* tx_message_st
   * @brief  check the transmission state of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1 or CAN2.
+  *         CAN1.
   * @param  transmit_mailbox: the number of the mailbox that is used for transmission.
   *         this parameter can be one of the following values:
   *         - CAN_TX_MAILBOX0
@@ -567,13 +567,11 @@ can_transmit_status_type can_transmit_status_get(can_type* can_x, can_tx_mailbox
   return state_index;
 }
 
-
-
 /**
   * @brief  cancel a transmit request of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1 or CAN2.
+  *         CAN1.
   * @param  mailbox:  mailbox number.
   *         this parameter can be one of the following values:
   *         - CAN_TX_MAILBOX0
@@ -605,7 +603,7 @@ void can_transmit_cancel(can_type* can_x, can_tx_mailbox_num_type transmit_mailb
   * @brief  receive message of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @param  fifo_number: receive fifo number.
   *         this parameter can be one of the following values:
   *         - CAN_RX_FIFO0
@@ -653,7 +651,7 @@ void can_message_receive(can_type* can_x, can_rx_fifo_num_type fifo_number, can_
   * @brief  release the specified fifo of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @param  fifo_number: fifo to be release.
   *         this parameter can be one of the following values:
   *         - CAN_RX_FIFO0
@@ -679,7 +677,7 @@ void can_receive_fifo_release(can_type* can_x, can_rx_fifo_num_type fifo_number)
   * @brief  return the number of pending messages of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @param  fifo_number: receive fifo number.
   *         this parameter can be one of the following values:
   *         - CAN_RX_FIFO0
@@ -707,7 +705,7 @@ uint8_t can_receive_message_pending_get(can_type* can_x, can_rx_fifo_num_type fi
   * @brief  set the operation mode of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @param  can_operating_mode: can operating mode.
   *         this parameter can be one of the following values:
   *         - CAN_OPERATINGMODE_FREEZE
@@ -790,7 +788,7 @@ error_status can_operating_mode_set(can_type* can_x, can_operating_mode_type can
   * @brief  enter the low power mode of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @retval status of doze mode enter, the returned value can be:
   *         - CAN_ENTER_DOZE_SUCCESSFUL  <it meaning enter the doze mode succeed>
   *         - CAN_ENTER_DOZE_FAILED  <it meaning enter the doze mode failed>
@@ -820,7 +818,7 @@ can_enter_doze_status_type can_doze_mode_enter(can_type* can_x)
   * @brief  exit the doze mode of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @retval status of doze mode enter, the returned value can be:
   *         - CAN_QUIT_DOZE_SUCCESSFUL  <it meaning exit the doze mode succeed>
   *         - CAN_QUIT_DOZE_FAILED  <it meaning exit the doze mode failed>
@@ -845,7 +843,7 @@ can_quit_doze_status_type can_doze_mode_exit(can_type* can_x)
   * @brief  return the error type record (etr) of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @retval the value of the error code
   *         the return can be one of the follow values:
   *         - CAN_ERRORRECORD_NOERR                  
@@ -869,7 +867,7 @@ can_error_record_type can_error_type_record_get(can_type* can_x)
   * @brief  return the receive error counter (rec) of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @retval the value of receive error counter.
   */
 uint8_t can_receive_error_counter_get(can_type* can_x)
@@ -883,7 +881,7 @@ uint8_t can_receive_error_counter_get(can_type* can_x)
   * @brief  return the transmit error counter of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @retval the value of transmit error counter.
   */
 uint8_t can_transmit_error_counter_get(can_type* can_x)
@@ -897,7 +895,7 @@ uint8_t can_transmit_error_counter_get(can_type* can_x)
   * @brief  enable or disable the interrupt of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @param  can_int: specifies the can interrupt sources to be enabled or disabled.
   *         this parameter can be one of the following values:
   *         - CAN_TCIEN_INT 
@@ -934,7 +932,7 @@ void can_interrupt_enable(can_type* can_x, uint32_t can_int, confirm_state new_s
   * @brief  get interrupt flag of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @param  can_flag: select the flag.
   *         this parameter can be one of the following flags:
   *         - CAN_EAF_FLAG
@@ -1030,7 +1028,7 @@ flag_status can_interrupt_flag_get(can_type* can_x, uint32_t can_flag)
   * @brief  get flag of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @param  can_flag: select the flag.
   *         this parameter can be one of the following flags:
   *         - CAN_EAF_FLAG     
@@ -1156,7 +1154,7 @@ flag_status can_flag_get(can_type* can_x, uint32_t can_flag)
   * @brief  clear flag of the specified can peripheral.
   * @param  can_x: select the can peripheral.
   *         this parameter can be one of the following values:
-  *         CAN1,CAN2.
+  *         CAN1.
   * @param  can_flag: select the flag.
   *         this parameter can be one of the following flags:
   *         - CAN_EAF_FLAG

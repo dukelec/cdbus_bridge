@@ -350,7 +350,7 @@ typedef struct
   */
 typedef struct
 {
-  uint16_t baudrate_div;                  /*!< baudrate division,this parameter can be 0x001~0x400.*/                   
+  uint16_t baudrate_div;                  /*!< baudrate division,this parameter can be 0x001~0x1000.*/                   
  
   can_rsaw_type rsaw_size;                /*!< resynchronization adjust width */   
  
@@ -707,7 +707,7 @@ typedef struct
     __IO uint32_t inten;
     struct
     {
-      __IO uint32_t tcien               : 1; /* [0] */      
+      __IO uint32_t tcien                : 1; /* [0] */      
       __IO uint32_t rf0mien              : 1; /* [1] */
       __IO uint32_t rf0fien              : 1; /* [2] */
       __IO uint32_t rf0oien              : 1; /* [3] */  
@@ -821,21 +821,7 @@ typedef struct
       __IO uint32_t fmsel11              : 1; /* [11] */      
       __IO uint32_t fmsel12              : 1; /* [12] */       
       __IO uint32_t fmsel13              : 1; /* [13] */
-      __IO uint32_t fmsel14              : 1; /* [14] */
-      __IO uint32_t fmsel15              : 1; /* [15] */
-      __IO uint32_t fmsel16              : 1; /* [16] */
-      __IO uint32_t fmsel17              : 1; /* [17] */
-      __IO uint32_t fmsel18              : 1; /* [18] */
-      __IO uint32_t fmsel19              : 1; /* [19] */
-      __IO uint32_t fmsel20              : 1; /* [20] */
-      __IO uint32_t fmsel21              : 1; /* [21] */
-      __IO uint32_t fmsel22              : 1; /* [22] */
-      __IO uint32_t fmsel23              : 1; /* [23] */
-      __IO uint32_t fmsel24              : 1; /* [24] */
-      __IO uint32_t fmsel25              : 1; /* [25] */
-      __IO uint32_t fmsel26              : 1; /* [26] */
-      __IO uint32_t fmsel27              : 1; /* [27] */
-      __IO uint32_t reserved1            : 4;/* [31:28] */  
+      __IO uint32_t reserved1            : 18;/* [31:14] */  
     } fmcfg_bit;            
   };  
   
@@ -866,21 +852,7 @@ typedef struct
       __IO uint32_t fbwsel11             : 1; /* [11] */      
       __IO uint32_t fbwsel12             : 1; /* [12] */       
       __IO uint32_t fbwsel13             : 1; /* [13] */
-      __IO uint32_t fbwsel14             : 1; /* [14] */
-      __IO uint32_t fbwsel15             : 1; /* [15] */
-      __IO uint32_t fbwsel16             : 1; /* [16] */
-      __IO uint32_t fbwsel17             : 1; /* [17] */
-      __IO uint32_t fbwsel18             : 1; /* [18] */
-      __IO uint32_t fbwsel19             : 1; /* [19] */
-      __IO uint32_t fbwsel20             : 1; /* [20] */
-      __IO uint32_t fbwsel21             : 1; /* [21] */
-      __IO uint32_t fbwsel22             : 1; /* [22] */
-      __IO uint32_t fbwsel23             : 1; /* [23] */
-      __IO uint32_t fbwsel24             : 1; /* [24] */
-      __IO uint32_t fbwsel25             : 1; /* [25] */
-      __IO uint32_t fbwsel26             : 1; /* [26] */
-      __IO uint32_t fbwsel27             : 1; /* [27] */
-      __IO uint32_t reserved1            : 4;/* [31:28] */  
+      __IO uint32_t reserved1            : 18;/* [31:14] */  
     } fbwcfg_bit;            
   }; 
   
@@ -911,21 +883,7 @@ typedef struct
       __IO uint32_t frfsel11             : 1; /* [11] */      
       __IO uint32_t frfsel12             : 1; /* [12] */       
       __IO uint32_t frfsel13             : 1; /* [13] */
-      __IO uint32_t frfsel14             : 1; /* [14] */
-      __IO uint32_t frfsel15             : 1; /* [15] */
-      __IO uint32_t frfsel16             : 1; /* [16] */
-      __IO uint32_t frfsel17             : 1; /* [17] */
-      __IO uint32_t frfsel18             : 1; /* [18] */
-      __IO uint32_t frfsel19             : 1; /* [19] */
-      __IO uint32_t frfsel20             : 1; /* [20] */
-      __IO uint32_t frfsel21             : 1; /* [21] */
-      __IO uint32_t frfsel22             : 1; /* [22] */
-      __IO uint32_t frfsel23             : 1; /* [23] */
-      __IO uint32_t frfsel24             : 1; /* [24] */
-      __IO uint32_t frfsel25             : 1; /* [25] */
-      __IO uint32_t frfsel26             : 1; /* [26] */
-      __IO uint32_t frfsel27             : 1; /* [27] */
-      __IO uint32_t reserved1            : 4;/* [31:28] */  
+      __IO uint32_t reserved1            : 18;/* [31:14] */  
     } frf_bit;            
   }; 
   
@@ -956,21 +914,7 @@ typedef struct
       __IO uint32_t faen11               : 1; /* [11] */      
       __IO uint32_t faen12               : 1; /* [12] */       
       __IO uint32_t faen13               : 1; /* [13] */
-      __IO uint32_t faen14               : 1; /* [14] */
-      __IO uint32_t faen15               : 1; /* [15] */
-      __IO uint32_t faen16               : 1; /* [16] */
-      __IO uint32_t faen17               : 1; /* [17] */
-      __IO uint32_t faen18               : 1; /* [18] */
-      __IO uint32_t faen19               : 1; /* [19] */
-      __IO uint32_t faen20               : 1; /* [20] */
-      __IO uint32_t faen21               : 1; /* [21] */
-      __IO uint32_t faen22               : 1; /* [22] */
-      __IO uint32_t faen23               : 1; /* [23] */
-      __IO uint32_t faen24               : 1; /* [24] */
-      __IO uint32_t faen25               : 1; /* [25] */
-      __IO uint32_t faen26               : 1; /* [26] */
-      __IO uint32_t faen27               : 1; /* [27] */
-      __IO uint32_t reserved1            : 4;/* [31:28] */  
+      __IO uint32_t reserved1            : 18;/* [31:14] */  
     } facfg_bit;            
   }; 
 
@@ -982,7 +926,7 @@ typedef struct
   /**
     * @brief can ffb register, offset:0x240~0x2AC
     */
-  can_filter_register_type ffb[28];
+  can_filter_register_type ffb[14];
 } can_type;  
 
 /**
@@ -990,7 +934,6 @@ typedef struct
   */
 
 #define CAN1                             ((can_type *) CAN1_BASE)
-//#define CAN2                             ((can_type *) CAN2_BASE)
 
 /** @defgroup CAN_exported_functions
   * @{

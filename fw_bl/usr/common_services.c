@@ -40,7 +40,7 @@ static void init_info_str(void)
     // M: model; S: serial string; HW: hardware version; SW: software version
     get_uid(cpu_id);
     sprintf(info_str, "M: cdbus bridge (bl); S: %s; SW: %s", cpu_id, SW_VER);
-    d_info("info: %s\n", info_str);
+    d_info("info: %s, git: %s\n", info_str, SW_VER_FULL);
 }
 
 

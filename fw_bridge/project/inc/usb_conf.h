@@ -88,7 +88,7 @@ extern "C" {
 */
 #define USBD2_RX_SIZE                    512  /*this value is in terms of 4 bytes*/
 #define USBD2_EP0_TX_SIZE                64   /*this value is in terms of 4 bytes*/
-#define USBD2_EP1_TX_SIZE                256  /*this value is in terms of 4 bytes*/
+#define USBD2_EP1_TX_SIZE                260  /*this value is in terms of 4 bytes*/
 #define USBD2_EP2_TX_SIZE                20   /*this value is in terms of 4 bytes*/
 #define USBD2_EP3_TX_SIZE                0   /*this value is in terms of 4 bytes*/
 #define USBD2_EP4_TX_SIZE                0   /*this value is in terms of 4 bytes*/

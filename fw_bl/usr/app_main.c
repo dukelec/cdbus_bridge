@@ -26,8 +26,9 @@ uint32_t *bl_args = (uint32_t *)BL_ARGS;
 
 void try_jump_to_app(void)
 {
+    static uint32_t func; // not on stack (MSP switches before use)
     uint32_t stack = *(uint32_t *)APP_ADDR;
-    uint32_t func = *(uint32_t *)(APP_ADDR + 4);
+    func = *(uint32_t *)(APP_ADDR + 4);
     bool sw = !gpio_get_val(&sw1);
 
     printf("\nbl_args: %08lx, rst flg: %08lx (por %d), sw1: %d\n",

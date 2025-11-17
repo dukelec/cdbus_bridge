@@ -65,6 +65,7 @@
             <ParametersSub name="DEVICE_HS_Manufacturer" value="DUKELEC"/>
             <ParametersSub name="DEVICE_HS_Product_CDC" value="CDBUS Bridge (BL)"/>
             <ParametersSub name="DEVICE_HS_Receive_FIFO_Size" value="512"/>
+            <ParametersSub name="DEVICE_HS_Transmit_FIFO_Size_IN1" value="260"/>
         </Parameters>
     </USB_DEVICE>
     <NVIC>

@@ -116,7 +116,7 @@ void cdctl_dev_init(cdctl_cfg_t *init, spi_t *spi)
 {
     cdctl_spi = spi;
 
-    d_info("cdctl: init...\n");
+    d_info("cdctl: mode%d init...\n", init->mode);
     uint8_t ver = cdctl_reg_r(REG_VERSION);
     d_info("cdctl: version: %02x\n", ver);
 
@@ -125,7 +125,10 @@ void cdctl_dev_init(cdctl_cfg_t *init, spi_t *spi)
     cdctl_reg_w(REG_PIN_RE_CTRL, 0x10); // enable phy rx
 
     uint8_t setting = (cdctl_reg_r(REG_SETTING) & 0xf) | BIT_SETTING_TX_PUSH_PULL;
-    setting |= init->mode == 1 ? BIT_SETTING_BREAK_SYNC : BIT_SETTING_ARBITRATE;
+    if (init->mode == 1 || init->mode == 2)
+        setting |= init->mode << 4;
+    else if (init->mode == 3)
+        setting |= BIT_SETTING_FULL_DUPLEX;
     cdctl_reg_w(REG_SETTING, setting);
     cdctl_reg_w(REG_FILTER, init->mac);
     cdctl_reg_w(REG_FILTER_M0, init->filter_m[0]);

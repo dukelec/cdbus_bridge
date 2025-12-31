@@ -216,7 +216,7 @@ void app_main(void)
         bool sw2_val = !gpio_get_val(&sw2);
         uint32_t baud_limit = sw2_val ? csa.limit_baudrate1 : csa.limit_baudrate0;
         uint32_t baud_h = cdc_rate_final;
-        uint32_t baud_l = csa.bus_cfg.mode ? baud_h : min(baud_h, baud_limit);
+        uint32_t baud_l = csa.bus_cfg.mode == 1 ? min(baud_h, baud_limit) : baud_h;
 
         if (cdctl_baud_l != baud_l || cdctl_baud_h != baud_h) {
             gpio_set_val(&led_g, 1);

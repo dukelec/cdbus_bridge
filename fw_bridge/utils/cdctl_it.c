@@ -222,6 +222,7 @@ void cdctl_spi_isr(void)
     if (cdctl_state == CDCTL_RX_HEADER) {
         cdctl_state = CDCTL_RX_BODY;
         if (rx_frame->dat[2] > min(CD_FRAME_SIZE - 3, 253)) {
+            CD_SS_HIGH();
             cdctl_rx_len_err_cnt++;
             cdctl_state = CDCTL_REG_W;
             cdctl_reg_w_it(REG_RX_CTRL, BIT_RX_CLR_PENDING | BIT_RX_RST_POINTER);

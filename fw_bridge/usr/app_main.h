@@ -26,7 +26,7 @@
 
 #define BL_ARGS             0x20000000 // first word
 #define APP_CONF_ADDR       0x0801F800 // last page
-#define APP_CONF_VER        0x0202
+#define APP_CONF_VER        0x0203
 
 #define FRAME_MAX           80
 

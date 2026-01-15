@@ -67,8 +67,7 @@
             <ModeSub name="Hardware Flow Control (RS485)" value="TRUE"/>
         </Mode>
         <Parameters>
-            <ParametersSub name="BaudRate" value="2000000"/>
-            <ParametersSub name="RealBaudRate" value="2000000"/>
+            <ParametersSub name="RealBaudRate" value="115139"/>
             <ParametersSub name="TransmitStartDelayTime" value="1"/>
         </Parameters>
     </USART1>
@@ -115,7 +114,7 @@
             <ParametersSub name="Instance" value="DMA2_Channel1"/>
             <ParametersSub name="DMANum" value="DMA2"/>
             <ParametersSub name="Mode" value="TRUE"/>
-            <ParametersSub name="Priority" value="DMA_PRIORITY_MEDIUM"/>
+            <ParametersSub name="Priority" value="DMA_PRIORITY_HIGH"/>
             <ParametersSub name="SyncRequestCount" value="1"/>
             <ParametersSub name="RequestCount" value="1"/>
         </USART1_RX>

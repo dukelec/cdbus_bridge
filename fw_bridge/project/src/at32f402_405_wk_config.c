@@ -380,7 +380,7 @@ void wk_usart1_init(void)
   gpio_init(GPIOB, &gpio_init_struct);
 
   /* configure param */
-  usart_init(USART1, 2000000, USART_DATA_8BITS, USART_STOP_1_BIT);
+  usart_init(USART1, 115200, USART_DATA_8BITS, USART_STOP_1_BIT);
   usart_transmitter_enable(USART1, TRUE);
   usart_receiver_enable(USART1, TRUE);
   usart_parity_selection_config(USART1, USART_PARITY_NONE);
@@ -653,7 +653,7 @@ void wk_dma2_channel1_init(void)
   dma_init_struct.memory_inc_enable = TRUE;
   dma_init_struct.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_BYTE;
   dma_init_struct.peripheral_inc_enable = FALSE;
-  dma_init_struct.priority = DMA_PRIORITY_MEDIUM;
+  dma_init_struct.priority = DMA_PRIORITY_HIGH;
   dma_init_struct.loop_mode_enable = TRUE;
   dma_init(DMA2_CHANNEL1, &dma_init_struct);
 

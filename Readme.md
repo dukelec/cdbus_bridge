@@ -14,7 +14,9 @@ Switchs Defination：
  - S2.1: Enable pull-up resistor.
  - S2.2: Enable termination resistor.
  - S2.3: Enable pull-down resistor.
- - S2.4: Enable 5V output (disable when using external power supply ≤24V).
+ - S2.4 (HW v6.2+): When enabled together with S2.3, pulls B to 1.65V,
+         allowing signal A to operate as a TTL single-wire serial.
+ - S2.5 (HW v6.2+) / S2.4: Enable 5V output (should disable when using external power supply).
 
 ## Transparent Mode
 
@@ -23,6 +25,7 @@ Switchs Defination：
  - The baud rate set by the PC when opening the USB serial port is used for RS-485 (`baud_l` is automatically limited in arbitration mode).
  - The PC must enable the DTR option on the USB serial port.
  - The default RS-485 address of the Bridge is 0. To change it, see the next section.
+ - Raw mode allows arbitrary data transfer without following the CDBUS byte format (HW v6.2+).
 
 ## Configuration Mode
 

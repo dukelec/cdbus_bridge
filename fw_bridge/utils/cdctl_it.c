@@ -107,6 +107,11 @@ void cdctl_dev_init(cdctl_cfg_t *init)
     cdctl_set_clk(init->baud_h);
     cdctl_reg_w(REG_PIN_RE_CTRL, 0x10); // enable phy rx
 
+    if (init->mode >= 4) {
+        d_debug("cdctl: init abort, mode: %d\n", init->mode);
+        return;
+    }
+
     uint8_t setting = (cdctl_reg_r(REG_SETTING) & 0xf) | BIT_SETTING_TX_PUSH_PULL;
     if (init->mode == 1 || init->mode == 2)
         setting |= init->mode << 4;

@@ -80,6 +80,7 @@ utils/cdctl_it.c \
 utils/cdctl_pll_cal.c \
 utils/crc_hw.c \
 usr/cdctl_spi_wr.c \
+usr/uart_dma_wr.c \
 usr/config.c \
 usr/common_services.c \
 usr/app_main.c

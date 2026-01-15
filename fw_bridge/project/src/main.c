@@ -131,7 +131,7 @@ int main(void)
   dma_channel_enable(DMA2_CHANNEL2, TRUE);
 
   /* init usart1 function. */
-  wk_usart1_init();
+  // wk_usart1_init(); // disabled by default to avoid conflicts with cdctl
 
   /* init uart7 function. */
   wk_uart7_init();

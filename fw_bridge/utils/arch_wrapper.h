@@ -87,7 +87,7 @@ static inline void gpio_set_low(gpio_t *gpio)
 }
 
 
-#ifdef ARCH_SPI
+#ifdef CD_ARCH_SPI
 // spi wrapper
 
 typedef struct {
@@ -142,7 +142,7 @@ static inline int spi_mem_read(spi_t *spi, uint8_t mem_addr, uint8_t *buf, int l
 #endif
 
 
-#ifdef ARCH_SPI_DMA
+#ifdef CD_ARCH_SPI_DMA
 // spi wrapper
 
 typedef struct {
@@ -182,7 +182,7 @@ static inline int spi_mem_read(spi_t *spi, uint8_t mem_addr, uint8_t *buf, int l
 #endif
 
 
-#ifdef ARCH_I2C
+#ifdef CD_ARCH_I2C
 // i2c wrapper
 
 typedef struct {
@@ -202,7 +202,7 @@ static inline int i2c_mem_read(i2c_t *i2c, uint8_t mem_addr, uint8_t *buf, int l
 #endif
 
 
-#ifdef ARCH_CRC_HW
+#ifdef CD_ARCH_CRC_HW
 uint16_t crc16_hw_sub(const uint8_t *data, uint32_t length, uint16_t crc_val);
 
 static inline uint16_t crc16_hw(const uint8_t *data, uint32_t length)
@@ -212,8 +212,8 @@ static inline uint16_t crc16_hw(const uint8_t *data, uint32_t length)
 #endif
 
 
-#ifndef SYSTICK_US_DIV
-#define SYSTICK_US_DIV  1000
+#ifndef CD_SYSTICK_US_DIV
+#define CD_SYSTICK_US_DIV   1000
 #endif
 
 extern volatile uint32_t timebase_ticks;

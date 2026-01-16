@@ -65,7 +65,7 @@ extern gpio_t led_g;
 extern gpio_t sw1;
 
 extern list_head_t frame_free_head;
-extern cduart_dev_t d_dev;  // uart / usb
+extern cduart_dev_t d_dev;  // usb cdc
 extern volatile uint8_t cdc_dtr;
 extern otg_core_type otg_core_struct_hs;
 

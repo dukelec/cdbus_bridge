@@ -4,8 +4,7 @@
  * Copyright (c) 2017, DUKELEC, Inc.
  * All rights reserved.
  *
- * Author: http://www.modbustools.com/modbus_crc16.htm
- * Modified by: Duke Fong <d@d-l.io>
+ * Author: Duke Fong <d@d-l.io>
  */
 
 #ifndef __MODBUS_CRC_H__

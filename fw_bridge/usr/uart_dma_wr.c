@@ -78,14 +78,9 @@ static void rx_handle(const uint8_t *buf, unsigned len)
 {
     const uint8_t *p = buf;
     while (raw_mode && len) {
-        cd_frame_t *frm = NULL;
-        if (raw_rx_head.len) {
-            frm = cd_list_get_last(&raw_rx_head);
-            if (frm->dat[257] == 255) {
-                cd_list_put(&raw_rx_head, frm);
-                frm = NULL;
-            }
-        }
+        cd_frame_t *frm = list_entry_safe(raw_rx_head.last, cd_frame_t);
+        if (frm && frm->dat[257] == 255)
+            frm = NULL;
         if (!frm) {
             frm = cd_list_get(&frame_free_head);
             frm->dat[257] = 0;
@@ -95,7 +90,8 @@ static void rx_handle(const uint8_t *buf, unsigned len)
         unsigned sub_len = min(255 - frm->dat[257], len);
         memcpy(frm->dat + frm->dat[257], p, sub_len);
         frm->dat[257] += sub_len;
-        cd_list_put(&raw_rx_head, frm);
+        if (frm != list_entry_safe(raw_rx_head.last, cd_frame_t))
+            cd_list_put(&raw_rx_head, frm);
         p += sub_len;
         len -= sub_len;
     }

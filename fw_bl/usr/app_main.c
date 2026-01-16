@@ -137,7 +137,7 @@ void app_main(void)
             NVIC_SystemReset();
         }
 
-        if (get_systick() - t_last > 300000 / SYSTICK_US_DIV) {
+        if (get_systick() - t_last > 300000 / CD_SYSTICK_US_DIV) {
             t_last = get_systick();
             gpio_set_val(&led_g, !gpio_get_val(&led_g));
         }

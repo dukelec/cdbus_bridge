@@ -64,13 +64,16 @@ static void p8_handler(cd_frame_t *frame)
 {
     uint8_t *p_dat = frame->dat + 5;
     uint8_t p_len = frame->dat[2] - 2;
+    bool reply = !(*p_dat & 0x80);
+    *p_dat &= 0x7f;
 
     if (*p_dat == 0x2f && p_len == 9) {
         uint32_t addr = get_unaligned32(p_dat + 1);
         uint32_t len = get_unaligned32(p_dat + 5);
         uint8_t ret = flash_erase(addr, len);
         *p_dat = ret ? 1 : 0;
-        send_frame(frame, 1);
+        if (reply)
+            send_frame(frame, 1);
 
     } else if (*p_dat == 0x00 && p_len == 6) {
         uint32_t addr = get_unaligned32(p_dat + 1);
@@ -78,18 +81,23 @@ static void p8_handler(cd_frame_t *frame)
         uint8_t len = min(p_dat[5], CDN_MAX_DAT - 1);
         memcpy(p_dat + 1, dst_addr, len);
         *p_dat = 0;
-        send_frame(frame, len + 1);
+        if (reply)
+            send_frame(frame, len + 1);
 
     } else if (*p_dat == 0x20 && p_len > 8) {
         uint32_t addr = get_unaligned32(p_dat + 1);
         uint8_t len = p_len - 5;
         uint8_t ret = flash_write(addr, len, p_dat + 5);
         *p_dat = ret ? 1 : 0;
-        send_frame(frame, 1);
+        if (reply)
+            send_frame(frame, 1);
 
     } else {
         cd_list_put(&frame_free_head, frame);
+        return;
     }
+    if (!reply)
+        cd_list_put(&frame_free_head, frame);
 }
 
 // csa manipulation
@@ -98,6 +106,8 @@ static void p5_handler(cd_frame_t *frame)
     uint32_t flags;
     uint8_t *p_dat = frame->dat + 5;
     uint8_t p_len = frame->dat[2] - 2;
+    bool reply = !(*p_dat & 0x80);
+    *p_dat &= 0x7f;
 
     if (*p_dat == 0x00 && p_len == 4) {
         uint16_t offset = get_unaligned16(p_dat + 1);
@@ -106,7 +116,8 @@ static void p5_handler(cd_frame_t *frame)
         memcpy(p_dat + 1, ((void *) &csa) + offset, len);
         cd_irq_restore(&p5_lock, flags);
         *p_dat = 0;
-        send_frame(frame, len + 1);
+        if (reply)
+            send_frame(frame, len + 1);
 
     } else if (*p_dat == 0x20 && p_len > 3) {
         uint16_t offset = get_unaligned16(p_dat + 1);
@@ -118,18 +129,23 @@ static void p5_handler(cd_frame_t *frame)
         memcpy(((void *) &csa) + start, src_addr + (start - offset), end - start);
         cd_irq_restore(&p5_lock, flags);
         *p_dat = 0;
-        send_frame(frame, 1);
+        if (reply)
+            send_frame(frame, 1);
 
     } else if (*p_dat == 0x01 && p_len == 4) {
         uint16_t offset = get_unaligned16(p_dat + 1);
         uint8_t len = min(p_dat[3], CDN_MAX_DAT - 1);
         memcpy(p_dat + 1, ((void *) &csa_dft) + offset, len);
         *p_dat = 0;
-        send_frame(frame, len + 1);
+        if (reply)
+            send_frame(frame, len + 1);
 
     } else {
         cd_list_put(&frame_free_head, frame);
+        return;
     }
+    if (!reply)
+        cd_list_put(&frame_free_head, frame);
 }
 
 

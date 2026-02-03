@@ -29,6 +29,7 @@ static uint8_t circ_buf[CIRC_BUF_SZ];
 static uint32_t rd_pos = 0;
 
 static cd_frame_t *tx_frame = NULL;
+static cd_spinlock_t tx_lock = {0};
 
 
 void uart_tdc_isr(void)
@@ -51,10 +52,17 @@ void uart_dma_isr(void)
     //uint32_t flag_it = UART_DMA->ISR;
     //if (flag_it & UART_DMA_MASK) {
         UART_DMA->IFCR = UART_DMA_MASK;
+#ifdef CD_SMP
+        uint32_t flags;
+        cd_irq_save(&tx_lock, flags);
+#endif
         if (tx_frame) {
             cd_list_put(&frame_free_head, tx_frame);
             tx_frame = NULL;
         }
+#ifdef CD_SMP
+        cd_irq_restore(&tx_lock, flags);
+#endif
         uart_dma_tx();
     //}
 }
@@ -63,7 +71,7 @@ void uart_dma_isr(void)
 void uart_dma_tx(void)
 {
     uint32_t flags;
-    local_irq_save(flags);
+    cd_irq_save(&tx_lock, flags);
     if (!tx_frame) {
         tx_frame = cd_list_get(&raw_tx_head);
         if (tx_frame) {
@@ -71,7 +79,7 @@ void uart_dma_tx(void)
             uart_dma_wr_it(tx_frame->dat, tx_frame->dat[257]);
         }
     }
-    local_irq_restore(flags);
+    cd_irq_restore(&tx_lock, flags);
 }
 
 static void rx_handle(const uint8_t *buf, unsigned len)

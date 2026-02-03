@@ -13,13 +13,17 @@
 #define CR      ctrl
 #define DR      dt
 
+#ifdef CRC_HW_IRQ_SAFE
+static cd_spinlock_t crc_lock = {0};
+#endif
+
 
 uint16_t crc16_hw_sub(const uint8_t *data, uint32_t length, uint16_t crc_val)
 {
     uint16_t ret_val;
 #ifdef CRC_HW_IRQ_SAFE // not recommended, avoid large critical sections
     uint32_t flags;
-    local_irq_save(flags);
+    cd_irq_save(&crc_lock, flags);
 #endif
     CRC->INIT = crc_val;
     CRC->CR = 0xe9;
@@ -42,7 +46,7 @@ uint16_t crc16_hw_sub(const uint8_t *data, uint32_t length, uint16_t crc_val)
 
     ret_val = CRC->DR;
 #ifdef CRC_HW_IRQ_SAFE
-    local_irq_restore(flags);
+    cd_irq_restore(&crc_lock, flags);
 #endif
     return ret_val;
 }

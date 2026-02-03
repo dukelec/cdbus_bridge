@@ -11,6 +11,7 @@
 
 static char cpu_id[25];
 static char info_str[100];
+static cd_spinlock_t p5_lock = {0};
 
 
 static void send_frame(cd_frame_t *frame, uint8_t p_len)
@@ -101,9 +102,9 @@ static void p5_handler(cd_frame_t *frame)
     if (*p_dat == 0x00 && p_len == 4) {
         uint16_t offset = get_unaligned16(p_dat + 1);
         uint8_t len = min(p_dat[3], CDN_MAX_DAT - 1);
-        local_irq_save(flags);
+        cd_irq_save(&p5_lock, flags);
         memcpy(p_dat + 1, ((void *) &csa) + offset, len);
-        local_irq_restore(flags);
+        cd_irq_restore(&p5_lock, flags);
         *p_dat = 0;
         send_frame(frame, len + 1);
 
@@ -113,9 +114,9 @@ static void p5_handler(cd_frame_t *frame)
         uint8_t *src_addr = p_dat + 3;
         uint16_t start = clip(offset, 0, sizeof(csa_t));
         uint16_t end = clip(offset + len, 0, sizeof(csa_t));
-        local_irq_save(flags);
+        cd_irq_save(&p5_lock, flags);
         memcpy(((void *) &csa) + start, src_addr + (start - offset), end - start);
-        local_irq_restore(flags);
+        cd_irq_restore(&p5_lock, flags);
         *p_dat = 0;
         send_frame(frame, 1);
 

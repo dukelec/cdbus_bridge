@@ -123,12 +123,12 @@ void PendSV_Handler(void)
                 uint8_t *p = usb_rx_buf;
                 while (len) {
                     uint32_t flags;
-                    local_irq_save(flags);
+                    cd_irq_save(&raw_tx_head.lock, flags);
                     cd_frame_t *frm = list_entry_safe(raw_tx_head.last, cd_frame_t);
                     if (frm && frm->dat[257] == 255)
                         frm = NULL;
                     if (!frm) {
-                        local_irq_restore(flags);
+                        cd_irq_restore(&raw_tx_head.lock, flags);
                         frm = cd_list_get(&frame_free_head);
                         frm->dat[257] = 0;
                     }
@@ -141,7 +141,7 @@ void PendSV_Handler(void)
                     if (frm != list_entry_safe(raw_tx_head.last, cd_frame_t))
                         cd_list_put(&raw_tx_head, frm);
                     else
-                        local_irq_restore(flags);
+                        cd_irq_restore(&raw_tx_head.lock, flags);
                     uart_dma_tx();
                     p += sub_len;
                     len -= sub_len;

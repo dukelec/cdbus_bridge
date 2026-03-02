@@ -168,12 +168,12 @@ static inline void serial_cmd_dispatch(void)
 }
 
 
-void common_service_init(void)
+void comm_service_init(void)
 {
     init_info_str();
 }
 
-void common_service_routine(void)
+void comm_service_poll(void)
 {
     if (csa.save_conf) {
         csa.save_conf = false;

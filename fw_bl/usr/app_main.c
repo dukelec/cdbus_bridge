@@ -100,7 +100,7 @@ void app_main(void)
     cduart_dev_init(&d_dev, &frame_free_head);
     d_dev.local_mac = 0xff;
 
-    common_service_init();
+    comm_service_init();
 
     printf("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
     gpio_set_val(&led_g, 0);
@@ -130,7 +130,7 @@ void app_main(void)
             }
         }
 
-        common_service_routine();
+        comm_service_poll();
 
         if (gpio_get_val(&sw1) && *bl_args != 0xcdcd0001) {
             printf("sw1 switch off, reboot...\n");

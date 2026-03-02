@@ -72,8 +72,8 @@ extern otg_core_type otg_core_struct_hs;
 extern uint32_t end; // end of bss
 extern uint32_t *bl_args;
 
-void common_service_init(void);
-void common_service_routine(void);
+void comm_service_init(void);
+void comm_service_poll(void);
 
 void app_main(void);
 void load_conf(void);

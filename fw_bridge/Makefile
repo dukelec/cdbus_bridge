@@ -82,7 +82,7 @@ utils/crc_hw.c \
 usr/cdctl_spi_wr.c \
 usr/uart_dma_wr.c \
 usr/config.c \
-usr/common_services.c \
+usr/comm_services.c \
 usr/app_main.c
 
 # ASM sources

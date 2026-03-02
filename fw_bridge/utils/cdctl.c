@@ -149,7 +149,7 @@ void cdctl_dev_init(cdctl_cfg_t *init, spi_t *spi)
 }
 
 
-void cdctl_routine(void)
+void cdctl_poll(void)
 {
     uint8_t flags = cdctl_reg_r(REG_INT_FLAG);
 

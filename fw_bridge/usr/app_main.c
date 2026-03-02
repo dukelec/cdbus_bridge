@@ -181,7 +181,7 @@ void PendSV_Handler(void)
     uart_dma_rx();
 
     if (cdc_rate == 0xcdcd) {
-        common_service_routine();
+        comm_service_poll();
     } else if (!raw_mode) {
         cd_frame_t *frame;
         while ((frame = cd_list_get(&d_dev.rx_head)) != NULL)
@@ -217,7 +217,7 @@ void app_main(void)
     cduart_dev_init(&d_dev, &frame_free_head);
     d_dev.local_mac = 0xff;
 
-    common_service_init();
+    comm_service_init();
 
     printf("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
     csa_list_show();

@@ -79,8 +79,8 @@ extern bool raw_mode;
 
 extern uint32_t end; // end of bss
 
-void common_service_init(void);
-void common_service_routine(void);
+void comm_service_init(void);
+void comm_service_poll(void);
 
 void app_main(void);
 void load_conf(void);

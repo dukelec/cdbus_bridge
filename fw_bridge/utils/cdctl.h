@@ -46,7 +46,7 @@ void cdctl_set_clk(uint32_t target_baud);
 void cdctl_set_baud_rate(uint32_t low, uint32_t high);
 void cdctl_get_baud_rate(uint32_t *low, uint32_t *high);
 
-void cdctl_routine(void);
+void cdctl_poll(void);
 void cdctl_dev_init(cdctl_cfg_t *init, spi_t *spi);
 
 static inline void cdctl_flush(void)

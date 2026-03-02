@@ -75,7 +75,7 @@ utils/cd_list.c \
 utils/cdbus_uart.c \
 utils/crc_hw.c \
 usr/config.c \
-usr/common_services.c \
+usr/comm_services.c \
 usr/app_main.c
 
 # ASM sources

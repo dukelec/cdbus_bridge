@@ -55,6 +55,7 @@ static inline void cdctl_flush(void)
 }
 
 void cdctl_put_tx_frame(cd_frame_t *frame);
+void cdctl_tx_cb(cd_frame_t *frame);
 
 
 #define cdctl_state 0

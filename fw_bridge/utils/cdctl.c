@@ -17,7 +17,7 @@ list_head_t cdctl_rx_head = {0};
 list_head_t cdctl_tx_head = {0};
 
 static uint32_t sysclk;
-static bool is_pending = false;
+static cd_frame_t *is_pending = NULL;
 
 uint32_t cdctl_rx_cnt = 0;
 uint32_t cdctl_tx_cnt = 0;
@@ -33,7 +33,6 @@ uint32_t cdctl_rx_len_err_cnt = 0;
 void cdctl_put_tx_frame(cd_frame_t *frame)
 {
     cd_list_put(&cdctl_tx_head, frame);
-    cdctl_tx_cnt++;
 }
 
 
@@ -119,10 +118,16 @@ void cdctl_dev_init(cdctl_cfg_t *init, spi_t *spi)
     d_info("cdctl: mode%d init...\n", init->mode);
     uint8_t ver = cdctl_reg_r(REG_VERSION);
     d_info("cdctl: version: %02x\n", ver);
+    if (ver != 0x10) {
+        d_error("cdctl: version error\n");
+        return;
+    }
 
     cdctl_reg_w(REG_CLK_CTRL, 0x80); // soft reset
     cdctl_set_clk(init->baud_h);
+#ifndef CDCTL_AVOID_PIN_RE
     cdctl_reg_w(REG_PIN_RE_CTRL, 0x10); // enable phy rx
+#endif
 
     uint8_t setting = (cdctl_reg_r(REG_SETTING) & 0xf) | BIT_SETTING_TX_PUSH_PULL;
     if (init->mode == 1 || init->mode == 2)
@@ -193,23 +198,32 @@ void cdctl_poll(void)
         if (cdctl_tx_head.first) {
             cd_frame_t *frame = cd_list_get(&cdctl_tx_head);
             cdctl_write_frame(frame);
+            cdctl_tx_cnt++;
 
-            if (flags & BIT_FLAG_TX_BUF_CLEAN)
+            if (flags & BIT_FLAG_TX_BUF_CLEAN) {
                 cdctl_reg_w(REG_TX_CTRL, BIT_TX_START | BIT_TX_RST_POINTER);
-            else
-                is_pending = true;
+                cdctl_tx_cb(frame);
+            } else {
+                is_pending = frame;
+            }
 #ifdef VERBOSE
             char pbuf[52];
             hex_dump_small(pbuf, frame->dat, frame->dat[2] + 3, 16);
             d_verbose("cdctl: <- [%s]%s\n", pbuf, dev->is_pending ? " (p)" : "");
 #endif
+#ifndef CDCTL_TX_NOT_FREE
             cd_list_put(&frame_free_head, frame);
+#endif
         }
     } else {
         if (flags & BIT_FLAG_TX_BUF_CLEAN) {
             d_verbose("cdctl: trigger pending tx\n");
             cdctl_reg_w(REG_TX_CTRL, BIT_TX_START | BIT_TX_RST_POINTER);
-            is_pending = false;
+            cdctl_tx_cb(dev, is_pending);
+            is_pending = NULL;
         }
     }
 }
+
+
+__weak void cdctl_tx_cb(cd_frame_t *frame) {}

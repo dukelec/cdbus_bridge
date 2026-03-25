@@ -70,6 +70,9 @@ static inline void cdctl_flush(void)
 void cdctl_int_isr(void);
 void cdctl_spi_isr(void);
 
+void cdctl_rx_cb(cd_frame_t *frame);
+void cdctl_tx_cb(cd_frame_t *frame);
+
 
 extern volatile cdctl_state_t cdctl_state;
 

@@ -304,6 +304,12 @@ void app_main(void)
     }
 }
 
+
+void cdctl_rx_cb(cd_frame_t *frame)
+{
+    SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+}
+
 void EXINT0_IRQHandler(void)
 {
     EXINT->intsts = EXINT_LINE_0;

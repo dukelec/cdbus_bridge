@@ -219,7 +219,7 @@ void cdctl_poll(void)
         if (flags & BIT_FLAG_TX_BUF_CLEAN) {
             d_verbose("cdctl: trigger pending tx\n");
             cdctl_reg_w(REG_TX_CTRL, BIT_TX_START | BIT_TX_RST_POINTER);
-            cdctl_tx_cb(dev, is_pending);
+            cdctl_tx_cb(is_pending);
             is_pending = NULL;
         }
     }

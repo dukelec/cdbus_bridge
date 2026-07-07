@@ -16,7 +16,7 @@
 #define CDUART_CRC_SUB      crc16_hw_sub
 
 #define CD_FRAME_SIZE       258
-#define CDN_MAX_DAT         253
+#define CDN_MAX_PAYLOAD     251
 
 #define CD_DEBUG
 //#define CD_VERBOSE
@@ -28,7 +28,7 @@
 
 #define CDUART_IDLE_TIME    (50000 / CD_SYSTICK_US_DIV) // 50 ms
 
+#include "cd_debug.h"
 #include "at32f402_405_wk_config.h"
-#include "debug_config.h"
 
 #endif

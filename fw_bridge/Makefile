@@ -74,12 +74,11 @@ middlewares/usb_drivers/src/usb_core.c \
 middlewares/usb_drivers/src/usbd_core.c \
 middlewares/usb_drivers/src/usbd_int.c \
 middlewares/usb_drivers/src/usbd_sdr.c \
-utils/cd_list.c \
-utils/cdbus_uart.c \
-utils/cdctl_it.c \
-utils/cdctl_pll_cal.c \
-utils/crc_hw.c \
-usr/cdctl_spi_wr.c \
+cdnet/arch/at32/arch_wrapper.c \
+cdnet/utils/cd_list.c \
+cdnet/dev/cdbus_uart.c \
+cdnet/dev/cdctl_it.c \
+cdnet/dev/cdctl_pll_cal.c \
 usr/uart_dma_wr.c \
 usr/config.c \
 usr/comm_service.c \
@@ -151,7 +150,9 @@ C_INCLUDES = \
 -Ilibraries/cmsis/cm4/core_support \
 -Ilibraries/cmsis/cm4/device_support \
 -Imiddlewares/usb_drivers/inc \
--Iutils \
+-Icdnet/utils \
+-Icdnet/dev \
+-Icdnet/arch/at32 \
 -Iusr
 
 

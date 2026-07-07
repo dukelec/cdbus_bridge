@@ -60,7 +60,7 @@ int save_conf(void)
 
 int flash_erase(uint32_t addr, uint32_t len)
 {
-    int ret = 0;
+    int ret = -1;
     uint32_t ofs = addr & ~0x08000000;
     if (ofs <= 0x6000 && 0x6000 < ofs + len) {
         d_error("flash erase: avoid erasing self\n");

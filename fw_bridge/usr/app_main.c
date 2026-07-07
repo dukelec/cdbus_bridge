@@ -17,10 +17,23 @@ static gpio_t led_rx = { .group = LED_G_GPIO_PORT, .num = LED_G_PIN };
 static gpio_t sw1 = { .group = SW1_GPIO_PORT, .num = SW1_PIN };
 static gpio_t sw2 = { .group = SW2_GPIO_PORT, .num = SW2_PIN };
 
+static gpio_t r_int = { .group = CD_INT_GPIO_PORT, .num = CD_INT_PIN };
+static gpio_t r_cs = { .group = CD_SS_GPIO_PORT, .num = CD_SS_PIN };
+static spi_t r_spi = {
+        .spi = SPI1,
+        .ns_pin = &r_cs,
+        .dma_rx = DMA1,
+        .dma_ch_rx = DMA1_CHANNEL1,
+        .dma_ch_tx = DMA1_CHANNEL2,
+        .dma_mask = (2 << 0)
+};
+
+
 static cd_frame_t frame_alloc[FRAME_MAX];
 list_head_t frame_free_head = {0};
 
 cduart_dev_t d_dev = {0};   // usb cdc
+cdctl_dev_t r_dev = {0};    // CDBUS
 
 static uint8_t usb_rx_buf[512];
 static bool cdc_need_flush = false;
@@ -37,13 +50,13 @@ static void data_led_task(void)
     static uint32_t tx_cnt_last = 0;
     static uint32_t rx_cnt_last = 0;
 
-    if (rx_cnt_last != cdctl_rx_cnt) {
-        rx_cnt_last = cdctl_rx_cnt;
+    if (rx_cnt_last != r_dev.rx_cnt) {
+        rx_cnt_last = r_dev.rx_cnt;
         rx_t_last = get_systick();
         gpio_set_val(&led_rx, 1);
     }
-    if (tx_cnt_last != cdctl_tx_cnt) {
-        tx_cnt_last = cdctl_tx_cnt;
+    if (tx_cnt_last != r_dev.tx_cnt) {
+        tx_cnt_last = r_dev.tx_cnt;
         tx_t_last = get_systick();
         gpio_set_val(&led_tx, 1);
     }
@@ -61,10 +74,10 @@ static void dump_hw_status(void)
         t_l = get_systick();
 
         d_debug("ctl: %d, pend t %ld r %ld, irq %d\n",
-                cdctl_state, cdctl_tx_head.len, cdctl_rx_head.len, !CD_INT_RD());
+                r_dev.state, r_dev.tx_head.len, r_dev.rx_head.len, !gpio_get_val(r_dev.int_n));
         d_debug("  r %ld (lost %ld err %ld full %ld), t %ld (cd %ld err %ld)\n",
-                cdctl_rx_cnt, cdctl_rx_lost_cnt, cdctl_rx_error_cnt, cdctl_rx_no_free_node_cnt,
-                cdctl_tx_cnt, cdctl_tx_cd_cnt, cdctl_tx_error_cnt);
+                r_dev.rx_cnt, r_dev.rx_lost_cnt, r_dev.rx_error_cnt, r_dev.rx_no_free_node_cnt,
+                r_dev.tx_cnt, r_dev.tx_cd_cnt, r_dev.tx_error_cnt);
         //d_debug("usb: r_cnt %d, t_cnt %d, t_buf %p, t_len %d, t_state %x\n",
         //        usb_rx_cnt, usb_tx_cnt, cdc_tx_buf, cdc_tx_head.len, hcdc->TxState);
     }
@@ -134,7 +147,7 @@ void PendSV_Handler(void)
                     }
                     if (!frm)
                         break;
-                    cdctl_tx_cnt++;
+                    r_dev.tx_cnt++;
                     unsigned sub_len = min(255 - frm->dat[257], len);
                     memcpy(frm->dat + frm->dat[257], p, sub_len);
                     frm->dat[257] += sub_len;
@@ -165,7 +178,7 @@ void PendSV_Handler(void)
             } else {
                 tx_frame = cd_list_get(&raw_rx_head);
                 if (tx_frame) {
-                    cdctl_rx_cnt++;
+                    r_dev.rx_cnt++;
                     usb_vcp_send_data(&otg_core_struct_hs.dev, tx_frame->dat, tx_frame->dat[257]);
                     cdc_need_flush = true;
                 }
@@ -185,8 +198,8 @@ void PendSV_Handler(void)
     } else if (!raw_mode) {
         cd_frame_t *frame;
         while ((frame = cd_list_get(&d_dev.rx_head)) != NULL)
-            cdctl_put_tx_frame(frame);
-        while ((frame = cd_list_get(&cdctl_rx_head)) != NULL)
+            cdctl_send_frame(&r_dev.cd_dev, frame);
+        while ((frame = cdctl_recv_frame(&r_dev.cd_dev)) != NULL)
             cd_list_put(&d_dev.tx_head, frame);
     }
 }
@@ -231,8 +244,8 @@ void app_main(void)
     gpio_set_val(&led_b, 1);
     gpio_set_val(&led_g, 0);
 
-    cdctl_spi_wr_init();
-    cdctl_dev_init(&csa.bus_cfg);
+    spi_wr_init(&r_spi);
+    cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, &r_int, EXINT0_IRQn);
 
     if (csa.bus_cfg.mode < 4) {
         nvic_irq_enable(EXINT0_IRQn, 2, 0);
@@ -281,10 +294,10 @@ void app_main(void)
             cdctl_baud_h = baud_h;
             __set_BASEPRI(0xc0); // disable pendsv
             if (!raw_mode) {
-                cdctl_set_clk(cdctl_baud_h);
-                cdctl_set_baud_rate(cdctl_baud_l, cdctl_baud_h);
-                cdctl_flush();
-                cdctl_get_baud_rate(&csa.bus_cfg.baud_l, &csa.bus_cfg.baud_h);
+                cdctl_set_clk(&r_dev, cdctl_baud_h);
+                cdctl_set_baud_rate(&r_dev, cdctl_baud_l, cdctl_baud_h);
+                cdctl_flush(&r_dev);
+                cdctl_get_baud_rate(&r_dev, &csa.bus_cfg.baud_l, &csa.bus_cfg.baud_h);
             } else {
                 crm_clocks_freq_type clocks_freq;
                 crm_clocks_freq_get(&clocks_freq);
@@ -305,7 +318,7 @@ void app_main(void)
 }
 
 
-void cdctl_rx_cb(cd_frame_t *frame)
+void cdctl_rx_cb(cdctl_dev_t *dev, cd_frame_t *frame)
 {
     SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
 }
@@ -313,12 +326,13 @@ void cdctl_rx_cb(cd_frame_t *frame)
 void EXINT0_IRQHandler(void)
 {
     EXINT->intsts = EXINT_LINE_0;
-    cdctl_int_isr();
+    cdctl_int_isr(&r_dev);
 }
 
 void DMA1_Channel1_IRQHandler(void)
 {
-    cdctl_spi_wr_isr();
+    r_spi.dma_rx->clr = r_spi.dma_mask;
+    cdctl_spi_isr(&r_dev);
 }
 
 void DMA2_Channel2_IRQHandler(void)

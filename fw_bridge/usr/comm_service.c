@@ -78,7 +78,7 @@ static void p8_handler(cd_frame_t *frame)
     } else if (*p_dat == 0x00 && p_len == 6) {
         uint32_t addr = get_unaligned32(p_dat + 1);
         uint8_t *dst_addr = (uint8_t *) addr;
-        uint8_t len = min(p_dat[5], CDN_MAX_DAT - 1);
+        uint8_t len = min(p_dat[5], CDN_MAX_PAYLOAD - 1);
         memcpy(p_dat + 1, dst_addr, len);
         *p_dat = 0;
         if (reply)
@@ -111,7 +111,7 @@ static void p5_handler(cd_frame_t *frame)
 
     if (*p_dat == 0x00 && p_len == 4) {
         uint16_t offset = get_unaligned16(p_dat + 1);
-        uint8_t len = min(p_dat[3], CDN_MAX_DAT - 1);
+        uint8_t len = min(p_dat[3], CDN_MAX_PAYLOAD - 1);
         cd_irq_save(&p5_lock, flags);
         memcpy(p_dat + 1, ((void *) &csa) + offset, len);
         cd_irq_restore(&p5_lock, flags);
@@ -134,7 +134,7 @@ static void p5_handler(cd_frame_t *frame)
 
     } else if (*p_dat == 0x01 && p_len == 4) {
         uint16_t offset = get_unaligned16(p_dat + 1);
-        uint8_t len = min(p_dat[3], CDN_MAX_DAT - 1);
+        uint8_t len = min(p_dat[3], CDN_MAX_PAYLOAD - 1);
         memcpy(p_dat + 1, ((void *) &csa_dft) + offset, len);
         *p_dat = 0;
         if (reply)
@@ -187,13 +187,21 @@ void comm_service_poll(void)
 }
 
 
+static inline void dbg_transmit(const uint8_t *buf, uint16_t len)
+{
+    for (uint16_t i = 0; i < len; i++) {
+        while (!(UART7->sts & USART_TDBE_FLAG));
+        UART7->dt = *(buf + i);
+    }
+}
+
 // for printf
 int _write(int file, char *data, int len)
 {
     if (csa.dbg_en) {
         cd_frame_t *frm = cd_list_get(&frame_free_head);
         if (frm) {
-            len = min(CDN_MAX_DAT - 2, len);
+            len = min(CDN_MAX_PAYLOAD, len);
             frm->dat[0] = 0xff;
             frm->dat[1] = 0x0;
             frm->dat[2] = 2 + len;

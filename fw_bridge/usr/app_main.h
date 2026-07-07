@@ -77,7 +77,7 @@ extern volatile uint8_t cdc_dtr;
 extern otg_core_type otg_core_struct_hs;
 extern bool raw_mode;
 
-extern uint32_t end; // end of bss
+extern uint32_t _estack, _Min_Stack_Size; // linker script symbols
 
 void comm_service_init(void);
 void comm_service_poll(void);

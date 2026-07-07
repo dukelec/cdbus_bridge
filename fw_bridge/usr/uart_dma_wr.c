@@ -31,11 +31,17 @@ static uint32_t rd_pos = 0;
 static cd_frame_t *tx_frame = NULL;
 static cd_spinlock_t tx_lock = {0};
 
-
+// uart_tdc_isr and uart_dma_isr share the same preempt priority,
+// so they never nest with each other
 void uart_tdc_isr(void)
 {
     UART_DEV->sts = ~USART_TDC_FLAG;
-    usart_receiver_enable(UART_DEV, true);
+    // tx_frame set with dma tc flag clear means a new frame is already being sent
+    // (this tdc is a leftover of the previous frame, pended during uart_dma_isr),
+    // keep the receiver off in that case;
+    // tx_frame set with dma tc flag set only delays the work to uart_dma_isr
+    if (!tx_frame || (UART_DMA->ISR & UART_DMA_MASK))
+        usart_receiver_enable(UART_DEV, true);
 }
 
 static void uart_dma_wr_it(const uint8_t *w_buf, int len)
@@ -52,17 +58,10 @@ void uart_dma_isr(void)
     //uint32_t flag_it = UART_DMA->ISR;
     //if (flag_it & UART_DMA_MASK) {
         UART_DMA->IFCR = UART_DMA_MASK;
-#ifdef CD_SMP
-        uint32_t flags;
-        cd_irq_save(&tx_lock, flags);
-#endif
         if (tx_frame) {
             cd_list_put(&frame_free_head, tx_frame);
             tx_frame = NULL;
         }
-#ifdef CD_SMP
-        cd_irq_restore(&tx_lock, flags);
-#endif
         uart_dma_tx();
     //}
 }
@@ -91,10 +90,10 @@ static void rx_handle(const uint8_t *buf, unsigned len)
             frm = NULL;
         if (!frm) {
             frm = cd_list_get(&frame_free_head);
+            if (!frm)
+                break;
             frm->dat[257] = 0;
         }
-        if (!frm)
-            break;
         unsigned sub_len = min(255 - frm->dat[257], len);
         memcpy(frm->dat + frm->dat[257], p, sub_len);
         frm->dat[257] += sub_len;

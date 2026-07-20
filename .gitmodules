@@ -1,0 +1,7 @@
+[submodule "cdnet_bl"]
+	path = fw_bl/cdnet
+	url = ../cdnet
+
+[submodule "cdnet_bridge"]
+	path = fw_bridge/cdnet
+	url = ../cdnet

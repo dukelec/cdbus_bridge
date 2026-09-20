@@ -27,6 +27,9 @@
 #define APP_CONF_VER        0x0200
 
 #define FRAME_MAX           80
+// keep this many frames in the free pool for the rx path, so debug
+// frames queued for an offline host can never starve it
+#define FRAME_RESERVE       10
 
 
 typedef struct {

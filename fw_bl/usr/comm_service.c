@@ -182,7 +182,10 @@ static inline void dbg_transmit(const uint8_t *buf, uint16_t len)
 // for printf
 int _write(int file, char *data, int len)
 {
-    if (csa.dbg_en) {
+    // never dip into the pool reserve for debug frames: the host may be offline
+    // and unable to drain them, while the same text goes out on the debug uart
+    // below in any case
+    if (csa.dbg_en && frame_free_head.len > FRAME_RESERVE) {
         cd_frame_t *frm = cd_list_get(&frame_free_head);
         if (frm) {
             len = min(CDN_MAX_PAYLOAD, len);

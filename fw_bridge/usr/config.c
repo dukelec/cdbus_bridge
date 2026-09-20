@@ -24,7 +24,8 @@ const csa_t csa_dft = {
         // picked value in the ULA range, see the Readme before changing it.
         .ip_pfx = { 0xfd, 0xcd },
         .net = 0x00,
-        .router_mac = ROUTER_MAC_NONE
+        .router_mac = ROUTER_MAC_NONE,
+        .port_offset = 0xcd00
 };
 
 csa_t csa;
@@ -169,8 +170,9 @@ void csa_list_show(void)
     CSA_SHOW(0, limit_baudrate1, "baud_l limit in arbitration mode (sw2 on)");
     d_debug("\n");
 
-    CSA_SHOW(1, ip_pfx, "IPv6 prefix, first 13 bytes of the /104");
+    CSA_SHOW(2, ip_pfx, "IPv6 prefix, first 13 bytes of the /104");
     CSA_SHOW(1, net, "CDNET net number of the local link");
     CSA_SHOW(1, router_mac, "Router mac for other nets, 0xff: none");
+    CSA_SHOW(1, port_offset, "Offset of the host side udp port, 0: none");
     d_debug("\n");
 }

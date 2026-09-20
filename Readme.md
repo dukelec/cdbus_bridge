@@ -56,6 +56,8 @@ port. Talking to a device is therefore plain IPv6 UDP.
    default).
  - A CDNET packet has to fit in one CDBUS frame and there is no
    fragmentation, so keep datagrams at 244 bytes or less.
+ - `port_offset` shifts the host's own port, for programs that need a port
+   the host would not let them bind; 0 (off) by default.
 
 It needs a one-time host setup, see [fw_bridge/host/](fw_bridge/host/). Until
 that is done the serial port works as it always has, so the ethernet port is

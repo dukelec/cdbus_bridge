@@ -73,6 +73,32 @@ s.bind(("fdcd::80:0", 50040))
 s.sendto(b"...", ("fdcd::80:00fe", 0xcdcd))
 ```
 
+Port offset
+-----------
+
+A level 0 CDNET port is only 7 bits wide, and a port under 1024 needs root
+to bind, so a program that wants to talk level 0 cannot simply bind the port
+it wants to be. `port_offset` in the bridge config moves the host's side of
+the mapping out of the way: the host sends from, and is sent to, the CDNET
+port plus the offset, while the ports on the bus side stay as they are. It
+is 0 by default, which changes nothing.
+
+With it set to 20000, binding 20040 makes the program CDNET port 40:
+
+```python
+s.bind(("fdcd::80:0", 20000 + 40))
+s.sendto(b"...", ("fdcd::fe", 5))   # level 0, mac fe, its config service
+```
+
+`fdcd::10:0` is shifted along with everything else, so one offset covers the
+whole prefix and the bridge is reached the same way a device is. Anything
+sent from below the offset is dropped and counted in `drop_fmt`, the bridge
+itself included, so if an offset ever locks you out of it, set it back over
+the serial port's `0xcdcd` config mode.
+
+This is the same mapping `cdnet_tun --port-offset` does, so again, programs
+written against it work unchanged.
+
 Packet size
 -----------
 

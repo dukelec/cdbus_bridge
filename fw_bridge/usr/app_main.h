@@ -29,7 +29,7 @@
 
 #define BL_ARGS             0x20000000 // first word
 #define APP_CONF_ADDR       0x0803F800 // last page
-#define APP_CONF_VER        0x0204
+#define APP_CONF_VER        0x0205
 
 #define CPU_UID_ADDR        0x1FFFF7E8
 
@@ -75,7 +75,9 @@ typedef struct {
     uint8_t         ip_pfx[IP_PFX_LEN]; // the /104 the bus is mapped into
     uint8_t         net;                // cdnet net number of the local link
     uint8_t         router_mac;         // 0xff: none, other nets are dropped
-    uint8_t         _reserved3[2];
+    uint8_t         _reserved3;
+    uint16_t        port_offset;        // what the host's own udp port carries
+                                        // above the cdnet port, 0: none
 
     // end of flash
     #define         _end_save usb_online

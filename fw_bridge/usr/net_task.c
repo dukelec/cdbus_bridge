@@ -16,6 +16,13 @@
  * needs no daemon on the host. One address is special, <prefix>10:0, which
  * is a node served right here and is how this bridge itself is configured.
  *
+ * The host's own port is shifted by port_offset: it sends from, and is sent
+ * to, the CDNET port plus the offset, while the ports on the far side are
+ * left alone. A level 0 port is only 7 bits wide, so without this a program
+ * wanting to talk level 0 would have to bind a port it needs root for. The
+ * shift is done where the udp header is parsed and built, the local node
+ * included, so one offset covers everything inside the prefix.
+ *
  * Only what a point to point link actually needs is implemented. Neighbor
  * solicitations are answered for the whole prefix so the host can resolve
  * any bus address, and everything else it sends (mld, mdns, ipv4, ...) is
@@ -228,7 +235,8 @@ static uint16_t build_udp(uint8_t *ip)
     memcpy(ip + 24, dst6, 16);
 
     put_unaligned_be16(xo.sport, udp);
-    put_unaligned_be16(xo.dport, udp + 2);
+    // xo.dport is a cdnet port, the host's side of it carries the offset
+    put_unaligned_be16(xo.dport + csa.port_offset, udp + 2);
     put_unaligned_be16(udp_len, udp + 4);
     put_unaligned_be16(0, udp + 6);
     memcpy(udp + UDP_HDR_LEN, xo.dat, xo.len);
@@ -336,7 +344,11 @@ static bool pc_tx_pick(void)
         cdn_pkt_t pkt = {0};
         pkt.frm = frm;
         pkt._l_net = csa.net;
-        if (cdn_frame_r(&pkt) != 0 || pkt.len > CD_FRAME_SIZE - 5) {
+        // drop what cannot become a udp datagram for the host: a frame that
+        // does not parse, one too big to map, or a dst port with no room
+        // left above it for the offset
+        if (cdn_frame_r(&pkt) != 0 || pkt.len > CD_FRAME_SIZE - 5 ||
+                pkt.dst.port + csa.port_offset > 0xffff) {
             cd_list_put(&frame_free_head, frm);
             net_cnt.drop_fmt++;
             continue;
@@ -555,6 +567,14 @@ static bool recv_one(const uint8_t *eth, uint16_t size)
 
     sport = get_unaligned_be16(udp);
     dport = get_unaligned_be16(udp + 2);
+
+    // the host sends from the cdnet port plus the offset; below the offset
+    // there is no cdnet port to map it back to
+    if (sport < csa.port_offset) {
+        net_cnt.drop_fmt++;
+        return true;
+    }
+    sport -= csa.port_offset;
 
     if (dst6[13] == CDN_ADDR_LOCAL)
         return local_node_handle(sport, dport, udp + UDP_HDR_LEN,

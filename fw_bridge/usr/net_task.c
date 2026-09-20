@@ -47,10 +47,6 @@
 // host retransmits a solicitation we had no room for
 #define NA_MAX              4
 
-// give up on a datagram the host keeps handing us but we cannot place, so a
-// permanently congested bus can never wedge the usb rx path
-#define RECV_DEFER_MAX      32
-
 // bounded work per poll, both directions get a turn
 #define TX_BURST            8
 #define RX_BURST            4
@@ -95,7 +91,7 @@ static struct {
     uint8_t     na_dst[16];
 } xo;
 
-static uint8_t recv_defer;
+
 static uint8_t rsp_buf[CDN_MAX_PAYLOAD];
 
 
@@ -368,9 +364,6 @@ bool net_local_tx(uint16_t sport, uint16_t dport, const uint8_t *dat, int len)
 
     if (len < 0 || len > CDN_MAX_PAYLOAD)
         return false;
-    // never dip into the reserve, the two rx paths need it more
-    if (frame_free_head.len <= FRAME_RESERVE)
-        return false;
     frm = cd_list_get(&frame_free_head);
     if (!frm)
         return false;
@@ -449,8 +442,10 @@ static bool bus_send(const uint8_t *dst6, uint16_t sport, uint16_t dport,
         return true;
     }
 
-    if (frame_free_head.len <= FRAME_RESERVE)
-        return false; // back off, the host will offer it again
+    // back off and let the host offer it again, rather than read it in and
+    // then have nowhere to put it
+    if (!bus_tx_ready() || frame_free_head.len <= FRAME_RESERVE)
+        return false;
     frm = cd_list_get(&frame_free_head);
     if (!frm)
         return false;
@@ -466,11 +461,7 @@ static bool bus_send(const uint8_t *dst6, uint16_t sport, uint16_t dport,
         return true;
     }
 
-    if (!bus_tx(frm)) {
-        cd_list_put(&frame_free_head, frm);
-        net_cnt.drop_busy++;
-        return true;
-    }
+    bus_tx(frm);
     net_cnt.to_bus++;
     return true;
 }
@@ -481,7 +472,10 @@ static bool local_node_handle(uint16_t sport, uint16_t dport,
     int rsp_len;
 
     // check for room before doing any work: returning false asks the host to
-    // offer the same datagram again, and a flash write must not run twice
+    // offer the same datagram again, and a flash write must not run twice.
+    // The pool rather than the direction's share: net_local_tx() takes a
+    // frame back from the direction if it has to, while a share that is
+    // already spent would never free itself and this would defer for good.
     if (frame_free_head.len <= FRAME_RESERVE)
         return false;
 
@@ -570,20 +564,17 @@ static bool recv_one(const uint8_t *eth, uint16_t size)
             udp_len - UDP_HDR_LEN);
 }
 
+/*
+ * Returning false leaves the datagram where it is and asks to be offered it
+ * again, which is what keeps the host's packet rather than dropping it: the
+ * out endpoint is not re-armed while the block is still held, so the host
+ * is made to wait instead. Every false below is a resource that frees up on
+ * its own, so this cannot sit forever, and nothing else stops meanwhile,
+ * the other direction included.
+ */
 bool tud_network_recv_cb(const uint8_t *src, uint16_t size)
 {
-    if (recv_one(src, size)) {
-        recv_defer = 0;
-        return true;
-    }
-    if (++recv_defer > RECV_DEFER_MAX) {
-        // whatever is congested is not clearing; drop this one rather than
-        // let the host's tx path stay blocked for good
-        recv_defer = 0;
-        net_cnt.drop_busy++;
-        return true;
-    }
-    return false;
+    return recv_one(src, size);
 }
 
 
@@ -609,6 +600,17 @@ void net_init(void)
 bool net_bus_active(void)
 {
     return tud_ready() && !hw_raw;
+}
+
+uint32_t net_queued(void)
+{
+    return pc_tx_bus.len + pc_tx_loc.len + (xo.frm ? 1 : 0);
+}
+
+cd_frame_t *net_tx_evict(void)
+{
+    cd_frame_t *frm = cd_list_get(&pc_tx_bus);
+    return frm ? frm : cd_list_get(&pc_tx_loc);
 }
 
 void net_bus_rx(cd_frame_t *frame)

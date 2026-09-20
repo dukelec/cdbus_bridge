@@ -62,8 +62,10 @@ unchanged.
 firmware serves on its own, offering the same services the serial port's
 `0xcdcd` config mode does; see the main Readme.
 
-Note that both ports are the same node on the bus, so each sees everything
-that arrives, including replies to what the other one asked for.
+Note that the two are the same node on the bus, so a frame arriving on it
+cannot be attributed to one of them and only one can have it: opening the
+serial port takes the bus away from this interface until it is closed
+again.
 
 ```python
 s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)

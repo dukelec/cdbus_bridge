@@ -48,12 +48,15 @@ uint32_t cdc_rate_final = 0;
  * and the port would stay silent until it is reopened or replugged.
  */
 volatile bool cdc_dtr = false;
+static uint32_t dtr_t = 0;
 
 
 void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts)
 {
     (void)itf;
     (void)rts;
+    if (dtr && !cdc_dtr)
+        dtr_t = get_systick();
     cdc_dtr = dtr;
 }
 
@@ -65,7 +68,10 @@ void tud_cdc_line_coding_cb(uint8_t itf, const cdc_line_coding_t *coding)
 
 static bool cdc_up(void)
 {
-    return tud_ready() && cdc_dtr;
+    // hold off briefly after the port is opened: a host that still has echo
+    // on would send our own frames back at us, and they would be parsed as
+    // incoming ones and put on the bus
+    return tud_ready() && cdc_dtr && get_systick() - dtr_t > 5;
 }
 
 static bool cfg_mode(void)
@@ -84,6 +90,21 @@ void cdc_bus_rx(cd_frame_t *frame)
     cdc_cnt.to_pc++;
 }
 
+uint32_t cdc_queued_to_host(void)
+{
+    return d_dev.tx_head.len + raw_rx_head.len + (tx_frm ? 1 : 0);
+}
+
+cd_frame_t *cdc_tx_evict(void)
+{
+    return cd_list_get(&d_dev.tx_head);
+}
+
+uint32_t cdc_queued_to_bus(void)
+{
+    return d_dev.rx_head.len + raw_tx_head.len;
+}
+
 
 //--------------------------------------------------------------------
 // framed mode
@@ -94,7 +115,7 @@ static void cdc_rx_task(void)
     while (tud_cdc_available()) {
         // leave the bytes in the usb fifo rather than read what we cannot
         // turn into frames: that is the back pressure the host needs
-        if (frame_free_head.len <= FRAME_RESERVE)
+        if (!bus_tx_ready() || frame_free_head.len <= FRAME_RESERVE)
             break;
         uint32_t n = tud_cdc_read(rx_buf, sizeof(rx_buf));
         if (!n)
@@ -121,17 +142,19 @@ static void cdc_tx_task(void)
     tud_cdc_write_flush();
 }
 
+// what the bus cannot take yet stays in rx_head, which cdc_rx_task() counts
+// against the to-bus share, so the host is eventually made to wait rather
+// than have its frames read in and dropped
 static void bus_tx_task(void)
 {
     cd_frame_t *frm;
 
-    while ((frm = cd_list_get(&d_dev.rx_head)) != NULL) {
-        if (bus_tx(frm)) {
-            cdc_cnt.to_bus++;
-        } else {
-            cd_list_put(&frame_free_head, frm);
-            cdc_cnt.drop_busy++;
-        }
+    while (bus_tx_ready()) {
+        frm = cd_list_get(&d_dev.rx_head);
+        if (!frm)
+            break;
+        bus_tx(frm);
+        cdc_cnt.to_bus++;
     }
 }
 
@@ -207,7 +230,7 @@ static void raw_feed(const uint8_t *p, unsigned len)
 static void raw_rx_task(void)
 {
     while (tud_cdc_available()) {
-        if (frame_free_head.len <= FRAME_RESERVE)
+        if (!bus_tx_ready() || frame_free_head.len <= FRAME_RESERVE)
             break;
         uint32_t n = tud_cdc_read(rx_buf, sizeof(rx_buf));
         if (!n)
@@ -242,12 +265,13 @@ bool cdc_dbg_tx(const uint8_t *dat, int len)
 {
     cd_frame_t *frm;
 
-    // the raw mode carries a byte stream, there is nothing to put a frame in
-    if (raw_mode || !cdc_up())
+    // the raw mode carries a byte stream, there is nothing to put a frame in.
+    // No check on the port being open though: the boot log is printed long
+    // before a host can be there, and waiting in the queue until one
+    // connects is the only way it is ever seen.
+    if (hw_raw)
         return false;
     if (len <= 0 || len > CDN_MAX_PAYLOAD)
-        return false;
-    if (frame_free_head.len <= FRAME_RESERVE)
         return false;
     frm = cd_list_get(&frame_free_head);
     if (!frm)
@@ -289,10 +313,16 @@ void cdc_poll(void)
     }
 
     if (!cdc_up()) {
+        cd_frame_t *frm;
         if (tx_frm) {
             cd_list_put(&frame_free_head, tx_frm);
             tx_frm = NULL;
         }
+        // half a stream from a port that is closed is stale, and nothing
+        // drains rx_head while it stays closed, so it would hold part of
+        // the to-bus share against the network port for good
+        while ((frm = cd_list_get(&d_dev.rx_head)) != NULL)
+            cd_list_put(&frame_free_head, frm);
         return;
     }
 

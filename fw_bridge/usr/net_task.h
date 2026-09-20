@@ -45,6 +45,11 @@ void net_poll(void);
 bool net_bus_active(void);
 void net_bus_rx(cd_frame_t *frame);
 
+// frames this side is holding for the host
+uint32_t net_queued(void);
+// give back the oldest frame waiting for the host, NULL if there is none
+cd_frame_t *net_tx_evict(void);
+
 // queue a datagram from the local node to the host, false if there is no room
 bool net_local_tx(uint16_t sport, uint16_t dport, const uint8_t *dat, int len);
 

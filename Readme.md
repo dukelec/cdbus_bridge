@@ -23,11 +23,11 @@ Switchs Defination:
 The bridge presents both a serial port and an ethernet port, always, and
 either may be used. Nothing has to be reflashed to switch between them.
 
-Whatever comes off the bus is reported on both ports, and whatever either
-port sends is forwarded to the bus. The two are the same node on the bus, so
-neither can tell which one a frame was meant for, and neither has to: each
-sees everything and picks out what it asked for by UDP or CDNET port, the
-way a bus tap works.
+One of them has the bus at a time: the serial port while it is open, the
+ethernet port otherwise. Sending works from either. Opening the serial port
+is something you do on purpose, while the ethernet interface tends to come
+up on its own, so the serial port wins and the existing tools keep working
+without anything being taken down first.
 
 ### Serial Port (unchanged)
 
@@ -49,6 +49,8 @@ port. Talking to a device is therefore plain IPv6 UDP.
  - Linux, macOS and Windows 11 have an in-box driver (CDC NCM), nothing to install.
  - No daemon on the host, and no port to open exclusively: several programs
    can use the bus at the same time.
+ - Bus traffic goes here whenever the serial port is not open. Close it, or
+   leave it alone, and the ethernet port has the bus.
  - The address the host holds *is* the bridge's identity on the bus, so it
    has to match `bus_cfg_mac` and `net` on the device (`00` and `00` by
    default).
@@ -82,8 +84,11 @@ After modifying the configuration, write 1 to `save_conf` to save the changes to
 
 To restore the default configuration, change the value of `magic_code` to a different value, save it to flash, and then power cycle the device.
 
-Debug output goes to both ports when `dbg_en` is set (CDNET port 9), and
-always goes out on the debug uart.
+Debug output goes to the serial port when `dbg_en` is set (CDNET port 9),
+and always goes out on the debug uart. The serial port is there from the
+moment the device enumerates, so the boot log, the CSA table included,
+waits in its queue and is still there when the port is opened. If the port
+is never opened, bus traffic takes those frames back as it needs them.
 
 <img src="doc/img/cdgui.png">
 

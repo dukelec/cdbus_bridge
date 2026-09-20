@@ -39,20 +39,42 @@ bool hw_raw = false;        // usart1 instead of the cdctl controller
 bool raw_mode = false;      // ... and the serial port is not in config mode
 
 static uint32_t cache_drop_cnt = 0;
-static uint32_t dup_drop_cnt = 0;
 
 
 /*
- * Queue a frame for a host. Two things are kept from growing without bound:
- * each queue, so one host that stopped reading cannot take the pool away
- * from the other one, and the pool itself, so the rx paths always have
- * frames left. Either way the oldest queued frame goes and the newest data
- * wins, which is what a bus adapter should do.
+ * Frames a direction is holding, counted where they actually sit rather
+ * than tracked at every alloc and free. Neither may go past its own limit,
+ * so the other always has the rest, and a quiet direction lends everything
+ * it is not using to the busy one.
+ */
+uint32_t frame_dir_len(bool to_host)
+{
+    if (to_host)
+        return r_dev.rx_head.len + cdc_queued_to_host() + net_queued();
+    return r_dev.tx_head.len + cdc_queued_to_bus();
+}
+
+bool frame_dir_ok(bool to_host)
+{
+    return frame_dir_len(to_host) < FRAME_DIR_MAX;
+}
+
+/*
+ * Queue a frame for a host. The oldest queued frame goes once this
+ * direction is at its share or the pool is down to its reserve, so the
+ * newest data wins, which is what a bus adapter should do.
  */
 void frame_cache_put(list_head_t *head, cd_frame_t *frame)
 {
-    while (head->len >= CACHE_MAX || frame_free_head.len < FRAME_RESERVE) {
+    while (!frame_dir_ok(true) || frame_free_head.len < FRAME_RESERVE) {
         cd_frame_t *old = cd_list_get(head);
+        // whatever else the direction is sitting on, if this queue has
+        // nothing of its own left to give: the debug log with the serial
+        // port closed, or a host bound queue nobody is draining
+        if (!old)
+            old = cdc_tx_evict();
+        if (!old)
+            old = net_tx_evict();
         if (!old)
             break;
         cd_list_put(&frame_free_head, old);
@@ -61,65 +83,41 @@ void frame_cache_put(list_head_t *head, cd_frame_t *frame)
     cd_list_put(head, frame);
 }
 
-bool bus_tx(cd_frame_t *frame)
+// in the raw mode the controller is not driven at all, anything queued
+// there would sit forever
+bool bus_tx_ready(void)
 {
-    // in the raw mode the controller is not driven at all, anything queued
-    // there would sit forever
-    if (hw_raw || r_dev.tx_head.len >= BUS_TX_MAX)
-        return false;
-    cdctl_send_frame(&r_dev.cd_dev, frame);
-    return true;
+    return !hw_raw && frame_dir_ok(false);
 }
 
-// only reached with both hosts listening, so never in the raw mode: the
-// frame is a cdbus frame and dat[2] covers all of it
-static cd_frame_t *frame_dup(const cd_frame_t *src)
+// only after bus_tx_ready() said so
+void bus_tx(cd_frame_t *frame)
 {
-    cd_frame_t *frm;
-
-    if (frame_free_head.len <= FRAME_RESERVE)
-        return NULL;
-    frm = cd_list_get(&frame_free_head);
-    if (!frm)
-        return NULL;
-    memcpy(frm->dat, src->dat, 3 + src->dat[2]);
-    return frm;
+    cdctl_send_frame(&r_dev.cd_dev, frame);
 }
 
 /*
- * Hand what came off the bus to whoever is listening. Both ports are the
- * same node on the bus, so there is no way to tell which one a frame was
- * meant for, and no need to: each one gets everything and picks out what it
- * asked for by port, the way a tap works.
+ * Hand what came off the bus to the port that has it. One at a time: the
+ * serial port while it is open, the ethernet port otherwise. Opening the
+ * serial port is something someone does on purpose, while the ethernet
+ * interface tends to come up on its own, so the serial port wins. Both are
+ * the same node on the bus and a frame cannot be attributed to one of them
+ * anyway, so handing it to both would only cost a copy and the frames to
+ * hold it.
  */
 static void bus_rx_dispatch(void)
 {
     cd_frame_t *frm;
 
     while ((frm = cdctl_recv_frame(&r_dev.cd_dev)) != NULL) {
-        bool to_net = net_bus_active();
-        bool to_cdc = cdc_bus_active();
-
-        // the copy only happens when both are really listening; with one of
-        // them, which is the usual case, the frame is just handed over
-        if (to_net && to_cdc) {
-            cd_frame_t *dup = frame_dup(frm);
-            if (dup)
-                cdc_bus_rx(dup);
-            else
-                dup_drop_cnt++;
-            to_cdc = false;
-        }
-
-        if (to_net)
-            net_bus_rx(frm);
-        else if (to_cdc)
+        if (cdc_bus_active())
             cdc_bus_rx(frm);
+        else if (net_bus_active())
+            net_bus_rx(frm);
         else
             cd_list_put(&frame_free_head, frm);
     }
 }
-
 
 static void data_led_task(void)
 {
@@ -156,8 +154,9 @@ static void dump_hw_status(void)
         d_debug("  r %ld (lost %ld err %ld full %ld), t %ld (cd %ld err %ld)\n",
                 r_dev.rx_cnt, r_dev.rx_lost_cnt, r_dev.rx_error_cnt, r_dev.rx_no_free_node_cnt,
                 r_dev.tx_cnt, r_dev.tx_cd_cnt, r_dev.tx_error_cnt);
-        d_debug("  free %ld, drop cache %ld dup %ld, usb %d, raw %d\n",
-                frame_free_head.len, cache_drop_cnt, dup_drop_cnt,
+        d_debug("  free %ld, drop %ld, dir h %ld b %ld, usb %d, raw %d\n",
+                frame_free_head.len, cache_drop_cnt,
+                frame_dir_len(true), frame_dir_len(false),
                 csa.usb_online, raw_mode);
         d_debug("  net: bus %ld, pc %ld, loc %ld, drop f %ld b %ld y %ld\n",
                 net_cnt.to_bus, net_cnt.to_pc, net_cnt.local,
@@ -278,9 +277,14 @@ void app_main(void)
         cd_list_put(&frame_free_head, &frame_alloc[i]);
 
     load_conf();
+    // the bus always starts at 115200, whatever the saved config holds: the
+    // rate is something a host asks for, by opening the serial port at it or
+    // by writing bus_cfg_baud_h, and a stored one takes effect before either
+    // can
+    csa.bus_cfg.baud_l = csa.bus_cfg.baud_h = 115200;
     hw_raw = csa.bus_cfg.mode >= 4;
-    comm_service_init();
     cdc_init();
+    comm_service_init();
 
     printf("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
     csa_list_show();

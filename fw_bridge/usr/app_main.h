@@ -34,15 +34,17 @@
 #define CPU_UID_ADDR        0x1FFFF7E8
 
 #define FRAME_MAX           80
-// keep this many frames in the free pool for the rx paths, so caching frames
-// for an offline host can never starve them
+// keep this many frames in the free pool whatever happens. Everything in
+// the main loop backs off at this line so that the one allocator that
+// cannot, the cdctl receive interrupt, always has a frame: there is no way
+// to ask the rs-485 bus to wait, and a frame it cannot receive into is a
+// frame off the wire lost.
 #define FRAME_RESERVE       10
-// and cap each host bound queue, so one host that stopped reading cannot
-// take the pool away from the other one
-#define CACHE_MAX           20
-// bus frames allowed to pile up in the controller's tx queue before we start
-// dropping, so a jammed bus cannot eat the pool either
-#define BUS_TX_MAX          16
+// what a direction may hold, counted over every queue it uses. Neither may
+// go past it, so the other always has the rest to work with; nothing is
+// split evenly, whichever direction is busy gets everything the other one
+// is not using.
+#define FRAME_DIR_MAX       (FRAME_MAX * 4 / 5)
 
 
 typedef struct {
@@ -101,8 +103,14 @@ extern bool hw_raw;
 extern bool raw_mode;
 
 void frame_cache_put(list_head_t *head, cd_frame_t *frame);
-// hand a frame to the bus, false if its tx queue is already backed up
-bool bus_tx(cd_frame_t *frame);
+// ask before taking a frame for the bus, so that what cannot be sent yet is
+// left where it came from instead of being read in and thrown away
+bool bus_tx_ready(void);
+void bus_tx(cd_frame_t *frame);
+// false once this direction holds its share of the pool; the caller must
+// not take another frame for it. to_host is bus -> host, else host -> bus.
+bool frame_dir_ok(bool to_host);
+uint32_t frame_dir_len(bool to_host);
 
 extern uint32_t _estack, _Min_Stack_Size; // linker script symbols
 

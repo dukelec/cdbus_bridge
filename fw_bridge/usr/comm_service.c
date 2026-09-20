@@ -212,15 +212,12 @@ static inline void dbg_transmit(const uint8_t *buf, uint16_t len)
 // for printf
 int _write(int file, char *data, int len)
 {
-    // to both ports, so the message turns up wherever you happen to be
-    // looking. Each path keeps clear of the frame pool reserve on its own:
-    // a host may be offline and unable to drain these, while the same text
-    // goes out on the debug uart below in any case
-    if (csa.dbg_en) {
-        int n = min(CDN_MAX_PAYLOAD, len);
-        cdc_dbg_tx((const uint8_t *)data, n);
-        net_local_tx(64, 9, (const uint8_t *)data, n);
-    }
+    // to the serial port only. It is there from the moment the device
+    // enumerates, while the ethernet interface may never come up at all,
+    // and the boot log is printed before either could be. The same text
+    // goes out on the debug uart below in any case.
+    if (csa.dbg_en)
+        cdc_dbg_tx((const uint8_t *)data, min(CDN_MAX_PAYLOAD, len));
 
     dbg_transmit((uint8_t *)data, len);
     return len;

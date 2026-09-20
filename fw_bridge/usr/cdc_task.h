@@ -30,6 +30,12 @@ void cdc_poll(void);
 bool cdc_bus_active(void);
 void cdc_bus_rx(cd_frame_t *frame);
 
+// frames this side is holding, for the host and for the bus
+uint32_t cdc_queued_to_host(void);
+uint32_t cdc_queued_to_bus(void);
+// give back the oldest frame waiting for the host, NULL if there is none
+cd_frame_t *cdc_tx_evict(void);
+
 // queue debug text for the host, false if there is no room for it
 bool cdc_dbg_tx(const uint8_t *dat, int len);
 

@@ -7,6 +7,16 @@
  * Author: Duke Fong <d@d-l.io>
  */
 
+/*
+ * The local node: the services that configure this bridge itself.
+ *
+ * They are reached over udp at <prefix>10:0, the one address in our prefix
+ * that is not on the bus, so the usual tools talk to the bridge exactly the
+ * way they talk to a device. Each handler gets the request and fills a reply
+ * buffer; there is no frame and no queue, net_task calls them straight from
+ * the receive path and sends whatever they return.
+ */
+
 #include "app_main.h"
 
 static char cpu_id[25];
@@ -14,22 +24,13 @@ static char info_str[100];
 static cd_spinlock_t p5_lock = {0};
 
 
-static void send_frame(cd_frame_t *frame, uint8_t p_len)
-{
-    frame->dat[1] = frame->dat[0];
-    frame->dat[0] = 0xff;
-    frame->dat[2] = p_len + 2;
-    swap(frame->dat[3], frame->dat[4]); // swap src and dst port
-    cd_list_put(&d_dev.tx_head, frame);
-}
-
 static void get_uid(char *buf)
 {
     const char tlb[] = "0123456789abcdef";
     int i;
 
     for (i = 0; i < 12; i++) {
-        uint8_t val = *((char *)0x1FFFF7E8 + i);
+        uint8_t val = *((char *)CPU_UID_ADDR + i);
         buf[i * 2 + 0] = tlb[val >> 4];
         buf[i * 2 + 1] = tlb[val & 0xf];
     }
@@ -44,126 +45,140 @@ static void init_info_str(void)
     d_info("info: %s, git: %s\n", info_str, SW_VER_FULL);
 }
 
-
-// device info
-static void p1_handler(cd_frame_t *frame)
+/*
+ * Only flash, sram and the info block may be handed to memcpy. Reading an
+ * address that is not backed by anything hard faults, and the read service
+ * takes its address straight from the network.
+ */
+static bool mem_readable(uint32_t addr, uint32_t len)
 {
-    uint8_t *p_dat = frame->dat + 5;
-    uint8_t p_len = frame->dat[2] - 2;
+    uint32_t end = addr + len;
 
-    if (p_len == 0) {
-        strcpy((char *)p_dat, info_str);
-        send_frame(frame, strlen(info_str));
-    } else {
-        cd_list_put(&frame_free_head, frame);
-    }
+    if (end < addr)
+        return false;
+    if (addr >= 0x08000000 && end <= 0x08000000 + 256 * 1024)
+        return true;
+    if (addr >= 0x20000000 && end <= 0x20000000 + 102 * 1024)
+        return true;
+    if (addr >= 0x1ffff000 && end <= 0x1ffff800)
+        return true;
+    return false;
 }
 
-// flash memory manipulation
-static void p8_handler(cd_frame_t *frame)
+
+// device info
+static int p1_handler(const uint8_t *req, int req_len, uint8_t *rsp, int rsp_max)
 {
-    uint8_t *p_dat = frame->dat + 5;
-    uint8_t p_len = frame->dat[2] - 2;
-    bool reply = !(*p_dat & 0x80);
-    *p_dat &= 0x7f;
+    int len;
 
-    if (*p_dat == 0x2f && p_len == 9) {
-        uint32_t addr = get_unaligned32(p_dat + 1);
-        uint32_t len = get_unaligned32(p_dat + 5);
-        uint8_t ret = flash_erase(addr, len);
-        *p_dat = ret ? 1 : 0;
-        if (reply)
-            send_frame(frame, 1);
-
-    } else if (*p_dat == 0x00 && p_len == 6) {
-        uint32_t addr = get_unaligned32(p_dat + 1);
-        uint8_t *dst_addr = (uint8_t *) addr;
-        uint8_t len = min(p_dat[5], CDN_MAX_PAYLOAD - 1);
-        memcpy(p_dat + 1, dst_addr, len);
-        *p_dat = 0;
-        if (reply)
-            send_frame(frame, len + 1);
-
-    } else if (*p_dat == 0x20 && p_len > 8) {
-        uint32_t addr = get_unaligned32(p_dat + 1);
-        uint8_t len = p_len - 5;
-        uint8_t ret = flash_write(addr, len, p_dat + 5);
-        *p_dat = ret ? 1 : 0;
-        if (reply)
-            send_frame(frame, 1);
-
-    } else {
-        cd_list_put(&frame_free_head, frame);
-        return;
-    }
-    if (!reply)
-        cd_list_put(&frame_free_head, frame);
+    if (req_len != 0)
+        return -1;
+    len = min((int)strlen(info_str), rsp_max);
+    memcpy(rsp, info_str, len);
+    return len;
 }
 
 // csa manipulation
-static void p5_handler(cd_frame_t *frame)
+static int p5_handler(const uint8_t *req, int req_len, uint8_t *rsp, int rsp_max)
 {
     uint32_t flags;
-    uint8_t *p_dat = frame->dat + 5;
-    uint8_t p_len = frame->dat[2] - 2;
-    bool reply = !(*p_dat & 0x80);
-    *p_dat &= 0x7f;
+    uint8_t cmd;
+    bool reply;
 
-    if (*p_dat == 0x00 && p_len == 4) {
-        uint16_t offset = get_unaligned16(p_dat + 1);
-        uint8_t len = min(p_dat[3], CDN_MAX_PAYLOAD - 1);
+    if (req_len < 1)
+        return -1;
+    cmd = req[0] & 0x7f;
+    reply = !(req[0] & 0x80);
+
+    if ((cmd == 0x00 || cmd == 0x01) && req_len == 4) {
+        // read, from the live copy or from the defaults
+        const void *base = (cmd == 0x00) ? (const void *)&csa : (const void *)&csa_dft;
+        int offset = get_unaligned16(req + 1);
+        int len = req[3];
+
+        // a bad offset must read nothing rather than random memory
+        if (offset > (int)sizeof(csa_t))
+            len = 0;
+        else
+            len = min(len, (int)sizeof(csa_t) - offset);
+        len = min(len, rsp_max - 1);
+
+        rsp[0] = 0;
+        if (cmd == 0x00) {
+            cd_irq_save(&p5_lock, flags);
+            memcpy(rsp + 1, base + offset, len);
+            cd_irq_restore(&p5_lock, flags);
+        } else {
+            memcpy(rsp + 1, base + offset, len);
+        }
+        return reply ? len + 1 : -1;
+
+    } else if (cmd == 0x20 && req_len > 3) {
+        int offset = get_unaligned16(req + 1);
+        int len = req_len - 3;
+        int start = clip(offset, 0, (int)sizeof(csa_t));
+        int end = clip(offset + len, 0, (int)sizeof(csa_t));
+
         cd_irq_save(&p5_lock, flags);
-        memcpy(p_dat + 1, ((void *) &csa) + offset, len);
+        memcpy(((void *)&csa) + start, req + 3 + (start - offset), end - start);
         cd_irq_restore(&p5_lock, flags);
-        *p_dat = 0;
-        if (reply)
-            send_frame(frame, len + 1);
-
-    } else if (*p_dat == 0x20 && p_len > 3) {
-        uint16_t offset = get_unaligned16(p_dat + 1);
-        uint8_t len = p_len - 3;
-        uint8_t *src_addr = p_dat + 3;
-        uint16_t start = clip(offset, 0, sizeof(csa_t));
-        uint16_t end = clip(offset + len, 0, sizeof(csa_t));
-        cd_irq_save(&p5_lock, flags);
-        memcpy(((void *) &csa) + start, src_addr + (start - offset), end - start);
-        cd_irq_restore(&p5_lock, flags);
-        *p_dat = 0;
-        if (reply)
-            send_frame(frame, 1);
-
-    } else if (*p_dat == 0x01 && p_len == 4) {
-        uint16_t offset = get_unaligned16(p_dat + 1);
-        uint8_t len = min(p_dat[3], CDN_MAX_PAYLOAD - 1);
-        memcpy(p_dat + 1, ((void *) &csa_dft) + offset, len);
-        *p_dat = 0;
-        if (reply)
-            send_frame(frame, len + 1);
-
-    } else {
-        cd_list_put(&frame_free_head, frame);
-        return;
+        rsp[0] = 0;
+        return reply ? 1 : -1;
     }
-    if (!reply)
-        cd_list_put(&frame_free_head, frame);
+
+    return -1;
+}
+
+// flash memory manipulation
+static int p8_handler(const uint8_t *req, int req_len, uint8_t *rsp, int rsp_max)
+{
+    uint8_t cmd;
+    bool reply;
+
+    if (req_len < 1)
+        return -1;
+    cmd = req[0] & 0x7f;
+    reply = !(req[0] & 0x80);
+
+    if (cmd == 0x2f && req_len == 9) {
+        uint32_t addr = get_unaligned32(req + 1);
+        uint32_t len = get_unaligned32(req + 5);
+        rsp[0] = flash_erase(addr, len) ? 1 : 0;
+        return reply ? 1 : -1;
+
+    } else if (cmd == 0x00 && req_len == 6) {
+        uint32_t addr = get_unaligned32(req + 1);
+        int len = min((int)req[5], rsp_max - 1);
+        if (!mem_readable(addr, len)) {
+            rsp[0] = 1;
+            return reply ? 1 : -1;
+        }
+        rsp[0] = 0;
+        memcpy(rsp + 1, (const uint8_t *)addr, len);
+        return reply ? len + 1 : -1;
+
+    } else if (cmd == 0x20 && req_len > 5) {
+        uint32_t addr = get_unaligned32(req + 1);
+        int len = req_len - 5;
+        rsp[0] = flash_write(addr, len, req + 5) ? 1 : 0;
+        return reply ? 1 : -1;
+    }
+
+    return -1;
 }
 
 
-static inline void serial_cmd_dispatch(void)
+int comm_service_handle(uint16_t port, const uint8_t *req, int req_len,
+        uint8_t *rsp, int rsp_max)
 {
-    cd_frame_t *frame = cd_list_get(&d_dev.rx_head);
+    if (rsp_max < 1)
+        return -1;
 
-    if (frame) {
-        uint8_t server_num = frame->dat[4];
-
-        switch (server_num) {
-        case 1: p1_handler(frame); break;
-        case 5: p5_handler(frame); break;
-        case 8: p8_handler(frame); break;
-        default:
-            printf("cmd err\n");
-            cd_list_put(&frame_free_head, frame);
-        }
+    switch (port) {
+    case 1:  return p1_handler(req, req_len, rsp, rsp_max);
+    case 5:  return p5_handler(req, req_len, rsp, rsp_max);
+    case 8:  return p8_handler(req, req_len, rsp, rsp_max);
+    default: return -1;
     }
 }
 
@@ -183,7 +198,6 @@ void comm_service_poll(void)
         *(uint32_t *)BL_ARGS = 0xcdcd0000 | csa.do_reboot;
         NVIC_SystemReset();
     }
-    serial_cmd_dispatch();
 }
 
 
@@ -198,22 +212,14 @@ static inline void dbg_transmit(const uint8_t *buf, uint16_t len)
 // for printf
 int _write(int file, char *data, int len)
 {
-    // never dip into the pool reserve for debug frames: the host may be offline
-    // and unable to drain them, while the same text goes out on the debug uart
-    // below in any case
-    if (csa.dbg_en && frame_free_head.len > FRAME_RESERVE) {
-        cd_frame_t *frm = cd_list_get(&frame_free_head);
-        if (frm) {
-            len = min(CDN_MAX_PAYLOAD, len);
-            frm->dat[0] = 0xff;
-            frm->dat[1] = 0x0;
-            frm->dat[2] = 2 + len;
-            frm->dat[3] = 64;
-            frm->dat[4] = 9;
-            memcpy(frm->dat + 5, data, len);
-            cd_list_put(&d_dev.tx_head, frm);
-            //return len;
-        }
+    // to both ports, so the message turns up wherever you happen to be
+    // looking. Each path keeps clear of the frame pool reserve on its own:
+    // a host may be offline and unable to drain these, while the same text
+    // goes out on the debug uart below in any case
+    if (csa.dbg_en) {
+        int n = min(CDN_MAX_PAYLOAD, len);
+        cdc_dbg_tx((const uint8_t *)data, n);
+        net_local_tx(64, 9, (const uint8_t *)data, n);
     }
 
     dbg_transmit((uint8_t *)data, len);

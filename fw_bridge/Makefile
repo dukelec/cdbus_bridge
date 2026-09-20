@@ -53,9 +53,6 @@ project/src/sysmem.c \
 project/src/at32f402_405_wk_config.c \
 project/src/at32f402_405_int.c \
 project/src/wk_system.c \
-project/src/usb_app.c \
-project/src/cdc_class.c \
-project/src/cdc_desc.c \
 libraries/cmsis/cm4/device_support/system_at32f402_405.c \
 libraries/drivers/src/at32f402_405_crm.c \
 libraries/drivers/src/at32f402_405_gpio.c \
@@ -69,19 +66,27 @@ libraries/drivers/src/at32f402_405_crc.c \
 libraries/drivers/src/at32f402_405_exint.c \
 libraries/drivers/src/at32f402_405_misc.c \
 libraries/drivers/src/at32f402_405_scfg.c \
-libraries/drivers/src/at32f402_405_usb.c \
-middlewares/usb_drivers/src/usb_core.c \
-middlewares/usb_drivers/src/usbd_core.c \
-middlewares/usb_drivers/src/usbd_int.c \
-middlewares/usb_drivers/src/usbd_sdr.c \
+tinyusb/src/tusb.c \
+tinyusb/src/common/tusb_fifo.c \
+tinyusb/src/device/usbd.c \
+tinyusb/src/class/net/ncm_device.c \
+tinyusb/src/class/cdc/cdc_device.c \
+tinyusb/src/portable/synopsys/dwc2/dcd_dwc2.c \
+tinyusb/src/portable/synopsys/dwc2/dwc2_common.c \
 cdnet/arch/at32/arch_wrapper.c \
 cdnet/utils/cd_list.c \
 cdnet/dev/cdbus_uart.c \
 cdnet/dev/cdctl_it.c \
 cdnet/dev/cdctl_pll_cal.c \
+cdnet/parser/cdnet.c \
+cdnet/parser/cdnet_l0.c \
+cdnet/parser/cdnet_l1.c \
 usr/uart_dma_wr.c \
 usr/config.c \
 usr/comm_service.c \
+usr/usb_desc.c \
+usr/net_task.c \
+usr/cdc_task.c \
 usr/app_main.c
 
 # ASM sources
@@ -135,7 +140,6 @@ AS_DEFS =
 C_DEFS =  \
 -DUSE_STDPERIPH_DRIVER \
 -DAT32F405KCU7_4 \
--DOTG_USE_DMA \
 -DSW_VER_FULL=\"$(GIT_VERSION_FULL)\" \
 -DSW_VER=\"$(GIT_VERSION)\"
 
@@ -149,9 +153,10 @@ C_INCLUDES = \
 -Ilibraries/drivers/inc \
 -Ilibraries/cmsis/cm4/core_support \
 -Ilibraries/cmsis/cm4/device_support \
--Imiddlewares/usb_drivers/inc \
+-Itinyusb/src \
 -Icdnet/utils \
 -Icdnet/dev \
+-Icdnet/parser \
 -Icdnet/arch/at32 \
 -Iusr
 

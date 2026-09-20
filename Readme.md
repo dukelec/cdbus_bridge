@@ -18,26 +18,72 @@ Switchs Defination:
          allowing signal A to operate as a TTL single-wire serial.
  - S2.5 (HW v6.2+) / S2.4: Enable 5V output (should disable when using external power supply).
 
-## Transparent Mode
+## Two Ports, One Firmware
+
+The bridge presents both a serial port and an ethernet port, always, and
+either may be used. Nothing has to be reflashed to switch between them.
+
+Whatever comes off the bus is reported on both ports, and whatever either
+port sends is forwarded to the bus. The two are the same node on the bus, so
+neither can tell which one a frame was meant for, and neither has to: each
+sees everything and picks out what it asked for by UDP or CDNET port, the
+way a bus tap works.
+
+### Serial Port (unchanged)
 
  - The PC sends complete CDBUS packets (with CRC) via USB serial to the CDBUS Bridge, which forwards them unchanged to the RS-485 bus.
  - Data received from RS-485 is sent unchanged back to the PC via USB serial.
  - The baud rate set by the PC when opening the USB serial port is used for RS-485 (`baud_l` is automatically limited in arbitration mode).
  - The PC must enable the DTR option on the USB serial port.
- - The default RS-485 address of the Bridge is 0. To change it, see the next section.
- - Raw mode allows arbitrary data transfer without following the CDBUS byte format (HW v6.2+).
+ - The default RS-485 address of the Bridge is 0. To change it, see below.
+ - Raw mode allows arbitrary data transfer without following the CDBUS byte
+   format (HW v6.2+). The bus then belongs to the serial port alone and the
+   ethernet port reports no carrier.
 
-## Configuration Mode
+### Ethernet Port
+
+The whole bus is mapped into `fdcd::/104`: the last 3 bytes of an IPv6
+address are the CDNET address `level:net:mac` and the UDP port is the CDNET
+port. Talking to a device is therefore plain IPv6 UDP.
+
+ - Linux, macOS and Windows 11 have an in-box driver (CDC NCM), nothing to install.
+ - No daemon on the host, and no port to open exclusively: several programs
+   can use the bus at the same time.
+ - The address the host holds *is* the bridge's identity on the bus, so it
+   has to match `bus_cfg_mac` and `net` on the device (`00` and `00` by
+   default).
+ - A CDNET packet has to fit in one CDBUS frame and there is no
+   fragmentation, so keep datagrams at 244 bytes or less.
+
+It needs a one-time host setup, see [fw_bridge/host/](fw_bridge/host/). Until
+that is done the serial port works as it always has, so the ethernet port is
+opt-in.
+
+```python
+s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+s.bind(("fdcd::80:0", 50040))
+s.sendto(b"...", ("fdcd::80:00fe", 0xcdcd))
+```
+
+## Configuration
 
 CDBUS GUI Tool: https://github.com/dukelec/cdbus_gui
 
-When you open the serial port, specify the baud rate as `52685` (`0xcdcd`) to enter the configuration mode.
+The same services (port 1: device info, port 5: config status area, port 8:
+flash) are reachable two ways:
 
-The target address should be set to `00:00:ff`.
+ - **Serial**: open the port with the baud rate `52685` (`0xcdcd`) and set
+   the target address to `00:00:ff`. The bus is not touched while the port
+   is in this mode.
+ - **Ethernet**: `fdcd::10:0`, the one address inside the prefix that never
+   reaches the bus. It is a node the firmware serves itself.
 
 After modifying the configuration, write 1 to `save_conf` to save the changes to flash.
 
 To restore the default configuration, change the value of `magic_code` to a different value, save it to flash, and then power cycle the device.
+
+Debug output goes to both ports when `dbg_en` is set (CDNET port 9), and
+always goes out on the debug uart.
 
 <img src="doc/img/cdgui.png">
 
@@ -49,6 +95,10 @@ git clone --recursive https://github.com/dukelec/cdbus_bridge
 ```
 
 For other hardware versions, please switch to the corresponding branch.
+
+The `tinyusb` submodule is pinned at an upstream commit rather than at a
+release tag, because `0.21.0` predates a batch of `usbd.c` fixes for ways
+the device can wedge until it is replugged. Nothing extra to run.
 
 ## Test
 

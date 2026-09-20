@@ -26,7 +26,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "at32f402_405_wk_config.h"
-#include "usb_app.h"
 #include "wk_system.h"
 
 /* private includes ----------------------------------------------------------*/
@@ -56,7 +55,7 @@
 
 /* private function prototypes --------------------------------------------*/
 /* add user code begin function prototypes */
-
+void app_main(void);
 /* add user code end function prototypes */
 
 /* private user code ---------------------------------------------------------*/
@@ -153,16 +152,13 @@ int main(void)
   /* init exint function. */
   wk_exint_config();
 
-  /* init usb app function. */
-  wk_usb_app_init();
-
   /* add user code begin 2 */
 
   /* add user code end 2 */
 
   while(1)
   {
-    wk_usb_app_task();
+    app_main();
 
     /* add user code begin 3 */
 

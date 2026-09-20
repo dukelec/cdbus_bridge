@@ -18,7 +18,13 @@ const csa_t csa_dft = {
         .dbg_en = false,
         .bus_cfg = CDCTL_CFG_DFT(0x00),
         .limit_baudrate0 = 1000000,
-        .limit_baudrate1 = 2000000
+        .limit_baudrate1 = 2000000,
+
+        // fdcd::/104, the same prefix the cdnet_tun tool uses. It is a hand
+        // picked value in the ULA range, see the Readme before changing it.
+        .ip_pfx = { 0xfd, 0xcd },
+        .net = 0x00,
+        .router_mac = ROUTER_MAC_NONE
 };
 
 csa_t csa;
@@ -159,7 +165,12 @@ void csa_list_show(void)
     CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, tx_pre_len, "TE pre-assert time");
     d_debug("\n");
 
-    CSA_SHOW(0, limit_baudrate0, "Low baudrate limit (sw1 off)");
-    CSA_SHOW(0, limit_baudrate1, "Low baudrate limit (sw1 on)");
+    CSA_SHOW(0, limit_baudrate0, "baud_l limit in arbitration mode (sw2 off)");
+    CSA_SHOW(0, limit_baudrate1, "baud_l limit in arbitration mode (sw2 on)");
+    d_debug("\n");
+
+    CSA_SHOW(1, ip_pfx, "IPv6 prefix, first 13 bytes of the /104");
+    CSA_SHOW(1, net, "CDNET net number of the local link");
+    CSA_SHOW(1, router_mac, "Router mac for other nets, 0xff: none");
     d_debug("\n");
 }

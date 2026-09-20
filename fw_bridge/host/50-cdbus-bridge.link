@@ -1,0 +1,11 @@
+# Give the bridge a predictable interface name.
+#
+# Install as /etc/systemd/network/50-cdbus-bridge.link, then replug the
+# device (or `udevadm trigger`). systemd-udevd applies .link files even when
+# the network itself is managed by NetworkManager.
+
+[Match]
+Property=ID_VENDOR_ID=2e3c ID_MODEL_ID=5742
+
+[Link]
+Name=cdbus0

@@ -1,0 +1,28 @@
+# Address the bridge's ethernet port.
+#
+# Install as /etc/systemd/network/50-cdbus-bridge.network. Only for hosts
+# running systemd-networkd; NetworkManager users see the Readme.
+#
+# The bridge never sends router advertisements and runs no DHCP server, so
+# the address below is not negotiated, it is a statement of identity: the
+# bridge is transparent and its address on the bus is the one configured
+# here. The last byte is the CDNET mac and has to match bus_cfg_mac on the
+# device (0x00 by default), the byte before it is the net number (net).
+
+[Match]
+Name=cdbus0
+
+[Link]
+RequiredForOnline=no
+
+[Network]
+LinkLocalAddressing=ipv6
+IPv6AcceptRA=no
+DHCP=no
+# level 1, net 00, mac 00
+Address=fdcd::80:0/64
+# level 0, same node
+Address=fdcd::/64
+
+[IPv6AcceptRA]
+UseGateway=no

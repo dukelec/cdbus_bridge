@@ -26,7 +26,7 @@
 
 /* includes ------------------------------------------------------------------*/
 #include "at32f402_405_int.h"
-#include "usb_app.h"
+#include "tusb.h"
 #include "wk_system.h"
 /* private includes ----------------------------------------------------------*/
 /* add user code begin private includes */
@@ -235,7 +235,7 @@ void OTGHS_IRQHandler(void)
 
   /* add user code end OTGHS_IRQ 0 */
 
-  wk_otghs_irq_handler();
+  tusb_int_handler(BOARD_TUD_RHPORT, true);
 
   /* add user code begin OTGHS_IRQ 1 */
 

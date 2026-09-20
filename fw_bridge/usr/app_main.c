@@ -8,6 +8,7 @@
  */
 
 #include "app_main.h"
+#include "tusb.h"
 
 static gpio_t led_r = { .group = RGB_R_GPIO_PORT, .num = RGB_R_PIN };
 static gpio_t led_g = { .group = RGB_G_GPIO_PORT, .num = RGB_G_PIN };
@@ -32,25 +33,25 @@ static spi_t r_spi = {
 static cd_frame_t frame_alloc[FRAME_MAX];
 list_head_t frame_free_head = {0};
 
-cduart_dev_t d_dev = {0};   // usb cdc
 cdctl_dev_t r_dev = {0};    // CDBUS
 
-static uint8_t usb_rx_buf[512];
-static bool cdc_need_flush = false;
-static uint32_t cdc_rate;
-static uint32_t cdc_rate_final = 115200;
+bool hw_raw = false;        // usart1 instead of the cdctl controller
+bool raw_mode = false;      // ... and the serial port is not in config mode
+
 static uint32_t cache_drop_cnt = 0;
-static volatile bool usb_resumed = false;
-
-bool raw_mode = false; // raw mode: use usart1 instead of cdctl, no data format restrictions
+static uint32_t dup_drop_cnt = 0;
 
 
-// Queue a frame for the host. Keeps FRAME_RESERVE frames in the free pool so
-// the two rx paths can never starve; once the pool runs low (host offline, or
-// not reading) the oldest queued frame is dropped, so the newest data wins.
+/*
+ * Queue a frame for a host. Two things are kept from growing without bound:
+ * each queue, so one host that stopped reading cannot take the pool away
+ * from the other one, and the pool itself, so the rx paths always have
+ * frames left. Either way the oldest queued frame goes and the newest data
+ * wins, which is what a bus adapter should do.
+ */
 void frame_cache_put(list_head_t *head, cd_frame_t *frame)
 {
-    while (frame_free_head.len < FRAME_RESERVE) {
+    while (head->len >= CACHE_MAX || frame_free_head.len < FRAME_RESERVE) {
         cd_frame_t *old = cd_list_get(head);
         if (!old)
             break;
@@ -58,6 +59,65 @@ void frame_cache_put(list_head_t *head, cd_frame_t *frame)
         cache_drop_cnt++;
     }
     cd_list_put(head, frame);
+}
+
+bool bus_tx(cd_frame_t *frame)
+{
+    // in the raw mode the controller is not driven at all, anything queued
+    // there would sit forever
+    if (hw_raw || r_dev.tx_head.len >= BUS_TX_MAX)
+        return false;
+    cdctl_send_frame(&r_dev.cd_dev, frame);
+    return true;
+}
+
+// only reached with both hosts listening, so never in the raw mode: the
+// frame is a cdbus frame and dat[2] covers all of it
+static cd_frame_t *frame_dup(const cd_frame_t *src)
+{
+    cd_frame_t *frm;
+
+    if (frame_free_head.len <= FRAME_RESERVE)
+        return NULL;
+    frm = cd_list_get(&frame_free_head);
+    if (!frm)
+        return NULL;
+    memcpy(frm->dat, src->dat, 3 + src->dat[2]);
+    return frm;
+}
+
+/*
+ * Hand what came off the bus to whoever is listening. Both ports are the
+ * same node on the bus, so there is no way to tell which one a frame was
+ * meant for, and no need to: each one gets everything and picks out what it
+ * asked for by port, the way a tap works.
+ */
+static void bus_rx_dispatch(void)
+{
+    cd_frame_t *frm;
+
+    while ((frm = cdctl_recv_frame(&r_dev.cd_dev)) != NULL) {
+        bool to_net = net_bus_active();
+        bool to_cdc = cdc_bus_active();
+
+        // the copy only happens when both are really listening; with one of
+        // them, which is the usual case, the frame is just handed over
+        if (to_net && to_cdc) {
+            cd_frame_t *dup = frame_dup(frm);
+            if (dup)
+                cdc_bus_rx(dup);
+            else
+                dup_drop_cnt++;
+            to_cdc = false;
+        }
+
+        if (to_net)
+            net_bus_rx(frm);
+        else if (to_cdc)
+            cdc_bus_rx(frm);
+        else
+            cd_list_put(&frame_free_head, frm);
+    }
 }
 
 
@@ -96,146 +156,99 @@ static void dump_hw_status(void)
         d_debug("  r %ld (lost %ld err %ld full %ld), t %ld (cd %ld err %ld)\n",
                 r_dev.rx_cnt, r_dev.rx_lost_cnt, r_dev.rx_error_cnt, r_dev.rx_no_free_node_cnt,
                 r_dev.tx_cnt, r_dev.tx_cd_cnt, r_dev.tx_error_cnt);
-        d_debug("  free %ld, cache %ld (drop %ld), usb %d\n",
-                frame_free_head.len, d_dev.tx_head.len, cache_drop_cnt, csa.usb_online);
-        //d_debug("usb: r_cnt %d, t_cnt %d, t_buf %p, t_len %d, t_state %x\n",
-        //        usb_rx_cnt, usb_tx_cnt, cdc_tx_buf, cdc_tx_head.len, hcdc->TxState);
+        d_debug("  free %ld, drop cache %ld dup %ld, usb %d, raw %d\n",
+                frame_free_head.len, cache_drop_cnt, dup_drop_cnt,
+                csa.usb_online, raw_mode);
+        d_debug("  net: bus %ld, pc %ld, loc %ld, drop f %ld b %ld y %ld\n",
+                net_cnt.to_bus, net_cnt.to_pc, net_cnt.local,
+                net_cnt.drop_fmt, net_cnt.drop_big, net_cnt.drop_busy);
+        d_debug("  cdc: bus %ld, pc %ld, loc %ld, drop y %ld, rate %ld\n",
+                cdc_cnt.to_bus, cdc_cnt.to_pc, cdc_cnt.local,
+                cdc_cnt.drop_busy, cdc_rate);
     }
 }
 
-
-static void usb_detection(void)
+static void usb_state_task(void)
 {
-    static uint32_t t_usb = 0;
-    static uint8_t cdc_dtr_final = 0;
-    uint32_t t_cur = get_systick();
+    bool online = tud_ready();
 
-    // cdc_dtr is deliberately not cleared on bus reset: the host only sends
-    // SET_CONTROL_LINE_STATE when the application opens or closes the port, so
-    // after a reset-resume (pc wake up) it would never be asserted again and
-    // the bridge would stay silent until the port is reopened or replugged
-    if (!cdc_dtr) {
-        t_usb = t_cur;
-        if (csa.usb_online)
-            printf("usb: 1 -> 0 (!dtr)\n");
-        cdc_dtr_final = 0;
-        csa.usb_online = false;
-    } else if (!cdc_dtr_final && t_cur - t_usb > 5) { // wait for host to turn off echo
-        cdc_dtr_final = 1;
-        printf("usb: dtr on\n");
-    }
-
-    if (otg_core_struct_hs.dev.conn_state != USB_CONN_STATE_CONFIGURED) {
-        if (csa.usb_online)
-            printf("usb: 1 -> 0 (!state)\n");
-        csa.usb_online = false;
-    } else if (!csa.usb_online && cdc_dtr_final) {
-        usb_resumed = true; // set before usb_online: pendsv may run in between
-        csa.usb_online = true;
-        printf("usb: 0 -> 1 (baudrate %ld)\n", cdc_rate);
+    if (online != csa.usb_online) {
+        csa.usb_online = online;
+        printf("usb: %s\n", online ? "up" : "down");
     }
 }
 
-
-void PendSV_Handler(void)
+/*
+ * The usb clock source defaults to pllu, but its output is not necessarily
+ * running yet. Enabling it here matches what the tinyusb board support does
+ * and is harmless if it was already on. Bounded: a stuck pll must not keep
+ * the firmware from starting, the usb port simply stays dead.
+ */
+static void usb_clock_init(void)
 {
-    cdc_struct_type *pcdc = (cdc_struct_type *)otg_core_struct_hs.dev.class_handler->pdata;
-    cdc_rate = pcdc->linecoding.bitrate;
-    static cd_frame_t *tx_frame = NULL;
+    uint32_t timeout = 100000;
 
-    if (csa.usb_online) {
-        if (usb_resumed) {
-            usb_resumed = false;
-            // a transfer armed just before the link went down never completes:
-            // usbd_core_in_handler() skips in_handler while the device is not
-            // in the configured state, so g_tx_completed would stay 0 forever
-            pcdc->g_tx_completed = 1;
-            if (tx_frame) {
-                cd_list_put(&frame_free_head, tx_frame);
-                tx_frame = NULL;
-            }
-            cdc_need_flush = false;
+    crm_pllu_output_set(TRUE);
+    while (crm_flag_get(CRM_PLLU_STABLE_FLAG) != SET) {
+        if (!--timeout) {
+            printf("usb: pllu did not lock\n");
+            return;
         }
+    }
+    crm_usb_clock_source_select(CRM_USB_CLOCK_SOURCE_PLLU);
+}
 
-        if (cdc_rate != 0xcdcd) {
-            cdc_rate_final = cdc_rate;
-            if (csa.bus_cfg.mode >= 4)
-                raw_mode = true;
+/*
+ * The bus rate is whatever was asked for last, by either the rate the serial
+ * port was opened with (which is how every existing tool sets it) or a write
+ * to bus_cfg_baud_h through one of the config services. A host that never
+ * opens the serial port therefore gets the configured rate.
+ */
+static void bus_baud_task(void)
+{
+    static uint32_t req_l = 0, req_h = 0;
+    static uint32_t csa_h_bk = 0;
+    static uint32_t t_update = 0;
+    uint32_t baud_l, baud_h, limit;
+
+    if (csa.bus_cfg.baud_h != csa_h_bk) {
+        csa_h_bk = csa.bus_cfg.baud_h;
+        cdc_rate_final = csa.bus_cfg.baud_h;
+    }
+
+    limit = !gpio_get_val(&sw2) ? csa.limit_baudrate1 : csa.limit_baudrate0;
+    baud_h = cdc_rate_final;
+    baud_l = csa.bus_cfg.mode == 1 ? min(baud_h, limit) : baud_h;
+
+    if (baud_l != req_l || baud_h != req_h) {
+        gpio_set_val(&led_g, 1);
+        gpio_set_val(&led_b, 0);
+        t_update = get_systick();
+        req_l = baud_l;
+        req_h = baud_h;
+
+        if (!hw_raw) {
+            cdctl_set_clk(&r_dev, baud_h);
+            cdctl_set_baud_rate(&r_dev, baud_l, baud_h);
+            cdctl_flush(&r_dev);
+            // the controller reports what it could actually reach
+            cdctl_get_baud_rate(&r_dev, &csa.bus_cfg.baud_l, &csa.bus_cfg.baud_h);
         } else {
-            raw_mode = false;
+            crm_clocks_freq_type clocks_freq;
+            crm_clocks_freq_get(&clocks_freq);
+            usart_enable(UART_DEV, false);
+            USART1->baudr = max(DIV_ROUND_CLOSEST(clocks_freq.apb2_freq, baud_h), 16);
+            csa.bus_cfg.baud_l = csa.bus_cfg.baud_h =
+                    DIV_ROUND_CLOSEST(clocks_freq.apb2_freq, USART1->baudr);
+            usart_enable(UART_DEV, true);
         }
-
-        if (frame_free_head.len > 5) {
-            uint16_t len = usb_vcp_get_rxdata(&otg_core_struct_hs.dev, usb_rx_buf);
-            if (raw_mode) {
-                uint8_t *p = usb_rx_buf;
-                while (len) {
-                    uint32_t flags;
-                    cd_irq_save(&raw_tx_head.lock, flags);
-                    cd_frame_t *frm = list_entry_safe(raw_tx_head.last, cd_frame_t);
-                    if (frm && frm->dat[257] == 255)
-                        frm = NULL;
-                    if (!frm) {
-                        cd_irq_restore(&raw_tx_head.lock, flags);
-                        frm = cd_list_get(&frame_free_head);
-                        if (!frm)
-                            break;
-                        frm->dat[257] = 0;
-                    }
-                    r_dev.tx_cnt++;
-                    unsigned sub_len = min(255 - frm->dat[257], len);
-                    memcpy(frm->dat + frm->dat[257], p, sub_len);
-                    frm->dat[257] += sub_len;
-                    if (frm != list_entry_safe(raw_tx_head.last, cd_frame_t))
-                        cd_list_put(&raw_tx_head, frm);
-                    else
-                        cd_irq_restore(&raw_tx_head.lock, flags);
-                    uart_dma_tx();
-                    p += sub_len;
-                    len -= sub_len;
-                }
-            } else {
-                cduart_rx_handle(&d_dev, usb_rx_buf, len);
-            }
-        }
-
-        if (pcdc->g_tx_completed) {
-            if (tx_frame) {
-                cd_list_put(&frame_free_head, tx_frame);
-                tx_frame = NULL;
-            }
-
-            tx_frame = cd_list_get(&d_dev.tx_head);
-            if (tx_frame) {
-                cduart_fill_crc(tx_frame->dat);
-                usb_vcp_send_data(&otg_core_struct_hs.dev, tx_frame->dat, tx_frame->dat[2] + 5);
-                cdc_need_flush = true;
-            } else {
-                tx_frame = cd_list_get(&raw_rx_head);
-                if (tx_frame) {
-                    r_dev.rx_cnt++;
-                    usb_vcp_send_data(&otg_core_struct_hs.dev, tx_frame->dat, tx_frame->dat[257]);
-                    cdc_need_flush = true;
-                }
-            }
-
-            if (!tx_frame && cdc_need_flush) {
-                usb_vcp_send_data(&otg_core_struct_hs.dev, NULL, 0);
-                cdc_need_flush = false;
-            }
-        }
+        csa_h_bk = csa.bus_cfg.baud_h;
+        d_debug("baud rate: %lu %lu\n", csa.bus_cfg.baud_l, csa.bus_cfg.baud_h);
     }
 
-    uart_dma_rx();
-
-    if (cdc_rate == 0xcdcd) {
-        comm_service_poll();
-    } else if (!raw_mode) {
-        cd_frame_t *frame;
-        while ((frame = cd_list_get(&d_dev.rx_head)) != NULL)
-            cdctl_send_frame(&r_dev.cd_dev, frame);
-        while ((frame = cdctl_recv_frame(&r_dev.cd_dev)) != NULL)
-            frame_cache_put(&d_dev.tx_head, frame);
+    if (gpio_get_val(&led_g) && get_systick() - t_update > 100) {
+        gpio_set_val(&led_b, 1);
+        gpio_set_val(&led_g, 0);
     }
 }
 
@@ -246,10 +259,11 @@ void app_main(void)
     // heap limit enforced by _sbrk, so malloc can never touch it
     volatile uint64_t *stack_check =
             (uint64_t *)((uint32_t)&_estack - (uint32_t)&_Min_Stack_Size);
-    uint32_t cdc_rate_bk = 0;
-    uint32_t cdctl_baud_l = 115200;
-    uint32_t cdctl_baud_h = 115200;
-    uint32_t t_update_baud = 0;
+
+    // the generated nvic config enables this long before there is a stack to
+    // handle it, and the led sequence below takes half a second. tinyusb
+    // turns it back on from tusb_rhport_init().
+    NVIC_DisableIRQ(OTGHS_IRQn);
 
     gpio_set_val(&led_tx, 1);
     gpio_set_val(&led_rx, 1);
@@ -264,11 +278,9 @@ void app_main(void)
         cd_list_put(&frame_free_head, &frame_alloc[i]);
 
     load_conf();
-    csa.bus_cfg.baud_l = csa.bus_cfg.baud_h = 115200;
-    cduart_dev_init(&d_dev, &frame_free_head);
-    d_dev.local_mac = 0xff;
-
+    hw_raw = csa.bus_cfg.mode >= 4;
     comm_service_init();
+    cdc_init();
 
     printf("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
     csa_list_show();
@@ -284,23 +296,35 @@ void app_main(void)
 
     spi_wr_init(&r_spi);
     cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, &r_int, EXINT0_IRQn);
+    cdctl_get_baud_rate(&r_dev, &csa.bus_cfg.baud_l, &csa.bus_cfg.baud_h);
 
-    if (csa.bus_cfg.mode < 4) {
+    if (!hw_raw) {
         nvic_irq_enable(EXINT0_IRQn, 2, 0);
         nvic_irq_enable(DMA1_Channel1_IRQn, 2, 0);
         exint_interrupt_enable(EXINT_LINE_0, TRUE);
     } else {
         wk_usart1_init();
-        nvic_irq_enable(DMA2_Channel2_IRQn, 2, 0); // uart_tx
+        nvic_irq_enable(DMA2_Channel2_IRQn, 2, 0); // uart tx
         nvic_irq_enable(USART1_IRQn, 2, 0);
         uart_dma_wr_init();
         usart_interrupt_enable(UART_DEV, USART_TDC_INT, true);
     }
 
-    while (true) {
-        usb_detection();
-        SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+    net_init();
+    usb_clock_init();
+    tusb_rhport_init(BOARD_TUD_RHPORT, &(tusb_rhport_init_t){
+            .role = TUSB_ROLE_DEVICE, .speed = TUSB_SPEED_AUTO });
 
+    while (true) {
+        tud_task();
+        cdc_poll();
+        if (!hw_raw)
+            bus_rx_dispatch();
+        net_poll();
+        comm_service_poll();
+
+        usb_state_task();
+        bus_baud_task();
         data_led_task();
         dump_hw_status();
 
@@ -313,52 +337,13 @@ void app_main(void)
             printf("stack overflow\n");
             while (true);
         }
-
-        if (cdc_rate != cdc_rate_bk) {
-            d_info("rate: %ld, mode: %s!\n", cdc_rate, cdc_rate == 0xcdcd ? "config" : "data");
-            cdc_rate_bk = cdc_rate;
-        }
-
-        bool sw2_val = !gpio_get_val(&sw2);
-        uint32_t baud_limit = sw2_val ? csa.limit_baudrate1 : csa.limit_baudrate0;
-        uint32_t baud_h = cdc_rate_final;
-        uint32_t baud_l = csa.bus_cfg.mode == 1 ? min(baud_h, baud_limit) : baud_h;
-
-        if (cdctl_baud_l != baud_l || cdctl_baud_h != baud_h) {
-            gpio_set_val(&led_g, 1);
-            gpio_set_val(&led_b, 0);
-            t_update_baud = get_systick();
-            cdctl_baud_l = baud_l;
-            cdctl_baud_h = baud_h;
-            __set_BASEPRI(0xc0); // disable pendsv
-            if (!raw_mode) {
-                cdctl_set_clk(&r_dev, cdctl_baud_h);
-                cdctl_set_baud_rate(&r_dev, cdctl_baud_l, cdctl_baud_h);
-                cdctl_flush(&r_dev);
-                cdctl_get_baud_rate(&r_dev, &csa.bus_cfg.baud_l, &csa.bus_cfg.baud_h);
-            } else {
-                crm_clocks_freq_type clocks_freq;
-                crm_clocks_freq_get(&clocks_freq);
-                usart_enable(UART_DEV, false);
-                USART1->baudr = max(DIV_ROUND_CLOSEST(clocks_freq.apb2_freq, baud_h), 16);
-                csa.bus_cfg.baud_l = csa.bus_cfg.baud_h = DIV_ROUND_CLOSEST(clocks_freq.apb2_freq, USART1->baudr);
-                usart_enable(UART_DEV, true);
-            }
-            __set_BASEPRI(0); // enable pendsv
-            d_debug("get baud rate: %lu %lu\n", csa.bus_cfg.baud_l, csa.bus_cfg.baud_h);
-        }
-
-        if (gpio_get_val(&led_g) && get_systick() - t_update_baud > 100) {
-            gpio_set_val(&led_b, 1);
-            gpio_set_val(&led_g, 0);
-        }
     }
 }
 
 
 void cdctl_rx_cb(cdctl_dev_t *dev, cd_frame_t *frame)
 {
-    SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
+    // the main loop polls, nothing to wake up
 }
 
 void EXINT0_IRQHandler(void)
@@ -382,4 +367,3 @@ void USART1_IRQHandler(void)
 {
     uart_tdc_isr();
 }
-

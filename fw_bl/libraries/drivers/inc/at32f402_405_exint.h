@@ -3,7 +3,8 @@
   * @file     at32f402_405_exint.h
   * @brief    at32f402_405 exint header file
   **************************************************************************
-  *                       Copyright notice & Disclaimer
+  *
+  * Copyright (c) 2025, Artery Technology, All rights reserved.
   *
   * The software Board Support Package (BSP) that is made available to
   * download from Artery official website is the copyrighted work of Artery.
@@ -96,7 +97,8 @@ typedef enum
 {
   EXINT_TRIGGER_RISING_EDGE              = 0x00, /*!< external interrupt line rising trigger mode */
   EXINT_TRIGGER_FALLING_EDGE             = 0x01, /*!< external interrupt line falling trigger mode */
-  EXINT_TRIGGER_BOTH_EDGE                = 0x02  /*!< external interrupt line both rising and falling trigger mode */
+  EXINT_TRIGGER_BOTH_EDGE                = 0x02, /*!< external interrupt line both rising and falling trigger mode */
+  EXINT_TRIGGER_NONE_EDGE                = 0x03  /*!< external interrupt line software trigger mode */
 } exint_polarity_config_type;
 
 /** 

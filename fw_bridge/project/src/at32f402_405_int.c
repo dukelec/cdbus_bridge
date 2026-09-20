@@ -28,7 +28,6 @@
 #include "at32f402_405_int.h"
 #include "usb_app.h"
 #include "wk_system.h"
-
 /* private includes ----------------------------------------------------------*/
 /* add user code begin private includes */
 
@@ -103,6 +102,7 @@ void HardFault_Handler(void)
     /* add user code end W1_HardFault_IRQ 0 */
   }
 }
+
 
 /**
   * @brief  this function handles memory manage exception.
@@ -206,6 +206,7 @@ void PendSV_Handler_bk(void)
   /* add user code end PendSV_IRQ 1 */
 }
 
+
 /**
   * @brief  this function handles systick handler.
   * @param  none
@@ -218,7 +219,6 @@ void SysTick_Handler(void)
   /* add user code end SysTick_IRQ 0 */
 
   wk_timebase_handler();
-
   /* add user code begin SysTick_IRQ 1 */
 
   /* add user code end SysTick_IRQ 1 */

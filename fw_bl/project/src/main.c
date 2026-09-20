@@ -84,7 +84,8 @@ int main(void)
   /* nvic config. */
   wk_nvic_config();
 
-  /* timebase config. */
+  /* timebase config for
+     void wk_delay_ms(uint32_t delay); */
   wk_timebase_init();
 
   /* init gpio function. */
@@ -108,7 +109,7 @@ int main(void)
 
   while(1)
   {
-     wk_usb_app_task();
+    wk_usb_app_task();
 
     /* add user code begin 3 */
 

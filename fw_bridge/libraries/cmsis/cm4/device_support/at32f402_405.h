@@ -3,7 +3,8 @@
   * @file     at32f402_405.h
   * @brief    at32f402_405 header file
   **************************************************************************
-  *                       Copyright notice & Disclaimer
+  *
+  * Copyright (c) 2025, Artery Technology, All rights reserved.
   *
   * The software Board Support Package (BSP) that is made available to 
   * download from Artery official website is the copyrighted work of Artery. 
@@ -56,7 +57,7 @@ extern "C" {
     !defined (AT32F405RCT7)   && !defined (AT32F402KBU7_4) && !defined (AT32F402KCU7_4)&& \
     !defined (AT32F402CBT7)   && !defined (AT32F402CCT7)   && !defined (AT32F402CBU7)  && \
     !defined (AT32F402CCU7)   && !defined (AT32F402RBT7_7) && !defined (AT32F402RCT7_7)&& \
-    !defined (AT32F402RBT7)   && !defined (AT32F402RCT7)
+    !defined (AT32F402RBT7)   && !defined (AT32F402RCT7)   && !defined (AT32F402HCY7)
 
     #error "Please select first the target device used in your application (in at32f402_405.h file)"
 #endif
@@ -72,7 +73,7 @@ extern "C" {
 #if defined (AT32F402KBU7_4) || defined (AT32F402KCU7_4) || defined (AT32F402CBT7) || \
     defined (AT32F402CCT7)   || defined (AT32F402CBU7)   || defined (AT32F402CCU7) || \
     defined (AT32F402RBT7_7) || defined (AT32F402RCT7_7) || defined (AT32F402RBT7) || \
-    defined (AT32F402RCT7)
+    defined (AT32F402RCT7)   || defined (AT32F402HCY7)
 
     #define AT32F402xx
 #endif
@@ -106,12 +107,16 @@ extern "C" {
     #define AT32F402Cx
 #endif
 
+#if defined (AT32F402HCY7)
+
+    #define AT32F402Hx
+#endif
+
 #if defined (AT32F402RBT7_7) || defined (AT32F402RCT7_7) || defined (AT32F402RBT7) || \
     defined (AT32F402RCT7)
    
     #define AT32F402Rx
 #endif
-
 
 /**
   * define with memory density
@@ -135,7 +140,7 @@ extern "C" {
 #endif
 
 #if defined (AT32F402KCU7_4) || defined (AT32F402CCT7)   || defined (AT32F402CCU7) || \
-    defined (AT32F402RCT7_7) || defined (AT32F402RCT7)
+    defined (AT32F402RCT7_7) || defined (AT32F402RCT7)   || defined (AT32F402HCY7)
 
     #define AT32F402xC
 #endif
@@ -159,7 +164,7 @@ extern "C" {
   */
 #define __AT32F402_405_LIBRARY_VERSION_MAJOR    (0x02) /*!< [31:24] major version */
 #define __AT32F402_405_LIBRARY_VERSION_MIDDLE   (0x01) /*!< [23:16] middle version */
-#define __AT32F402_405_LIBRARY_VERSION_MINOR    (0x03) /*!< [15:8]  minor version */
+#define __AT32F402_405_LIBRARY_VERSION_MINOR    (0x06) /*!< [15:8]  minor version */
 #define __AT32F402_405_LIBRARY_VERSION_RC       (0x00) /*!< [7:0]  release candidate */
 #define __AT32F402_405_LIBRARY_VERSION          ((__AT32F402_405_LIBRARY_VERSION_MAJOR << 24)  | \
                                                  (__AT32F402_405_LIBRARY_VERSION_MIDDLE << 16) | \

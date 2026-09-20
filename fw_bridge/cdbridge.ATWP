@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Root>
     <WorkBenchVersion>
-        <Version>V1.2.00</Version>
+        <Version>V1.2.06</Version>
     </WorkBenchVersion>
     <MCUInfo>
         <MCUSerials>AT32F405</MCUSerials>
@@ -128,25 +128,25 @@
     </DMA>
     <NVIC>
         <PriorityGroup>NVIC_PRIORITY_GROUP_2</PriorityGroup>
-        <SVC_Handler>1;3;0;0;0</SVC_Handler>
-        <PendSV_Handler>1;3;0;0;0</PendSV_Handler>
-        <SysTick_Handler>1;1;0;0;0</SysTick_Handler>
-        <FLASH_IRQHandler>0;0;0;0;0</FLASH_IRQHandler>
-        <CRM_IRQHandler>0;0;0;0;0</CRM_IRQHandler>
-        <EXINT0_IRQHandler>0;2;0;0;0</EXINT0_IRQHandler>
-        <DMA1_Channel1_IRQHandler>0;2;0;0;0</DMA1_Channel1_IRQHandler>
-        <DMA1_Channel2_IRQHandler>0;2;0;0;0</DMA1_Channel2_IRQHandler>
-        <SPI1_IRQHandler>0;0;0;0;0</SPI1_IRQHandler>
-        <USART1_IRQHandler>0;0;0;0;0</USART1_IRQHandler>
-        <DMA2_Channel1_IRQHandler>0;2;0;0;0</DMA2_Channel1_IRQHandler>
-        <DMA2_Channel2_IRQHandler>0;2;0;0;0</DMA2_Channel2_IRQHandler>
-        <OTGHS_EP1_OUT_IRQHandler>0;0;0;0;0</OTGHS_EP1_OUT_IRQHandler>
-        <OTGHS_EP1_IN_IRQHandler>0;0;0;0;0</OTGHS_EP1_IN_IRQHandler>
-        <OTGHS_WKUP_IRQHandler>0;0;0;0;0</OTGHS_WKUP_IRQHandler>
-        <OTGHS_IRQHandler>1;2;0;0;0</OTGHS_IRQHandler>
-        <FPU_IRQHandler>0;0;0;0;0</FPU_IRQHandler>
-        <UART7_IRQHandler>0;0;0;0;0</UART7_IRQHandler>
-        <DMAMUX_IRQHandler>0;0;0;0;0</DMAMUX_IRQHandler>
+        <SVC_Handler>1;3;0;0;0;1</SVC_Handler>
+        <PendSV_Handler>1;3;0;0;0;1</PendSV_Handler>
+        <SysTick_Handler>1;1;0;0;0;1</SysTick_Handler>
+        <FLASH_IRQHandler>0;0;0;0;0;0</FLASH_IRQHandler>
+        <CRM_IRQHandler>0;0;0;0;0;0</CRM_IRQHandler>
+        <EXINT0_IRQHandler>0;2;0;0;0;0</EXINT0_IRQHandler>
+        <DMA1_Channel1_IRQHandler>0;2;0;0;0;0</DMA1_Channel1_IRQHandler>
+        <DMA1_Channel2_IRQHandler>0;2;0;0;0;0</DMA1_Channel2_IRQHandler>
+        <SPI1_IRQHandler>0;0;0;0;0;0</SPI1_IRQHandler>
+        <USART1_IRQHandler>0;0;0;0;0;0</USART1_IRQHandler>
+        <DMA2_Channel1_IRQHandler>0;2;0;0;0;0</DMA2_Channel1_IRQHandler>
+        <DMA2_Channel2_IRQHandler>0;2;0;0;0;0</DMA2_Channel2_IRQHandler>
+        <OTGHS_EP1_OUT_IRQHandler>0;0;0;0;0;0</OTGHS_EP1_OUT_IRQHandler>
+        <OTGHS_EP1_IN_IRQHandler>0;0;0;0;0;0</OTGHS_EP1_IN_IRQHandler>
+        <OTGHS_WKUP_IRQHandler>0;0;0;0;0;0</OTGHS_WKUP_IRQHandler>
+        <OTGHS_IRQHandler>1;2;0;0;0;1</OTGHS_IRQHandler>
+        <FPU_IRQHandler>0;0;0;0;0;0</FPU_IRQHandler>
+        <UART7_IRQHandler>0;0;0;0;0;0</UART7_IRQHandler>
+        <DMAMUX_IRQHandler>0;0;0;0;0;0</DMAMUX_IRQHandler>
     </NVIC>
     <GPIO>
         <Signal SignalName="GPIO_Output" PinName="PA0">
@@ -249,13 +249,33 @@
         <ProjectLocation>/mnt/TF/company/dukelec/cdbus/fw/cdbus_bridge_at/fw_bridge</ProjectLocation>
         <ToolchainIDE>Makefile</ToolchainIDE>
         <ARMCompiler>1</ARMCompiler>
+        <BackupCode>true</BackupCode>
         <KeepUserCode>true</KeepUserCode>
         <NotUsedPinAnalog>false</NotUsedPinAnalog>
         <CodeSplitIP>false</CodeSplitIP>
         <AddNecessaryFileFlag>true</AddNecessaryFileFlag>
+        <DeletePriviousFiles>false</DeletePriviousFiles>
         <MinHeapSize>0x200</MinHeapSize>
         <MinStackSize>0x400</MinStackSize>
         <UseFirmware>true</UseFirmware>
-        <PackageVersion>V2.1.3</PackageVersion>
+        <PackageVersion>V2.1.6</PackageVersion>
     </ProjectInfomation>
+    <FunctionRankInfo>
+        <RankSub RankNum="1" FixPosFlag="TRUE" FuncName="wk_system_clock_config" InstanceName="CRM" CodeSection="config_system_clock_rtthread" MainDoNotCallFlag="FALSE"/>
+        <RankSub RankNum="2" FixPosFlag="TRUE" FuncName="wk_periph_clock_config" InstanceName="CRM" CodeSection="config periph clock" MainDoNotCallFlag="FALSE"/>
+        <RankSub RankNum="7" FixPosFlag="TRUE" FuncName="wk_nvic_config" InstanceName="NVIC" CodeSection="config nvic" MainDoNotCallFlag="FALSE"/>
+        <RankSub RankNum="8" FixPosFlag="TRUE" FuncName="wk_timebase_init" InstanceName="SYSTEM" CodeSection="config timebase" MainDoNotCallFlag="FALSE"/>
+        <RankSub RankNum="9" FixPosFlag="TRUE" FuncName="wk_gpio_config" InstanceName="GPIO" CodeSection="gpio function" MainDoNotCallFlag="FALSE"/>
+        <RankSub RankNum="11" FixPosFlag="FALSE" FuncName="wk_dma1_channel1_init" InstanceName="DMA1_Channel1" CodeSection="dma1_channel1_init" MainDoNotCallFlag="FALSE"/>
+        <RankSub RankNum="12" FixPosFlag="FALSE" FuncName="wk_dma1_channel2_init" InstanceName="DMA1_Channel2" CodeSection="dma1_channel2_init" MainDoNotCallFlag="FALSE"/>
+        <RankSub RankNum="18" FixPosFlag="FALSE" FuncName="wk_dma2_channel1_init" InstanceName="DMA2_Channel1" CodeSection="dma2_channel1_init" MainDoNotCallFlag="FALSE"/>
+        <RankSub RankNum="19" FixPosFlag="FALSE" FuncName="wk_dma2_channel2_init" InstanceName="DMA2_Channel2" CodeSection="dma2_channel2_init" MainDoNotCallFlag="FALSE"/>
+        <RankSub RankNum="25" FixPosFlag="FALSE" FuncName="wk_usart1_init" InstanceName="USART1" CodeSection="usart1 function" MainDoNotCallFlag="FALSE"/>
+        <RankSub RankNum="31" FixPosFlag="FALSE" FuncName="wk_uart7_init" InstanceName="UART7" CodeSection="uart7 function" MainDoNotCallFlag="FALSE"/>
+        <RankSub RankNum="35" FixPosFlag="FALSE" FuncName="wk_usb_otghs1_init" InstanceName="USB_OTGHS1" CodeSection="usb_otghs1 function" MainDoNotCallFlag="FALSE"/>
+        <RankSub RankNum="37" FixPosFlag="FALSE" FuncName="wk_spi1_init" InstanceName="SPI1" CodeSection="spi1 function" MainDoNotCallFlag="FALSE"/>
+        <RankSub RankNum="48" FixPosFlag="FALSE" FuncName="wk_crc_init" InstanceName="CRC" CodeSection="crc function" MainDoNotCallFlag="FALSE"/>
+        <RankSub RankNum="52" FixPosFlag="FALSE" FuncName="wk_exint_config" InstanceName="EXINT" CodeSection="exint function" MainDoNotCallFlag="FALSE"/>
+        <RankSub RankNum="65" FixPosFlag="FALSE" FuncName="wk_usb_app_init" InstanceName="USB_DEVICE/USB_HOST" CodeSection="usb_app_init" MainDoNotCallFlag="FALSE"/>
+    </FunctionRankInfo>
 </Root>

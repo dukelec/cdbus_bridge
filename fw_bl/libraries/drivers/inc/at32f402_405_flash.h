@@ -3,7 +3,8 @@
   * @file     at32f402_405_flash.h
   * @brief    at32f402_405 flash header file
   **************************************************************************
-  *                       Copyright notice & Disclaimer
+  *
+  * Copyright (c) 2025, Artery Technology, All rights reserved.
   *
   * The software Board Support Package (BSP) that is made available to 
   * download from Artery official website is the copyrighted work of Artery. 
@@ -42,13 +43,11 @@ extern "C" {
   * @{
   */
 
-/** @defgroup FLASH_exported_constants
+/** @defgroup FLASH_keys
+  * @brief flash keys
   * @{
   */
 
-/**
-  * @brief flash unlock keys
-  */
 #define FLASH_UNLOCK_KEY1                ((uint32_t)0x45670123) /*!< flash operation unlock order key1 */
 #define FLASH_UNLOCK_KEY2                ((uint32_t)0xCDEF89AB) /*!< flash operation unlock order key2 */
 #define FAP_RELIEVE_KEY                  ((uint16_t)0x00A5)     /*!< flash fap relieve key val */

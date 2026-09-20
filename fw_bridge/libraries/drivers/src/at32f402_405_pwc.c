@@ -3,7 +3,8 @@
   * @file     at32f402_405_pwc.c
   * @brief    contains all the functions for the pwc firmware library
   **************************************************************************
-  *                       Copyright notice & Disclaimer
+  *
+  * Copyright (c) 2025, Artery Technology, All rights reserved.
   *
   * The software Board Support Package (BSP) that is made available to
   * download from Artery official website is the copyrighted work of Artery.
@@ -238,9 +239,8 @@ void pwc_standby_mode_enter(void)
   PWC->ctrl_bit.clswef = TRUE;
   PWC->ctrl_bit.lpsel = TRUE;
   SCB->SCR |= 0x04;
-#if defined (__CC_ARM)
-  __force_stores();
-#endif
+  __DSB();
+  __ISB();
   while(1)
   {
     __WFI();

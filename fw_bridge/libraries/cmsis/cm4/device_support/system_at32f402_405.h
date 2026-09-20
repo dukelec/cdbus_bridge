@@ -3,7 +3,8 @@
   * @file     system_at32f402_405.h
   * @brief    cmsis cortex-m4 system header file.
   **************************************************************************
-  *                       Copyright notice & Disclaimer
+  *
+  * Copyright (c) 2025, Artery Technology, All rights reserved.
   *
   * The software Board Support Package (BSP) that is made available to 
   * download from Artery official website is the copyrighted work of Artery. 
@@ -36,6 +37,8 @@ extern "C" {
 /** @addtogroup AT32F402_405_system
   * @{
   */
+
+#define SystemCoreClock                  system_core_clock
 
 /** @defgroup AT32F402_405_system_exported_variables 
   * @{

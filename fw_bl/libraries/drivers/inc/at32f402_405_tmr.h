@@ -3,7 +3,8 @@
   * @file     at32f402_405_tmr.h
   * @brief    at32f402_405 tmr header file
   **************************************************************************
-  *                       Copyright notice & Disclaimer
+  *
+  * Copyright (c) 2025, Artery Technology, All rights reserved.
   *
   * The software Board Support Package (BSP) that is made available to
   * download from Artery official website is the copyrighted work of Artery.
@@ -498,8 +499,7 @@ typedef struct
       __IO uint32_t c3ios                : 1; /* [12] */
       __IO uint32_t c3cios               : 1; /* [13] */
       __IO uint32_t c4ios                : 1; /* [14] */
-      __IO uint32_t reserved2            : 16;/* [30:15] */
-      __IO uint32_t trgout2en            : 1; /* [31] */
+      __IO uint32_t reserved2            : 17;/* [31:15] */
     } ctrl2_bit;
   };
 
@@ -931,7 +931,6 @@ void tmr_sub_mode_select(tmr_type *tmr_x, tmr_sub_mode_select_type sub_mode);
 void tmr_channel_dma_select(tmr_type *tmr_x, tmr_dma_request_source_type cc_dma_select);
 void tmr_hall_select(tmr_type *tmr_x,  confirm_state new_state);
 void tmr_channel_buffer_enable(tmr_type *tmr_x, confirm_state new_state);
-void tmr_trgout2_enable(tmr_type *tmr_x, confirm_state new_state);
 void tmr_trigger_input_select(tmr_type *tmr_x, sub_tmr_input_sel_type trigger_select);
 void tmr_sub_sync_mode_set(tmr_type *tmr_x, confirm_state new_state);
 void tmr_dma_request_enable(tmr_type *tmr_x, tmr_dma_request_type dma_request, confirm_state new_state);
@@ -942,7 +941,6 @@ void tmr_flag_clear(tmr_type *tmr_x, uint32_t tmr_flag);
 void tmr_event_sw_trigger(tmr_type *tmr_x, tmr_event_trigger_type tmr_event);
 void tmr_output_enable(tmr_type *tmr_x, confirm_state new_state);
 void tmr_internal_clock_set(tmr_type *tmr_x);
-void tmr_output_channel_fast_set(tmr_type *tmr_x, tmr_channel_output_fast_type oc_fast);
 void tmr_output_channel_polarity_set(tmr_type *tmr_x, tmr_channel_select_type tmr_channel, \
                                      tmr_polarity_active_type oc_polarity);
 void tmr_external_clock_config(tmr_type *tmr_x, tmr_external_signal_divider_type es_divide, \

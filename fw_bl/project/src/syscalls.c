@@ -4,7 +4,7 @@
   * @file     syscalls.c
   * @brief    minimal system calls file
   **************************************************************************
-  *                       Copyright notice & Disclaimer
+  * Copyright (c) 2025, Artery Technology, All rights reserved.
   *
   * The software Board Support Package (BSP) that is made available to
   * download from Artery official website is the copyrighted work of Artery.
@@ -80,7 +80,6 @@ __attribute__((weak)) int _read(int file, char *ptr, int len)
   return len;
 }
 
-/*
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
   (void)file;
@@ -92,7 +91,6 @@ __attribute__((weak)) int _write(int file, char *ptr, int len)
   }
   return len;
 }
-*/
 
 int _close(int file)
 {

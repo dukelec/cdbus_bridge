@@ -84,7 +84,8 @@ int main(void)
   /* nvic config. */
   wk_nvic_config();
 
-  /* timebase config. */
+  /* timebase config for
+     void wk_delay_ms(uint32_t delay); */
   wk_timebase_init();
 
   /* init gpio function. */
@@ -93,7 +94,8 @@ int main(void)
   /* init dma1 channel1 */
   wk_dma1_channel1_init();
   /* config dma channel transfer parameter */
-  /* user need to modify define values DMAx_CHANNELy_XXX_BASE_ADDR and DMAx_CHANNELy_BUFFER_SIZE in at32xxx_wk_config.h */
+  /* user need to modify define values DMAx_CHANNELy_XXX_BASE_ADDR 
+     and DMAx_CHANNELy_BUFFER_SIZE in at32xxx_wk_config.h */
   wk_dma_channel_config(DMA1_CHANNEL1, 
                         (uint32_t)&SPI1->dt, 
                         DMA1_CHANNEL1_MEMORY_BASE_ADDR, 
@@ -103,7 +105,8 @@ int main(void)
   /* init dma1 channel2 */
   wk_dma1_channel2_init();
   /* config dma channel transfer parameter */
-  /* user need to modify define values DMAx_CHANNELy_XXX_BASE_ADDR and DMAx_CHANNELy_BUFFER_SIZE in at32xxx_wk_config.h */
+  /* user need to modify define values DMAx_CHANNELy_XXX_BASE_ADDR 
+     and DMAx_CHANNELy_BUFFER_SIZE in at32xxx_wk_config.h */
   wk_dma_channel_config(DMA1_CHANNEL2, 
                         (uint32_t)&SPI1->dt, 
                         DMA1_CHANNEL2_MEMORY_BASE_ADDR, 
@@ -113,7 +116,8 @@ int main(void)
   /* init dma2 channel1 */
   wk_dma2_channel1_init();
   /* config dma channel transfer parameter */
-  /* user need to modify define values DMAx_CHANNELy_XXX_BASE_ADDR and DMAx_CHANNELy_BUFFER_SIZE in at32xxx_wk_config.h */
+  /* user need to modify define values DMAx_CHANNELy_XXX_BASE_ADDR 
+     and DMAx_CHANNELy_BUFFER_SIZE in at32xxx_wk_config.h */
   wk_dma_channel_config(DMA2_CHANNEL1, 
                         (uint32_t)&USART1->dt, 
                         DMA2_CHANNEL1_MEMORY_BASE_ADDR, 
@@ -123,7 +127,8 @@ int main(void)
   /* init dma2 channel2 */
   wk_dma2_channel2_init();
   /* config dma channel transfer parameter */
-  /* user need to modify define values DMAx_CHANNELy_XXX_BASE_ADDR and DMAx_CHANNELy_BUFFER_SIZE in at32xxx_wk_config.h */
+  /* user need to modify define values DMAx_CHANNELy_XXX_BASE_ADDR 
+     and DMAx_CHANNELy_BUFFER_SIZE in at32xxx_wk_config.h */
   wk_dma_channel_config(DMA2_CHANNEL2, 
                         (uint32_t)&USART1->dt, 
                         DMA2_CHANNEL2_MEMORY_BASE_ADDR, 
@@ -157,7 +162,7 @@ int main(void)
 
   while(1)
   {
-     wk_usb_app_task();
+    wk_usb_app_task();
 
     /* add user code begin 3 */
 

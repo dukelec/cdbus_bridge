@@ -1,9 +1,10 @@
 /**
   **************************************************************************
-  * @file     at32f402_405_mcudbg.c
-  * @brief    contains all the functions for the mcudbg firmware library
+  * @file     at32f402_405_debug.c
+  * @brief    contains all the functions for the debug firmware library
   **************************************************************************
-  *                       Copyright notice & Disclaimer
+  *
+  * Copyright (c) 2025, Artery Technology, All rights reserved.
   *
   * The software Board Support Package (BSP) that is made available to 
   * download from Artery official website is the copyrighted work of Artery. 

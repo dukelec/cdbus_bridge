@@ -72,15 +72,15 @@ extern "C" {
    otg fs fifo size is 1280 byte
 */
 
-#define USBD_RX_SIZE                     128  /*this value is in terms of 4 bytes*/
-#define USBD_EP0_TX_SIZE                 24   /*this value is in terms of 4 bytes*/
-#define USBD_EP1_TX_SIZE                 20   /*this value is in terms of 4 bytes*/
-#define USBD_EP2_TX_SIZE                 20   /*this value is in terms of 4 bytes*/
-#define USBD_EP3_TX_SIZE                 20   /*this value is in terms of 4 bytes*/
-#define USBD_EP4_TX_SIZE                 20   /*this value is in terms of 4 bytes*/
-#define USBD_EP5_TX_SIZE                 20   /*this value is in terms of 4 bytes*/
-#define USBD_EP6_TX_SIZE                 20   /*this value is in terms of 4 bytes*/
-#define USBD_EP7_TX_SIZE                 20   /*this value is in terms of 4 bytes*/
+#define USBD_RX_SIZE                     0   /*this value is in terms of 4 bytes*/
+#define USBD_EP0_TX_SIZE                 0   /*this value is in terms of 4 bytes*/
+#define USBD_EP1_TX_SIZE                 0   /*this value is in terms of 4 bytes*/
+#define USBD_EP2_TX_SIZE                 0   /*this value is in terms of 4 bytes*/
+#define USBD_EP3_TX_SIZE                 0   /*this value is in terms of 4 bytes*/
+#define USBD_EP4_TX_SIZE                 0   /*this value is in terms of 4 bytes*/
+#define USBD_EP5_TX_SIZE                 0   /*this value is in terms of 4 bytes*/
+#define USBD_EP6_TX_SIZE                 0   /*this value is in terms of 4 bytes*/
+#define USBD_EP7_TX_SIZE                 0   /*this value is in terms of 4 bytes*/
 
 
 /* otg hs device fifo 

@@ -3,7 +3,8 @@
   * @file     at32f402_405_crm.c
   * @brief    contains all the functions for the crm firmware library
   **************************************************************************
-  *                       Copyright notice & Disclaimer
+  *
+  * Copyright (c) 2025, Artery Technology, All rights reserved.
   *
   * The software Board Support Package (BSP) that is made available to 
   * download from Artery official website is the copyrighted work of Artery. 
@@ -72,8 +73,18 @@ void crm_reset(void)
   CRM->pllcfg = 0x000007C1U;
 
   /* reset clkout_sel, clkoutdiv, pllclk_to_adc, hick_to_usb */
-  CRM->misc1 &= 0x00005000U;
-  CRM->misc1 |= 0x000F0000U;
+  FLASH->psr_bit.wtcyc = FLASH_WAIT_CYCLE_1;
+  CRM->misc2_bit.hick_to_sclk_div = CRM_HICK_SCLK_DIV_16;
+  __ISB();
+  CRM->misc1_bit.hick_to_sclk = 1;
+  __ISB();
+  CRM->misc1_bit.hickdiv = 0;
+  __ISB();
+  CRM->misc1 = 0x000F0000U;
+  __ISB();
+  CRM->misc2_bit.hick_to_sclk_div = CRM_HICK_SCLK_DIV_1;
+  __ISB();
+  FLASH->psr_bit.wtcyc = FLASH_WAIT_CYCLE_0;
 
   /* disable all interrupts enable and clear pending bits  */
   CRM->clkint = 0x009F0000U;
@@ -661,9 +672,12 @@ void crm_hick_divider_select(crm_hick_div_6_type value)
     __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
   }
 
-  CRM->misc1_bit.hick_to_sclk = TRUE;
+  CRM->misc1_bit.hick_to_sclk = 1;
+  __ISB();
   CRM->misc1_bit.hickdiv = value;
+  __ISB();
   CRM->misc1_bit.hick_to_sclk = temp_sclk;
+  __ISB();
   crm_hick_sclk_div_set((crm_hick_sclk_div_type)temp_div);
 }
 
@@ -688,9 +702,12 @@ void crm_hick_sclk_frequency_select(crm_hick_sclk_frequency_type value)
     __NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();__NOP();
   }
 
-  CRM->misc1_bit.hick_to_sclk = TRUE;
+  CRM->misc1_bit.hick_to_sclk = 1;
+  __ISB();
   CRM->misc1_bit.hickdiv = CRM_HICK48_NODIV;
+  __ISB();
   CRM->misc1_bit.hick_to_sclk = value;
+  __ISB();
   crm_hick_sclk_div_set((crm_hick_sclk_div_type)temp_div);
 }
 

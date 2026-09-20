@@ -615,7 +615,10 @@ void usbd_suspend_handler(usbd_core_type *udev)
 {
   otg_global_type *usbx = udev->usb_reg;
 
-  if(OTG_DEVICE(usbx)->dsts_bit.suspsts)
+  /* local fix: a second suspend irq without an intervening wakeup must not
+     latch SUSPENDED into old_conn_state, the device would never come back */
+  if(OTG_DEVICE(usbx)->dsts_bit.suspsts &&
+     udev->conn_state != USB_CONN_STATE_SUSPENDED)
   {
     /* save connect state */
     udev->old_conn_state = udev->conn_state;
@@ -647,8 +650,13 @@ void usbd_wakeup_handler(usbd_core_type *udev)
   /* exit suspend mode */
   usb_open_phy_clk(udev->usb_reg);
 
-  /* restore connect state */
-  udev->conn_state = udev->old_conn_state;
+  /* restore connect state
+     local fix: only when still suspended. usbd_reset_handler() runs earlier in
+     usbd_irq_handler(), so a reset and a wakeup flag seen in the same pass
+     would otherwise put the freshly reset device back to CONFIGURED, and the
+     following set_address gets stalled */
+  if(udev->conn_state == USB_CONN_STATE_SUSPENDED)
+    udev->conn_state = udev->old_conn_state;
 
     /* user suspend handler */
   if(udev->class_handler->event_handler != 0)

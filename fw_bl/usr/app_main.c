@@ -19,6 +19,7 @@ cduart_dev_t d_dev = {0};   // uart / usb
 
 static uint8_t usb_rx_buf[512];
 static bool cdc_need_flush = false;
+static bool usb_resumed = false;
 uint32_t *bl_args = (uint32_t *)BL_ARGS;
 
 #define APP_ADDR 0x08006000 // 24K offset
@@ -58,9 +59,10 @@ static void usb_detection(void)
     static uint8_t cdc_dtr_final = 0;
     uint32_t t_cur = get_systick();
 
-    if (otg_core_struct_hs.dev.conn_state < USB_CONN_STATE_CONFIGURED)
-        cdc_dtr = 0;
-
+    // cdc_dtr is deliberately not cleared on bus reset: the host only sends
+    // SET_CONTROL_LINE_STATE when the application opens or closes the port, so
+    // after a reset-resume (pc wake up) it would never be asserted again and
+    // the bridge would stay silent until the port is reopened or replugged
     if (!cdc_dtr) {
         t_usb = t_cur;
         if (csa.usb_online)
@@ -77,6 +79,7 @@ static void usb_detection(void)
             printf("usb: 1 -> 0 (!state)\n");
         csa.usb_online = false;
     } else if (!csa.usb_online && cdc_dtr_final) {
+        usb_resumed = true;
         csa.usb_online = true;
         printf("usb: 0 -> 1\n");
     }
@@ -109,6 +112,19 @@ void app_main(void)
         usb_detection();
 
         if (csa.usb_online) {
+            if (usb_resumed) {
+                usb_resumed = false;
+                // a transfer armed just before the link went down never
+                // completes: usbd_core_in_handler() skips in_handler while the
+                // device is not configured, g_tx_completed would stay 0 forever
+                pcdc->g_tx_completed = 1;
+                if (tx_frame) {
+                    cd_list_put(&frame_free_head, tx_frame);
+                    tx_frame = NULL;
+                }
+                cdc_need_flush = false;
+            }
+
             uint16_t len = usb_vcp_get_rxdata(&otg_core_struct_hs.dev, usb_rx_buf);
             cduart_rx_handle(&d_dev, usb_rx_buf, len);
 

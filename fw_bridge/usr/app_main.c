@@ -39,8 +39,26 @@ static uint8_t usb_rx_buf[512];
 static bool cdc_need_flush = false;
 static uint32_t cdc_rate;
 static uint32_t cdc_rate_final = 115200;
+static uint32_t cache_drop_cnt = 0;
+static volatile bool usb_resumed = false;
 
 bool raw_mode = false; // raw mode: use usart1 instead of cdctl, no data format restrictions
+
+
+// Queue a frame for the host. Keeps FRAME_RESERVE frames in the free pool so
+// the two rx paths can never starve; once the pool runs low (host offline, or
+// not reading) the oldest queued frame is dropped, so the newest data wins.
+void frame_cache_put(list_head_t *head, cd_frame_t *frame)
+{
+    while (frame_free_head.len < FRAME_RESERVE) {
+        cd_frame_t *old = cd_list_get(head);
+        if (!old)
+            break;
+        cd_list_put(&frame_free_head, old);
+        cache_drop_cnt++;
+    }
+    cd_list_put(head, frame);
+}
 
 
 static void data_led_task(void)
@@ -78,6 +96,8 @@ static void dump_hw_status(void)
         d_debug("  r %ld (lost %ld err %ld full %ld), t %ld (cd %ld err %ld)\n",
                 r_dev.rx_cnt, r_dev.rx_lost_cnt, r_dev.rx_error_cnt, r_dev.rx_no_free_node_cnt,
                 r_dev.tx_cnt, r_dev.tx_cd_cnt, r_dev.tx_error_cnt);
+        d_debug("  free %ld, cache %ld (drop %ld), usb %d\n",
+                frame_free_head.len, d_dev.tx_head.len, cache_drop_cnt, csa.usb_online);
         //d_debug("usb: r_cnt %d, t_cnt %d, t_buf %p, t_len %d, t_state %x\n",
         //        usb_rx_cnt, usb_tx_cnt, cdc_tx_buf, cdc_tx_head.len, hcdc->TxState);
     }
@@ -90,9 +110,10 @@ static void usb_detection(void)
     static uint8_t cdc_dtr_final = 0;
     uint32_t t_cur = get_systick();
 
-    if (otg_core_struct_hs.dev.conn_state < USB_CONN_STATE_CONFIGURED)
-        cdc_dtr = 0;
-
+    // cdc_dtr is deliberately not cleared on bus reset: the host only sends
+    // SET_CONTROL_LINE_STATE when the application opens or closes the port, so
+    // after a reset-resume (pc wake up) it would never be asserted again and
+    // the bridge would stay silent until the port is reopened or replugged
     if (!cdc_dtr) {
         t_usb = t_cur;
         if (csa.usb_online)
@@ -109,6 +130,7 @@ static void usb_detection(void)
             printf("usb: 1 -> 0 (!state)\n");
         csa.usb_online = false;
     } else if (!csa.usb_online && cdc_dtr_final) {
+        usb_resumed = true; // set before usb_online: pendsv may run in between
         csa.usb_online = true;
         printf("usb: 0 -> 1 (baudrate %ld)\n", cdc_rate);
     }
@@ -122,6 +144,19 @@ void PendSV_Handler(void)
     static cd_frame_t *tx_frame = NULL;
 
     if (csa.usb_online) {
+        if (usb_resumed) {
+            usb_resumed = false;
+            // a transfer armed just before the link went down never completes:
+            // usbd_core_in_handler() skips in_handler while the device is not
+            // in the configured state, so g_tx_completed would stay 0 forever
+            pcdc->g_tx_completed = 1;
+            if (tx_frame) {
+                cd_list_put(&frame_free_head, tx_frame);
+                tx_frame = NULL;
+            }
+            cdc_need_flush = false;
+        }
+
         if (cdc_rate != 0xcdcd) {
             cdc_rate_final = cdc_rate;
             if (csa.bus_cfg.mode >= 4)
@@ -200,7 +235,7 @@ void PendSV_Handler(void)
         while ((frame = cd_list_get(&d_dev.rx_head)) != NULL)
             cdctl_send_frame(&r_dev.cd_dev, frame);
         while ((frame = cdctl_recv_frame(&r_dev.cd_dev)) != NULL)
-            cd_list_put(&d_dev.tx_head, frame);
+            frame_cache_put(&d_dev.tx_head, frame);
     }
 }
 

@@ -98,7 +98,7 @@ static void rx_handle(const uint8_t *buf, unsigned len)
         memcpy(frm->dat + frm->dat[257], p, sub_len);
         frm->dat[257] += sub_len;
         if (frm != list_entry_safe(raw_rx_head.last, cd_frame_t))
-            cd_list_put(&raw_rx_head, frm);
+            frame_cache_put(&raw_rx_head, frm);
         p += sub_len;
         len -= sub_len;
     }

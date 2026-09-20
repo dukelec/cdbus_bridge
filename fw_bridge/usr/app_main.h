@@ -33,6 +33,9 @@
 #define APP_CONF_VER        0x0203
 
 #define FRAME_MAX           80
+// keep this many frames in the free pool for the rx paths, so caching frames
+// for an offline host can never starve them (the usb rx gate needs > 5)
+#define FRAME_RESERVE       10
 
 
 typedef struct {
@@ -72,6 +75,7 @@ int flash_erase(uint32_t addr, uint32_t len);
 int flash_write(uint32_t addr, uint32_t len, const uint8_t *buf);
 
 extern list_head_t frame_free_head;
+void frame_cache_put(list_head_t *head, cd_frame_t *frame);
 extern cduart_dev_t d_dev;  // usb cdc
 extern volatile uint8_t cdc_dtr;
 extern otg_core_type otg_core_struct_hs;

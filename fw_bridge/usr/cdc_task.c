@@ -84,6 +84,11 @@ bool cdc_bus_active(void)
     return cdc_up() && !cfg_mode() && !raw_mode;
 }
 
+bool cdc_tx_live(void)
+{
+    return cdc_up() && !raw_mode;
+}
+
 void cdc_bus_rx(cd_frame_t *frame)
 {
     frame_cache_put(&d_dev.tx_head, frame);
@@ -115,9 +120,13 @@ static void cdc_rx_task(void)
     while (tud_cdc_available()) {
         // leave the bytes in the usb fifo rather than read what we cannot
         // turn into frames: that is the back pressure the host needs
-        if (!frame_dir_ok(false) || frame_free_head.len <= FRAME_RESERVE)
+        if (!frame_dir_ok(false) || !frame_pool_ready())
             break;
-        uint32_t n = tud_cdc_read(rx_buf, sizeof(rx_buf));
+        // a chunk can parse into a frame every 5 bytes, so never read more
+        // than what the pool holds above its reserve can take
+        uint32_t n = min((uint32_t)sizeof(rx_buf),
+                (frame_free_head.len - FRAME_RESERVE) * 5);
+        n = tud_cdc_read(rx_buf, n);
         if (!n)
             break;
         cduart_rx_handle(&d_dev, rx_buf, n);
@@ -231,7 +240,7 @@ static void raw_feed(const uint8_t *p, unsigned len)
 static void raw_rx_task(void)
 {
     while (tud_cdc_available()) {
-        if (!frame_dir_ok(false) || frame_free_head.len <= FRAME_RESERVE)
+        if (!frame_dir_ok(false) || !frame_pool_ready())
             break;
         uint32_t n = tud_cdc_read(rx_buf, sizeof(rx_buf));
         if (!n)

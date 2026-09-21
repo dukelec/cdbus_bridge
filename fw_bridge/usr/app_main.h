@@ -116,6 +116,13 @@ void bus_tx(cd_frame_t *frame);
 // not take another frame for it. to_host is bus -> host, else host -> bus.
 bool frame_dir_ok(bool to_host);
 uint32_t frame_dir_len(bool to_host);
+// a frame taken back from a host-bound queue nobody is draining: the debug
+// log in a serial port that is closed, the queue of a network host that
+// has stopped taking datagrams. NULL if there is no such frame.
+cd_frame_t *frame_dead_evict(void);
+// true while the pool is above its reserve, taking dead frames back to get
+// there; the to-bus intake asks before it takes a frame
+bool frame_pool_ready(void);
 
 extern uint32_t _estack, _Min_Stack_Size, _Noinit_Size; // linker script symbols
 

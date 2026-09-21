@@ -58,6 +58,12 @@
 #define TX_BURST            8
 #define RX_BURST            4
 
+// how long the endpoint may refuse the staged datagram before the host is
+// taken to be gone. A host that is reading empties the endpoint within a
+// millisecond; one that has not in this long is not reading, whether its
+// interface is down or it has never bound the driver at all.
+#define STALL_MS            200
+
 
 net_cnt_t net_cnt = {0};
 uint8_t net_dev_mac[6];
@@ -83,6 +89,8 @@ enum {
 // it straight into the ntb, so it is never copied to a buffer of our own
 static struct {
     bool        valid;
+    bool        waiting;    // the endpoint refused it at least once
+    uint32_t    t_wait;     // ... since when
     uint8_t     kind;
     uint16_t    size;       // resulting ethernet frame size
     cd_frame_t  *frm;       // released once sent, NULL if there is none
@@ -98,6 +106,11 @@ static struct {
     uint8_t     na_dst[16];
 } xo;
 
+
+// the host has stopped taking datagrams, see STALL_MS. Nothing is queued
+// for it while this holds, and one datagram stays staged as the probe that
+// clears it: the moment the endpoint takes that one, the host is back.
+static bool stalled = false;
 
 static uint8_t rsp_buf[CDN_MAX_PAYLOAD];
 
@@ -301,6 +314,7 @@ static void xmit_release(void)
         xo.frm = NULL;
     }
     xo.valid = false;
+    xo.waiting = false;
 }
 
 // stage the next thing waiting for the host, skipping frames we cannot map
@@ -400,12 +414,6 @@ static bool bus_send(const uint8_t *dst6, uint16_t sport, uint16_t dport,
     cd_frame_t *frm;
     int room;
 
-    if (hw_raw) {
-        // the controller is not the bus right now, drop rather than defer
-        net_cnt.drop_busy++;
-        return true;
-    }
-
     switch (dst6[13]) {
     case CDN_ADDR_L0:
         pc_addr(pkt.src.addr, CDN_ADDR_L0);
@@ -456,7 +464,7 @@ static bool bus_send(const uint8_t *dst6, uint16_t sport, uint16_t dport,
 
     // back off and let the host offer it again, rather than read it in and
     // then have nowhere to put it
-    if (!bus_tx_ready() || frame_free_head.len <= FRAME_RESERVE)
+    if (!bus_tx_ready() || !frame_pool_ready())
         return false;
     frm = cd_list_get(&frame_free_head);
     if (!frm)
@@ -488,7 +496,7 @@ static bool local_node_handle(uint16_t sport, uint16_t dport,
     // The pool rather than the direction's share: net_local_tx() takes a
     // frame back from the direction if it has to, while a share that is
     // already spent would never free itself and this would defer for good.
-    if (frame_free_head.len <= FRAME_RESERVE)
+    if (!frame_pool_ready())
         return false;
 
     rsp_len = comm_service_handle(dport, dat, len, rsp_buf, sizeof(rsp_buf));
@@ -533,6 +541,10 @@ static bool recv_one(const uint8_t *eth, uint16_t size)
     const uint8_t *udp;
     uint16_t ip_len, payload_len, udp_len, sport, dport;
 
+    // in the raw mode the bus belongs to usart1 and the link is reported
+    // down; whatever the host sends anyway has nowhere to go
+    if (hw_raw)
+        return true;
     if (size < ETH_HDR_LEN + IP6_HDR_LEN)
         return true;
     if (get_unaligned_be16(eth + 12) != ETHERTYPE_IPV6)
@@ -619,7 +631,15 @@ void net_init(void)
 
 bool net_bus_active(void)
 {
-    return tud_ready() && !hw_raw;
+    return tud_ready() && !hw_raw && !stalled;
+}
+
+// what the ncm driver reports to the host at enumeration, and again after
+// every bus reset: in the raw mode there is nothing behind the port, so it
+// has no carrier. The hardware choice is made at boot and never changes.
+bool tud_network_default_link_state_cb(void)
+{
+    return !hw_raw;
 }
 
 uint32_t net_queued(void)
@@ -639,12 +659,11 @@ void net_bus_rx(cd_frame_t *frame)
     net_cnt.to_pc++;
 }
 
-static void pc_tx_flush(void)
+// what is queued behind a datagram the host would not take is going nowhere
+static void pc_tx_drop_queued(void)
 {
     cd_frame_t *frm;
 
-    if (xo.valid)
-        xmit_release();
     while ((frm = cd_list_get(&pc_tx_bus)) != NULL)
         cd_list_put(&frame_free_head, frm);
     while ((frm = cd_list_get(&pc_tx_loc)) != NULL)
@@ -653,31 +672,39 @@ static void pc_tx_flush(void)
 
 void net_poll(void)
 {
-    static bool link_up = true;
     int i;
 
-    // in the raw mode the bus belongs to usart1 and there is nothing here to
-    // bridge; say so rather than leave the host with a port to nowhere. The
-    // hardware choice is made once at boot, so this settles immediately.
-    if (link_up == hw_raw) {
-        link_up = !hw_raw;
-        tud_network_link_state(BOARD_TUD_RHPORT, link_up);
-        if (!link_up)
-            pc_tx_flush();
-    }
     if (tud_ready() && !hw_raw) {
         for (i = 0; i < TX_BURST; i++) {
             if (!xo.valid && !pc_tx_pick())
                 break;
-            if (!tud_network_can_xmit(xo.size))
+            if (!tud_network_can_xmit(xo.size)) {
+                // the endpoint is full. Give the host STALL_MS to empty
+                // it; if it does not, it is not reading, and the queue is
+                // only holding frames for nobody. Let them go, keep this
+                // one staged as the probe, and take nothing more from the
+                // bus until it has been sent.
+                if (!xo.waiting) {
+                    xo.waiting = true;
+                    xo.t_wait = get_systick();
+                } else if (!stalled && get_systick() - xo.t_wait > STALL_MS) {
+                    stalled = true;
+                    net_cnt.stall++;
+                    pc_tx_drop_queued();
+                }
                 break;
+            }
             tud_network_xmit(NULL, xo.kind); // calls tud_network_xmit_cb() now
             xmit_release();
+            stalled = false;
         }
-    } else if (xo.valid) {
+    } else {
         // hold nothing back, frame_cache_put() keeps the queues from growing
-        // past what the pool can spare
-        xmit_release();
+        // past what the pool can spare; and a host that went away is no
+        // evidence about the one that plugs in next
+        if (xo.valid)
+            xmit_release();
+        stalled = false;
     }
 
     // keep consuming what the host sends even when there is nothing to

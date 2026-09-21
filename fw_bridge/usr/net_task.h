@@ -33,6 +33,7 @@ typedef struct {
     uint32_t drop_busy;     // bus tx backed up, or the frame pool ran dry
     uint32_t na_sent;
     uint32_t na_drop;
+    uint32_t stall;         // times the host stopped taking datagrams
 } net_cnt_t;
 
 extern net_cnt_t net_cnt;
@@ -41,7 +42,8 @@ extern uint8_t net_dev_mac[6];
 void net_init(void);
 void net_poll(void);
 
-// true while the network port is an endpoint on the bus
+// true while the network port is an endpoint on the bus: the usb device
+// is up, the controller is the bus, and the host is taking what is sent
 bool net_bus_active(void);
 void net_bus_rx(cd_frame_t *frame);
 

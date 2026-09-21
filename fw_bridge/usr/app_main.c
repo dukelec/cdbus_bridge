@@ -60,17 +60,48 @@ bool frame_dir_ok(bool to_host)
 }
 
 /*
- * Queue a frame for a host. The oldest queued frame goes once this
- * direction is at its share or the pool is down to its reserve, so the
- * newest data wins, which is what a bus adapter should do.
+ * A frame held for a host that is not there to take it: the debug log in a
+ * serial port nobody has opened, or the queue of a network host that has
+ * stopped reading. Such a queue is not buffering anything, it is only
+ * keeping frames from the paths that are moving, so it is the first place
+ * to take one back from, whoever is asking.
+ */
+cd_frame_t *frame_dead_evict(void)
+{
+    cd_frame_t *old = NULL;
+
+    if (!cdc_tx_live())
+        old = cdc_tx_evict();
+    if (!old && !net_bus_active())
+        old = net_tx_evict();
+    return old;
+}
+
+bool frame_pool_ready(void)
+{
+    while (frame_free_head.len <= FRAME_RESERVE) {
+        cd_frame_t *old = frame_dead_evict();
+        if (!old)
+            return false;
+        cd_list_put(&frame_free_head, old);
+        cache_drop_cnt++;
+    }
+    return true;
+}
+
+/*
+ * Queue a frame for a host. Once this direction is at its share, or the
+ * pool is down to its reserve, something has to go: first a frame nobody
+ * is going to read, then the oldest of this queue so that the newest data
+ * wins, which is what a bus adapter should do, then whatever else the
+ * direction is sitting on.
  */
 void frame_cache_put(list_head_t *head, cd_frame_t *frame)
 {
     while (!frame_dir_ok(true) || frame_free_head.len < FRAME_RESERVE) {
-        cd_frame_t *old = cd_list_get(head);
-        // whatever else the direction is sitting on, if this queue has
-        // nothing of its own left to give: the debug log with the serial
-        // port closed, or a host bound queue nobody is draining
+        cd_frame_t *old = frame_dead_evict();
+        if (!old)
+            old = cd_list_get(head);
         if (!old)
             old = cdc_tx_evict();
         if (!old)
@@ -158,9 +189,9 @@ static void dump_hw_status(void)
                 frame_free_head.len, cache_drop_cnt,
                 frame_dir_len(true), frame_dir_len(false),
                 csa.usb_online, raw_mode);
-        d_debug("  net: bus %ld, pc %ld, loc %ld, drop f %ld b %ld y %ld\n",
+        d_debug("  net: bus %ld, pc %ld, loc %ld, drop f %ld b %ld y %ld, stall %ld\n",
                 net_cnt.to_bus, net_cnt.to_pc, net_cnt.local,
-                net_cnt.drop_fmt, net_cnt.drop_big, net_cnt.drop_busy);
+                net_cnt.drop_fmt, net_cnt.drop_big, net_cnt.drop_busy, net_cnt.stall);
         d_debug("  cdc: bus %ld, pc %ld, loc %ld, drop y %ld, rate %ld\n",
                 cdc_cnt.to_bus, cdc_cnt.to_pc, cdc_cnt.local,
                 cdc_cnt.drop_busy, cdc_rate);

@@ -28,6 +28,10 @@ void cdc_poll(void);
 // true while the serial port is an endpoint on the bus: open, in data mode,
 // and not swallowing the bus whole the way the raw mode does
 bool cdc_bus_active(void);
+// true while something drains the frames queued for the host: the port is
+// open in the data or the config mode. Not in the raw mode, and not while
+// the port is closed, which is where the boot log waits.
+bool cdc_tx_live(void);
 void cdc_bus_rx(cd_frame_t *frame);
 
 // frames this side is holding, for the host and for the bus

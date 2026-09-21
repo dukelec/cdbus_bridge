@@ -106,8 +106,10 @@ extern bool hw_raw;
 extern bool raw_mode;
 
 void frame_cache_put(list_head_t *head, cd_frame_t *frame);
-// ask before taking a frame for the bus, so that what cannot be sent yet is
-// left where it came from instead of being read in and thrown away
+// the network port asks before taking a frame for the bus, so that what
+// cannot be sent yet is left where it came from instead of being read in
+// and thrown away. The serial port asks frame_dir_ok() instead: its frames
+// are parsed into a queue of its own and handed over from there.
 bool bus_tx_ready(void);
 void bus_tx(cd_frame_t *frame);
 // false once this direction holds its share of the pool; the caller must

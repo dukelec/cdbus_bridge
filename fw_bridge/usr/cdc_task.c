@@ -115,7 +115,7 @@ static void cdc_rx_task(void)
     while (tud_cdc_available()) {
         // leave the bytes in the usb fifo rather than read what we cannot
         // turn into frames: that is the back pressure the host needs
-        if (!bus_tx_ready() || frame_free_head.len <= FRAME_RESERVE)
+        if (!frame_dir_ok(false) || frame_free_head.len <= FRAME_RESERVE)
             break;
         uint32_t n = tud_cdc_read(rx_buf, sizeof(rx_buf));
         if (!n)
@@ -142,17 +142,18 @@ static void cdc_tx_task(void)
     tud_cdc_write_flush();
 }
 
-// what the bus cannot take yet stays in rx_head, which cdc_rx_task() counts
-// against the to-bus share, so the host is eventually made to wait rather
-// than have its frames read in and dropped
+// hand the controller everything the host has framed. Its queue is drained
+// by its own interrupt, and moving a frame there does not change the to-bus
+// share, so the share must not gate this: cdc_rx_task() already stops
+// reading once the share is spent, and gating here as well left the frames
+// in rx_head for good once it alone filled the share.
 static void bus_tx_task(void)
 {
     cd_frame_t *frm;
 
-    while (bus_tx_ready()) {
-        frm = cd_list_get(&d_dev.rx_head);
-        if (!frm)
-            break;
+    if (hw_raw)
+        return;
+    while ((frm = cd_list_get(&d_dev.rx_head)) != NULL) {
         bus_tx(frm);
         cdc_cnt.to_bus++;
     }
@@ -230,7 +231,7 @@ static void raw_feed(const uint8_t *p, unsigned len)
 static void raw_rx_task(void)
 {
     while (tud_cdc_available()) {
-        if (!bus_tx_ready() || frame_free_head.len <= FRAME_RESERVE)
+        if (!frame_dir_ok(false) || frame_free_head.len <= FRAME_RESERVE)
             break;
         uint32_t n = tud_cdc_read(rx_buf, sizeof(rx_buf));
         if (!n)
@@ -321,9 +322,12 @@ void cdc_poll(void)
         }
         // half a stream from a port that is closed is stale, and nothing
         // drains rx_head while it stays closed, so it would hold part of
-        // the to-bus share against the network port for good
+        // the to-bus share against the network port for good. The same
+        // goes for bytes still in the usb fifo, which would otherwise be
+        // parsed the moment the port is opened again.
         while ((frm = cd_list_get(&d_dev.rx_head)) != NULL)
             cd_list_put(&frame_free_head, frm);
+        tud_cdc_read_flush();
         return;
     }
 

@@ -92,22 +92,61 @@ const uint8_t *tud_descriptor_device_cb(void)
 #define CONFIG_TOTAL_LEN    (TUD_CONFIG_DESC_LEN + TUD_CDC_NCM_DESC_LEN + \
                              TUD_CDC_DESC_LEN)
 
-static const uint8_t desc_configuration[] = {
-    TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0, 100),
+// the same set for both speeds, only the bulk packet size differs: 512 is
+// the only legal size at high speed and 64 the largest at full speed, which
+// is what the port gets behind a usb 1.1 hub or on a full speed host
+#define CONFIG_DESCRIPTOR(_bulk_size) \
+    TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0, 100), \
+    TUD_CDC_NCM_DESCRIPTOR(ITF_NUM_NCM, STRID_INTERFACE, STRID_MAC, \
+            EPNUM_NET_NOTIF, 64, EPNUM_NET_OUT, EPNUM_NET_IN, _bulk_size, \
+            CFG_TUD_NET_MTU, 9, \
+            NCM_NETWORK_CAPS_ETH_FILTER | NCM_NETWORK_CAPS_NTB_INPUT_SIZE), \
+    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, STRID_CDC, EPNUM_CDC_NOTIF, 64, \
+            EPNUM_CDC_OUT, EPNUM_CDC_IN, _bulk_size)
 
-    TUD_CDC_NCM_DESCRIPTOR(ITF_NUM_NCM, STRID_INTERFACE, STRID_MAC,
-            EPNUM_NET_NOTIF, 64, EPNUM_NET_OUT, EPNUM_NET_IN, 512,
-            CFG_TUD_NET_MTU, 9,
-            NCM_NETWORK_CAPS_ETH_FILTER | NCM_NETWORK_CAPS_NTB_INPUT_SIZE),
+static const uint8_t desc_hs_configuration[] = { CONFIG_DESCRIPTOR(512) };
+static const uint8_t desc_fs_configuration[] = { CONFIG_DESCRIPTOR(64) };
 
-    TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, STRID_CDC, EPNUM_CDC_NOTIF, 64,
-            EPNUM_CDC_OUT, EPNUM_CDC_IN, 512)
-};
+TU_VERIFY_STATIC(sizeof(desc_hs_configuration) == CONFIG_TOTAL_LEN, "bad config size");
 
 const uint8_t *tud_descriptor_configuration_cb(uint8_t index)
 {
     (void)index;
-    return desc_configuration;
+    return tud_speed_get() == TUSB_SPEED_HIGH ?
+            desc_hs_configuration : desc_fs_configuration;
+}
+
+// a high speed capable device is asked for these two; without them a host
+// that has to fall back to full speed is left with 512 byte bulk endpoints
+// it cannot use
+static const tusb_desc_device_qualifier_t desc_device_qualifier = {
+    .bLength            = sizeof(tusb_desc_device_qualifier_t),
+    .bDescriptorType    = TUSB_DESC_DEVICE_QUALIFIER,
+    .bcdUSB             = 0x0200,
+    .bDeviceClass       = TUSB_CLASS_MISC,
+    .bDeviceSubClass    = MISC_SUBCLASS_COMMON,
+    .bDeviceProtocol    = MISC_PROTOCOL_IAD,
+    .bMaxPacketSize0    = CFG_TUD_ENDPOINT0_SIZE,
+    .bNumConfigurations = 1,
+    .bReserved          = 0
+};
+
+const uint8_t *tud_descriptor_device_qualifier_cb(void)
+{
+    return (const uint8_t *)&desc_device_qualifier;
+}
+
+static uint8_t desc_other_speed[CONFIG_TOTAL_LEN];
+
+const uint8_t *tud_descriptor_other_speed_configuration_cb(uint8_t index)
+{
+    (void)index;
+    // the set for the speed we are not running at, with the type the host
+    // asked for; tinyusb hands the buffer over as is
+    memcpy(desc_other_speed, tud_speed_get() == TUSB_SPEED_HIGH ?
+            desc_fs_configuration : desc_hs_configuration, CONFIG_TOTAL_LEN);
+    desc_other_speed[1] = TUSB_DESC_OTHER_SPEED_CONFIG;
+    return desc_other_speed;
 }
 
 

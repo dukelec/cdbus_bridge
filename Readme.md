@@ -35,7 +35,14 @@ without anything being taken down first.
  - Data received from RS-485 is sent unchanged back to the PC via USB serial.
  - The baud rate set by the PC when opening the USB serial port is used for RS-485 (`baud_l` is automatically limited in arbitration mode).
  - Before that, the bus runs at the rate stored in the config, which is what it comes up with after power on.
- - The PC must enable the DTR option on the USB serial port.
+   Saving the config stores the rates in effect at that moment, so a save
+   made while the port is open at 2 Mbps makes 2 Mbps the boot rate.
+ - The PC must enable the DTR option on the USB serial port. The port
+   counts as open for as long as DTR is asserted, and DTR is deliberately
+   not cleared by a USB reset: if the host resets the bus while a program
+   holds the port (a wake up, a hub replug), the bridge keeps treating the
+   port as open, and the ethernet port does not get the bus back, until
+   the program closes and reopens it.
  - The default RS-485 address of the Bridge is 0. To change it, see below.
  - Raw mode allows arbitrary data transfer without following the CDBUS byte
    format (HW v6.2+). The bus then belongs to the serial port alone and the
@@ -52,6 +59,9 @@ port. Talking to a device is therefore plain IPv6 UDP.
    can use the bus at the same time.
  - Bus traffic goes here whenever the serial port is not open. Close it, or
    leave it alone, and the ethernet port has the bus.
+ - A host that is not reading the port (interface down, driver not bound)
+   is noticed within 200 ms; bus traffic is then dropped rather than queued
+   for it, and queuing resumes the moment the host reads again.
  - The bus comes up at the rate stored in the config, so the serial port
    does not have to be opened once just to pick a rate for this one. To
    change it, write `bus_cfg_baud_h`, save and power cycle.
@@ -95,6 +105,13 @@ and always goes out on the debug uart. The serial port is there from the
 moment the device enumerates, so the boot log, the CSA table included,
 waits in its queue and is still there when the port is opened. If the port
 is never opened, bus traffic takes those frames back as it needs them.
+
+The debug uart (2 Mbps) is fed through a 2 KB ring buffer drained by DMA,
+so printing never holds up the main loop. The ring survives a reset:
+whatever a crash or a watchdog left unsent is printed by the next boot,
+between `--- unsent before reset ---` and `--- end ---`, followed by the
+reset cause. A hard fault prints the fault registers and the faulting pc
+before it hangs, and a deliberate reset flushes the ring first.
 
 <img src="doc/img/cdgui.png">
 

@@ -33,7 +33,7 @@ GIT_VERSION := $(shell \
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -Og
+OPT = -O2
 
 
 #######################################

@@ -36,6 +36,26 @@ static void get_uid(char *buf)
     buf[24] = '\0';
 }
 
+/*
+ * Only flash, sram and the info block may be handed to memcpy. Reading an
+ * address that is not backed by anything hard faults, and the read service
+ * takes its address straight from the host.
+ */
+static bool mem_readable(uint32_t addr, uint32_t len)
+{
+    uint32_t end = addr + len;
+
+    if (end < addr)
+        return false;
+    if (addr >= 0x08000000 && end <= 0x08000000 + 256 * 1024)
+        return true;
+    if (addr >= 0x20000000 && end <= 0x20000000 + 102 * 1024)
+        return true;
+    if (addr >= 0x1ffff000 && end <= 0x1ffff800)
+        return true;
+    return false;
+}
+
 static void init_info_str(void)
 {
     // M: model; S: serial string; HW: hardware version; SW: software version
@@ -77,10 +97,14 @@ static void p8_handler(cd_frame_t *frame)
 
     } else if (*p_dat == 0x00 && p_len == 6) {
         uint32_t addr = get_unaligned32(p_dat + 1);
-        uint8_t *dst_addr = (uint8_t *) addr;
         uint8_t len = min(p_dat[5], CDN_MAX_PAYLOAD - 1);
-        memcpy(p_dat + 1, dst_addr, len);
-        *p_dat = 0;
+        if (!mem_readable(addr, len)) {
+            *p_dat = 1;
+            len = 0;
+        } else {
+            memcpy(p_dat + 1, (const uint8_t *)addr, len);
+            *p_dat = 0;
+        }
         if (reply)
             send_frame(frame, len + 1);
 
@@ -100,6 +124,15 @@ static void p8_handler(cd_frame_t *frame)
         cd_list_put(&frame_free_head, frame);
 }
 
+// a bad offset must read nothing rather than whatever lies past csa
+static uint8_t csa_read_len(uint16_t offset, uint8_t len)
+{
+    if (offset > sizeof(csa_t))
+        return 0;
+    len = min(len, sizeof(csa_t) - offset);
+    return min(len, CDN_MAX_PAYLOAD - 1);
+}
+
 // csa manipulation
 static void p5_handler(cd_frame_t *frame)
 {
@@ -111,7 +144,7 @@ static void p5_handler(cd_frame_t *frame)
 
     if (*p_dat == 0x00 && p_len == 4) {
         uint16_t offset = get_unaligned16(p_dat + 1);
-        uint8_t len = min(p_dat[3], CDN_MAX_PAYLOAD - 1);
+        uint8_t len = csa_read_len(offset, p_dat[3]);
         cd_irq_save(&p5_lock, flags);
         memcpy(p_dat + 1, ((void *) &csa) + offset, len);
         cd_irq_restore(&p5_lock, flags);
@@ -134,7 +167,7 @@ static void p5_handler(cd_frame_t *frame)
 
     } else if (*p_dat == 0x01 && p_len == 4) {
         uint16_t offset = get_unaligned16(p_dat + 1);
-        uint8_t len = min(p_dat[3], CDN_MAX_PAYLOAD - 1);
+        uint8_t len = csa_read_len(offset, p_dat[3]);
         memcpy(p_dat + 1, ((void *) &csa_dft) + offset, len);
         *p_dat = 0;
         if (reply)

@@ -20,6 +20,7 @@
 #include "uart_dma_wr.h"
 #include "net_task.h"
 #include "cdc_task.h"
+#include "dbg_uart.h"
 
 #include "wk_system.h"
 
@@ -114,7 +115,7 @@ void bus_tx(cd_frame_t *frame);
 bool frame_dir_ok(bool to_host);
 uint32_t frame_dir_len(bool to_host);
 
-extern uint32_t _estack, _Min_Stack_Size; // linker script symbols
+extern uint32_t _estack, _Min_Stack_Size, _Noinit_Size; // linker script symbols
 
 void comm_service_init(void);
 void comm_service_poll(void);

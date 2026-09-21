@@ -248,16 +248,19 @@ static void bus_baud_task(void)
 
 void app_main(void)
 {
-    // canary at the bottom of the reserved msp stack area, above the
-    // heap limit enforced by _sbrk, so malloc can never touch it
+    // canary at the bottom of the msp stack area, right above the debug
+    // ring that takes the lowest part of the reservation; both are past the
+    // heap limit enforced by _sbrk, so malloc can never touch them
     volatile uint64_t *stack_check =
-            (uint64_t *)((uint32_t)&_estack - (uint32_t)&_Min_Stack_Size);
+            (uint64_t *)((uint32_t)&_estack - (uint32_t)&_Min_Stack_Size
+                    + (uint32_t)&_Noinit_Size);
 
     // the generated nvic config enables this long before there is a stack to
     // handle it, and the led sequence below takes half a second. tinyusb
     // turns it back on from tusb_rhport_init().
     NVIC_DisableIRQ(OTGHS_IRQn);
 
+    dbg_uart_init(); // before the first print
     gpio_set_val(&led_tx, 1);
     gpio_set_val(&led_rx, 1);
     delay_systick(1);
@@ -323,11 +326,13 @@ void app_main(void)
 
         if (!gpio_get_val(&sw1)) {
             printf("sw1 switch on, reboot...\n");
+            dbg_uart_flush();
             NVIC_SystemReset();
         }
 
         if (*stack_check != 0xababcdcd12123434) {
             printf("stack overflow\n");
+            dbg_uart_flush();
             while (true);
         }
     }

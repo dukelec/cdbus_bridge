@@ -92,7 +92,9 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* add user code begin HardFault_IRQ 0 */
-
+  __asm volatile(
+    "mrs r0, msp\n"
+    "b dbg_hard_fault\n"); /* prints the fault, flushes, never returns */
   /* add user code end HardFault_IRQ 0 */
   /* go to infinite loop when hard fault exception occurs */
   while (1)

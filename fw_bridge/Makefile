@@ -33,7 +33,7 @@ GIT_VERSION := $(shell \
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -Og
+OPT = -O2
 
 
 #######################################
@@ -87,6 +87,7 @@ usr/comm_service.c \
 usr/usb_desc.c \
 usr/net_task.c \
 usr/cdc_task.c \
+usr/dbg_uart.c \
 usr/app_main.c
 
 # ASM sources

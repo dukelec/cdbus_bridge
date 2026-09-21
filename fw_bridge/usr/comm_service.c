@@ -196,18 +196,11 @@ void comm_service_poll(void)
     }
     if (csa.do_reboot) {
         *(uint32_t *)BL_ARGS = 0xcdcd0000 | csa.do_reboot;
+        dbg_uart_flush();
         NVIC_SystemReset();
     }
 }
 
-
-static inline void dbg_transmit(const uint8_t *buf, uint16_t len)
-{
-    for (uint16_t i = 0; i < len; i++) {
-        while (!(UART7->sts & USART_TDBE_FLAG));
-        UART7->dt = *(buf + i);
-    }
-}
 
 // for printf
 int _write(int file, char *data, int len)
@@ -219,6 +212,6 @@ int _write(int file, char *data, int len)
     if (csa.dbg_en)
         cdc_dbg_tx((const uint8_t *)data, min(CDN_MAX_PAYLOAD, len));
 
-    dbg_transmit((uint8_t *)data, len);
+    dbg_uart_write((const uint8_t *)data, len);
     return len;
 }

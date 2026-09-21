@@ -198,22 +198,17 @@ static void usb_clock_init(void)
 }
 
 /*
- * The bus rate is whatever was asked for last, by either the rate the serial
- * port was opened with (which is how every existing tool sets it) or a write
- * to bus_cfg_baud_h through one of the config services. A host that never
- * opens the serial port therefore gets the configured rate.
+ * The bus starts at the rate the config holds and follows the rate the
+ * serial port is opened with after that, which is how every existing tool
+ * sets it. A host that never opens the serial port therefore keeps the
+ * configured rate; changing that one means writing bus_cfg_baud_h, saving
+ * and power cycling.
  */
 static void bus_baud_task(void)
 {
     static uint32_t req_l = 0, req_h = 0;
-    static uint32_t csa_h_bk = 0;
     static uint32_t t_update = 0;
     uint32_t baud_l, baud_h, limit;
-
-    if (csa.bus_cfg.baud_h != csa_h_bk) {
-        csa_h_bk = csa.bus_cfg.baud_h;
-        cdc_rate_final = csa.bus_cfg.baud_h;
-    }
 
     limit = !gpio_get_val(&sw2) ? csa.limit_baudrate1 : csa.limit_baudrate0;
     baud_h = cdc_rate_final;
@@ -241,7 +236,6 @@ static void bus_baud_task(void)
                     DIV_ROUND_CLOSEST(clocks_freq.apb2_freq, USART1->baudr);
             usart_enable(UART_DEV, true);
         }
-        csa_h_bk = csa.bus_cfg.baud_h;
         d_debug("baud rate: %lu %lu\n", csa.bus_cfg.baud_l, csa.bus_cfg.baud_h);
     }
 
@@ -277,11 +271,6 @@ void app_main(void)
         cd_list_put(&frame_free_head, &frame_alloc[i]);
 
     load_conf();
-    // the bus always starts at 115200, whatever the saved config holds: the
-    // rate is something a host asks for, by opening the serial port at it or
-    // by writing bus_cfg_baud_h, and a stored one takes effect before either
-    // can
-    csa.bus_cfg.baud_l = csa.bus_cfg.baud_h = 115200;
     hw_raw = csa.bus_cfg.mode >= 4;
     cdc_init();
     comm_service_init();

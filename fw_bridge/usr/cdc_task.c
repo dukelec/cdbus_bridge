@@ -291,6 +291,7 @@ void cdc_init(void)
 {
     cduart_dev_init(&d_dev, &frame_free_head);
     d_dev.local_mac = 0xff; // the host composes whole frames, take them all
+    // until a host opens the port the bus keeps the configured rate
     cdc_rate_final = csa.bus_cfg.baud_h;
 }
 

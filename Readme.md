@@ -34,6 +34,7 @@ without anything being taken down first.
  - The PC sends complete CDBUS packets (with CRC) via USB serial to the CDBUS Bridge, which forwards them unchanged to the RS-485 bus.
  - Data received from RS-485 is sent unchanged back to the PC via USB serial.
  - The baud rate set by the PC when opening the USB serial port is used for RS-485 (`baud_l` is automatically limited in arbitration mode).
+ - Before that, the bus runs at the rate stored in the config, which is what it comes up with after power on.
  - The PC must enable the DTR option on the USB serial port.
  - The default RS-485 address of the Bridge is 0. To change it, see below.
  - Raw mode allows arbitrary data transfer without following the CDBUS byte
@@ -51,6 +52,9 @@ port. Talking to a device is therefore plain IPv6 UDP.
    can use the bus at the same time.
  - Bus traffic goes here whenever the serial port is not open. Close it, or
    leave it alone, and the ethernet port has the bus.
+ - The bus comes up at the rate stored in the config, so the serial port
+   does not have to be opened once just to pick a rate for this one. To
+   change it, write `bus_cfg_baud_h`, save and power cycle.
  - The address the host holds *is* the bridge's identity on the bus, so it
    has to match `bus_cfg_mac` and `net` on the device (`00` and `00` by
    default).

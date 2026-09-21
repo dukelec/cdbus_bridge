@@ -41,7 +41,10 @@ void load_conf(void)
         memcpy(&csa, (void *)APP_CONF_ADDR, offsetof(csa_t, _end_save));
         csa.conf_from = 1;
     } else if (magic_code == 0xcdcd && (conf_ver >> 8) == (APP_CONF_VER >> 8)) {
-        memcpy(&csa, (void *)APP_CONF_ADDR, offsetof(csa_t, _end_common));
+        // nothing up to the bus settings has moved within this major
+        // version, so a device coming from an older minor keeps its mac
+        // and rates and takes defaults for what came after
+        memcpy(&csa, (void *)APP_CONF_ADDR, offsetof(csa_t, _reserved2));
         csa.conf_from = 2;
         csa.conf_ver = APP_CONF_VER;
     }

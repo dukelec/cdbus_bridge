@@ -87,6 +87,9 @@ typedef struct {
 
 } csa_t; // config status area
 
+// load_conf() relies on both: an older minor version is loaded up to the
+// first, and everything from the second on is versioned by _reserved2
+_Static_assert(offsetof(csa_t, _reserved2) == 0x30, "bus config moved");
 _Static_assert(offsetof(csa_t, ip_pfx) == 0x40, "network config moved");
 
 extern csa_t csa;

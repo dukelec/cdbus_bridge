@@ -67,16 +67,23 @@ extern "C" {
 // ~320 bytes, but the host may hand us a full sized frame and it has to fit.
 #define CFG_TUD_NCM_IN_NTB_MAX_SIZE     2048
 #define CFG_TUD_NCM_OUT_NTB_MAX_SIZE    2048
-#define CFG_TUD_NCM_IN_NTB_N            1
+// two towards the host, so the next datagram can be staged while one block
+// is on the wire, rather than waiting a main loop turn for it to finish
+#define CFG_TUD_NCM_IN_NTB_N            2
 #define CFG_TUD_NCM_OUT_NTB_N           1
 
 // The bus carries short request/response exchanges, so aggregation buys
 // nothing and only adds latency. tinyusb never waits on a timer to fill an
 // NTB, it sends whatever it has as soon as the endpoint is free, so the
-// device to host direction is already immediate. This value is the one the
-// host is told to use for the other direction.
+// device to host direction is already immediate; IN merely caps what may
+// share a block when several are waiting.
+//
+// OUT is what the host is told, and linux does wait on a timer, 400 us and
+// more, for a block to fill up to it. 1 makes it send each datagram as it
+// comes. The receive path parses whatever a host packs regardless, so one
+// that ignores the limit still works.
 #define CFG_TUD_NCM_IN_MAX_DATAGRAMS_PER_NTB    4
-#define CFG_TUD_NCM_OUT_MAX_DATAGRAMS_PER_NTB   4
+#define CFG_TUD_NCM_OUT_MAX_DATAGRAMS_PER_NTB   1
 
 #ifdef __cplusplus
 }

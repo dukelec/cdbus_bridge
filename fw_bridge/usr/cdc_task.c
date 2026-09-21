@@ -66,12 +66,20 @@ void tud_cdc_line_coding_cb(uint8_t itf, const cdc_line_coding_t *coding)
     cdc_rate = coding->bit_rate;
 }
 
+// the host holds the port
+static bool cdc_open(void)
+{
+    return tud_ready() && cdc_dtr;
+}
+
+// ... and may be talked to. Nothing is sent for the first few ms after the
+// port is opened: a program that has not set the tty raw yet still has
+// echo on, and anything of ours it saw then would come back at us, be
+// parsed as incoming frames and put on the bus. Nothing of ours reaches it
+// in that window, so what it sends meanwhile is its own and is kept.
 static bool cdc_up(void)
 {
-    // hold off briefly after the port is opened: a host that still has echo
-    // on would send our own frames back at us, and they would be parsed as
-    // incoming ones and put on the bus
-    return tud_ready() && cdc_dtr && get_systick() - dtr_t > 5;
+    return cdc_open() && get_systick() - dtr_t > 5;
 }
 
 static bool cfg_mode(void)
@@ -123,9 +131,11 @@ static void cdc_rx_task(void)
         if (!frame_dir_ok(false) || !frame_pool_ready())
             break;
         // a chunk can parse into a frame every 5 bytes, so never read more
-        // than what the pool holds above its reserve can take
-        uint32_t n = min((uint32_t)sizeof(rx_buf),
-                (frame_free_head.len - FRAME_RESERVE) * 5);
+        // than what the pool holds above its reserve, or what is left of
+        // the share, can take
+        uint32_t room = min(frame_free_head.len - FRAME_RESERVE,
+                FRAME_DIR_MAX - frame_dir_len(false));
+        uint32_t n = min((uint32_t)sizeof(rx_buf), room * 5);
         n = tud_cdc_read(rx_buf, n);
         if (!n)
             break;
@@ -283,6 +293,8 @@ bool cdc_dbg_tx(const uint8_t *dat, int len)
         return false;
     if (len <= 0 || len > CDN_MAX_PAYLOAD)
         return false;
+    if (!frame_dbg_ready())
+        return false;
     frm = cd_list_get(&frame_free_head);
     if (!frm)
         return false;
@@ -323,7 +335,7 @@ void cdc_poll(void)
         }
     }
 
-    if (!cdc_up()) {
+    if (!cdc_open()) {
         cd_frame_t *frm;
         if (tx_frm) {
             cd_list_put(&frame_free_head, tx_frm);
@@ -333,12 +345,20 @@ void cdc_poll(void)
         // drains rx_head while it stays closed, so it would hold part of
         // the to-bus share against the network port for good. The same
         // goes for bytes still in the usb fifo, which would otherwise be
-        // parsed the moment the port is opened again.
+        // parsed the moment the port is opened again. And for what is
+        // still on its way out: the next program to open the port would
+        // get it before it has set the tty raw, and echo it back at us.
         while ((frm = cd_list_get(&d_dev.rx_head)) != NULL)
             cd_list_put(&frame_free_head, frm);
         tud_cdc_read_flush();
+        tud_cdc_write_clear();
         return;
     }
+    // just opened, see cdc_up(): what the host sends waits in the usb fifo
+    // until the hold-off is over, a request sent right after opening the
+    // port must not be lost to it
+    if (!cdc_up())
+        return;
 
     if (cdc_rate != CDC_CONFIG_RATE && cdc_rate)
         cdc_rate_final = cdc_rate;

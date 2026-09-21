@@ -126,6 +126,10 @@ cd_frame_t *frame_dead_evict(void);
 // true while the pool is above its reserve, taking dead frames back to get
 // there; the to-bus intake asks before it takes a frame
 bool frame_pool_ready(void);
+// whether a line of debug text may take a frame: only from what is spare,
+// never out of the reserve and never in place of a data frame a host is
+// about to read. Text nobody has read yet makes room, the newest line wins.
+bool frame_dbg_ready(void);
 
 extern uint32_t _estack, _Min_Stack_Size, _Noinit_Size; // linker script symbols
 

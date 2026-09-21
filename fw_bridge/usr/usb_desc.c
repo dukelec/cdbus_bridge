@@ -62,7 +62,9 @@ enum {
 static const tusb_desc_device_t desc_device = {
     .bLength            = sizeof(tusb_desc_device_t),
     .bDescriptorType    = TUSB_DESC_DEVICE,
-    .bcdUSB             = 0x0200,
+    // 2.1: windows only asks a device that claims at least that for the
+    // bos descriptor, and so for the ms os 2.0 set behind it
+    .bcdUSB             = 0x0210,
     .bDeviceClass       = TUSB_CLASS_MISC,
     .bDeviceSubClass    = MISC_SUBCLASS_COMMON,
     .bDeviceProtocol    = MISC_PROTOCOL_IAD,
@@ -122,7 +124,7 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index)
 static const tusb_desc_device_qualifier_t desc_device_qualifier = {
     .bLength            = sizeof(tusb_desc_device_qualifier_t),
     .bDescriptorType    = TUSB_DESC_DEVICE_QUALIFIER,
-    .bcdUSB             = 0x0200,
+    .bcdUSB             = 0x0210,
     .bDeviceClass       = TUSB_CLASS_MISC,
     .bDeviceSubClass    = MISC_SUBCLASS_COMMON,
     .bDeviceProtocol    = MISC_PROTOCOL_IAD,

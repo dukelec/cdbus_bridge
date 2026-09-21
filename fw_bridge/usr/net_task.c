@@ -416,7 +416,7 @@ bool net_dbg_tx(const uint8_t *dat, int len)
 {
     uint8_t dst[3];
 
-    if (!net_bus_active())
+    if (!net_bus_active() || !frame_dbg_ready())
         return false;
     pc_addr(dst, CDN_ADDR_L0);
     return net_local_tx(dst, 64, 9, dat, min(len, NET_LOCAL_MAX));

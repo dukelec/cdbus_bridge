@@ -90,6 +90,28 @@ bool frame_pool_ready(void)
 }
 
 /*
+ * A line of debug text is the least valuable thing here, the same text
+ * goes out on the debug uart anyway, so it gets a frame only from what is
+ * spare: not out of the reserve, and not by pushing out a data frame that
+ * a host is about to read. Text nobody has read yet is what makes room,
+ * so the newest line wins over the oldest, and the boot log waiting for a
+ * serial port nobody has opened never grows past the share.
+ */
+bool frame_dbg_ready(void)
+{
+    if (!frame_pool_ready())
+        return false;
+    while (!frame_dir_ok(true)) {
+        cd_frame_t *old = frame_dead_evict();
+        if (!old)
+            return false;
+        cd_list_put(&frame_free_head, old);
+        cache_drop_cnt++;
+    }
+    return true;
+}
+
+/*
  * Queue a frame for a host. Once this direction is at its share, or the
  * pool is down to its reserve, something has to go: first a frame nobody
  * is going to read, then the oldest of this queue so that the newest data

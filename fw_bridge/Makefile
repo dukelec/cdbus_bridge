@@ -82,6 +82,7 @@ cdnet/dev/cdctl_pll_cal.c \
 usr/uart_dma_wr.c \
 usr/config.c \
 usr/comm_service.c \
+usr/dbg_uart.c \
 usr/app_main.c
 
 # ASM sources

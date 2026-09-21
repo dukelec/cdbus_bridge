@@ -234,40 +234,54 @@ static void usb_clock_init(void)
  * sets it. A host that never opens the serial port therefore keeps the
  * configured rate; changing that one means writing bus_cfg_baud_h, saving
  * and power cycling.
+ *
+ * baud_l is derived, not configured: the switch caps it in the arbitration
+ * mode, and it equals baud_h in every other. The saved value only carries
+ * what was in effect at the time of the save.
  */
+static uint32_t baud_req_l = 0, baud_req_h = 0; // what was last asked for
+
+static void bus_baud_calc(uint32_t *baud_l, uint32_t *baud_h)
+{
+    uint32_t limit = !gpio_get_val(&sw2) ? csa.limit_baudrate1 : csa.limit_baudrate0;
+
+    *baud_h = cdc_rate_final;
+    *baud_l = csa.bus_cfg.mode == 1 ? min(*baud_h, limit) : *baud_h;
+}
+
+// csa.bus_cfg ends up holding what the hardware could actually reach
+static void bus_baud_apply(uint32_t baud_l, uint32_t baud_h)
+{
+    if (!hw_raw) {
+        cdctl_set_clk(&r_dev, baud_h);
+        cdctl_set_baud_rate(&r_dev, baud_l, baud_h);
+        cdctl_flush(&r_dev);
+        cdctl_get_baud_rate(&r_dev, &csa.bus_cfg.baud_l, &csa.bus_cfg.baud_h);
+    } else {
+        crm_clocks_freq_type clocks_freq;
+        crm_clocks_freq_get(&clocks_freq);
+        usart_enable(UART_DEV, false);
+        USART1->baudr = max(DIV_ROUND_CLOSEST(clocks_freq.apb2_freq, baud_h), 16);
+        csa.bus_cfg.baud_l = csa.bus_cfg.baud_h =
+                DIV_ROUND_CLOSEST(clocks_freq.apb2_freq, USART1->baudr);
+        usart_enable(UART_DEV, true);
+    }
+    d_debug("baud rate: %lu %lu\n", csa.bus_cfg.baud_l, csa.bus_cfg.baud_h);
+}
+
 static void bus_baud_task(void)
 {
-    static uint32_t req_l = 0, req_h = 0;
     static uint32_t t_update = 0;
-    uint32_t baud_l, baud_h, limit;
+    uint32_t baud_l, baud_h;
 
-    limit = !gpio_get_val(&sw2) ? csa.limit_baudrate1 : csa.limit_baudrate0;
-    baud_h = cdc_rate_final;
-    baud_l = csa.bus_cfg.mode == 1 ? min(baud_h, limit) : baud_h;
-
-    if (baud_l != req_l || baud_h != req_h) {
+    bus_baud_calc(&baud_l, &baud_h);
+    if (baud_l != baud_req_l || baud_h != baud_req_h) {
         gpio_set_val(&led_g, 1);
         gpio_set_val(&led_b, 0);
         t_update = get_systick();
-        req_l = baud_l;
-        req_h = baud_h;
-
-        if (!hw_raw) {
-            cdctl_set_clk(&r_dev, baud_h);
-            cdctl_set_baud_rate(&r_dev, baud_l, baud_h);
-            cdctl_flush(&r_dev);
-            // the controller reports what it could actually reach
-            cdctl_get_baud_rate(&r_dev, &csa.bus_cfg.baud_l, &csa.bus_cfg.baud_h);
-        } else {
-            crm_clocks_freq_type clocks_freq;
-            crm_clocks_freq_get(&clocks_freq);
-            usart_enable(UART_DEV, false);
-            USART1->baudr = max(DIV_ROUND_CLOSEST(clocks_freq.apb2_freq, baud_h), 16);
-            csa.bus_cfg.baud_l = csa.bus_cfg.baud_h =
-                    DIV_ROUND_CLOSEST(clocks_freq.apb2_freq, USART1->baudr);
-            usart_enable(UART_DEV, true);
-        }
-        d_debug("baud rate: %lu %lu\n", csa.bus_cfg.baud_l, csa.bus_cfg.baud_h);
+        baud_req_l = baud_l;
+        baud_req_h = baud_h;
+        bus_baud_apply(baud_l, baud_h);
     }
 
     if (gpio_get_val(&led_g) && get_systick() - t_update > 100) {
@@ -321,9 +335,14 @@ void app_main(void)
     gpio_set_val(&led_b, 1);
     gpio_set_val(&led_g, 0);
 
+    // the rates the controller is brought up with are the ones the task
+    // would ask for, so it has nothing to redo on its first turn
+    bus_baud_calc(&baud_req_l, &baud_req_h);
+    csa.bus_cfg.baud_l = baud_req_l;
+    csa.bus_cfg.baud_h = baud_req_h;
+
     spi_wr_init(&r_spi);
     cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, &r_int, EXINT0_IRQn);
-    cdctl_get_baud_rate(&r_dev, &csa.bus_cfg.baud_l, &csa.bus_cfg.baud_h);
 
     if (!hw_raw) {
         nvic_irq_enable(EXINT0_IRQn, 2, 0);
@@ -335,6 +354,7 @@ void app_main(void)
         nvic_irq_enable(USART1_IRQn, 2, 0);
         uart_dma_wr_init();
         usart_interrupt_enable(UART_DEV, USART_TDC_INT, true);
+        bus_baud_apply(baud_req_l, baud_req_h); // usart1 came up at 115200
     }
 
     net_init();

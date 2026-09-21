@@ -194,22 +194,6 @@ void DebugMon_Handler(void)
 }
 
 /**
-  * @brief  this function handles pendsv_handler exception.
-  * @param  none
-  * @retval none
-  */
-void PendSV_Handler_bk(void)
-{
-  /* add user code begin PendSV_IRQ 0 */
-
-  /* add user code end PendSV_IRQ 0 */
-  /* add user code begin PendSV_IRQ 1 */
-
-  /* add user code end PendSV_IRQ 1 */
-}
-
-
-/**
   * @brief  this function handles systick handler.
   * @param  none
   * @retval none

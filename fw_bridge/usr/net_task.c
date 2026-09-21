@@ -112,7 +112,7 @@ static struct {
 // clears it: the moment the endpoint takes that one, the host is back.
 static bool stalled = false;
 
-static uint8_t rsp_buf[CDN_MAX_PAYLOAD];
+static uint8_t rsp_buf[NET_LOCAL_MAX];
 
 
 //--------------------------------------------------------------------
@@ -341,11 +341,11 @@ static bool pc_tx_pick(void)
             xo.kind = XMIT_UDP;
             xo.frm = frm;
             cdn_set_addr(xo.s_addr, CDN_ADDR_LOCAL, 0, 0);
-            pc_addr(xo.d_addr, CDN_ADDR_L1);
             xo.sport = get_unaligned16(frm->dat);
             xo.dport = get_unaligned16(frm->dat + 2);
-            xo.len = frm->dat[4];
-            xo.dat = frm->dat + 5;
+            memcpy(xo.d_addr, frm->dat + 4, 3);
+            xo.len = frm->dat[7];
+            xo.dat = frm->dat + 8;
             xo.size = ETH_HDR_LEN + IP6_HDR_LEN + UDP_HDR_LEN + xo.len;
             xo.valid = true;
             return true;
@@ -384,11 +384,12 @@ static bool pc_tx_pick(void)
     }
 }
 
-bool net_local_tx(uint16_t sport, uint16_t dport, const uint8_t *dat, int len)
+bool net_local_tx(const uint8_t *dst, uint16_t sport, uint16_t dport,
+        const uint8_t *dat, int len)
 {
     cd_frame_t *frm;
 
-    if (len < 0 || len > CDN_MAX_PAYLOAD)
+    if (len < 0 || len > NET_LOCAL_MAX)
         return false;
     frm = cd_list_get(&frame_free_head);
     if (!frm)
@@ -396,8 +397,9 @@ bool net_local_tx(uint16_t sport, uint16_t dport, const uint8_t *dat, int len)
 
     put_unaligned16(sport, frm->dat);
     put_unaligned16(dport, frm->dat + 2);
-    frm->dat[4] = len;
-    memcpy(frm->dat + 5, dat, len);
+    memcpy(frm->dat + 4, dst, 3);
+    frm->dat[7] = len;
+    memcpy(frm->dat + 8, dat, len);
     frame_cache_put(&pc_tx_loc, frm);
     return true;
 }
@@ -486,9 +488,10 @@ static bool bus_send(const uint8_t *dst6, uint16_t sport, uint16_t dport,
     return true;
 }
 
-static bool local_node_handle(uint16_t sport, uint16_t dport,
-        const uint8_t *dat, uint16_t len)
+static bool local_node_handle(const uint8_t *src6, uint16_t sport,
+        uint16_t dport, const uint8_t *dat, uint16_t len)
 {
+    uint8_t reply_to[3];
     int rsp_len;
 
     // check for room before doing any work: returning false asks the host to
@@ -499,10 +502,19 @@ static bool local_node_handle(uint16_t sport, uint16_t dport,
     if (!frame_pool_ready())
         return false;
 
+    // the host holds two addresses for the same node, level 0 and level 1,
+    // and picks the level 0 one as the source for this destination; answer
+    // the address the request came from, so that a host with only one of
+    // them configured is served too
+    if (pfx_match(src6))
+        memcpy(reply_to, src6 + IP_PFX_LEN, 3);
+    else
+        pc_addr(reply_to, CDN_ADDR_L1);
+
     rsp_len = comm_service_handle(dport, dat, len, rsp_buf, sizeof(rsp_buf));
     net_cnt.local++;
     if (rsp_len >= 0)
-        net_local_tx(dport, sport, rsp_buf, rsp_len);
+        net_local_tx(reply_to, dport, sport, rsp_buf, rsp_len);
     return true;
 }
 
@@ -589,7 +601,7 @@ static bool recv_one(const uint8_t *eth, uint16_t size)
     sport -= csa.port_offset;
 
     if (dst6[13] == CDN_ADDR_LOCAL)
-        return local_node_handle(sport, dport, udp + UDP_HDR_LEN,
+        return local_node_handle(ip + 8, sport, dport, udp + UDP_HDR_LEN,
                 udp_len - UDP_HDR_LEN);
 
     return bus_send(dst6, sport, dport, udp + UDP_HDR_LEN,

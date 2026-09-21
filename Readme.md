@@ -98,7 +98,8 @@ flash) are reachable two ways:
    the target address to `00:00:ff`. The bus is not touched while the port
    is in this mode.
  - **Ethernet**: `fdcd::10:0`, the one address inside the prefix that never
-   reaches the bus. It is a node the firmware serves itself.
+   reaches the bus. It is a node the firmware serves itself, and it answers
+   to whichever of the host's addresses the request came from.
 
 After modifying the configuration, write 1 to `save_conf` to save the changes to flash.
 

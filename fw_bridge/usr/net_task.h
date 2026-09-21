@@ -52,7 +52,13 @@ uint32_t net_queued(void);
 // give back the oldest frame waiting for the host, NULL if there is none
 cd_frame_t *net_tx_evict(void);
 
-// queue a datagram from the local node to the host, false if there is no room
-bool net_local_tx(uint16_t sport, uint16_t dport, const uint8_t *dat, int len);
+// queue a datagram from the local node to the host address dst (a cdnet
+// address inside the prefix), false if there is no room
+bool net_local_tx(const uint8_t *dst, uint16_t sport, uint16_t dport,
+        const uint8_t *dat, int len);
+
+// what a local node reply may carry: the frame also holds the ports, the
+// destination and the length in front of it
+#define NET_LOCAL_MAX       (CD_FRAME_SIZE - 8)
 
 #endif

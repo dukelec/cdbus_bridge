@@ -69,7 +69,7 @@ again.
 
 ```python
 s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-s.bind(("fdcd::80:0", 50040))
+s.bind(("fdcd::80:0", 0xcd00 + 40))     # port_offset + CDNET port 40
 s.sendto(b"...", ("fdcd::80:00fe", 0xcdcd))
 ```
 
@@ -81,14 +81,18 @@ to bind, so a program that wants to talk level 0 cannot simply bind the port
 it wants to be. `port_offset` in the bridge config moves the host's side of
 the mapping out of the way: the host sends from, and is sent to, the CDNET
 port plus the offset, while the ports on the bus side stay as they are. It
-is 0 by default, which changes nothing.
+is `0xcd00` (52480) by default; 0 switches the shift off.
 
-With it set to 20000, binding 20040 makes the program CDNET port 40:
+So binding `0xcd00 + 40` makes the program CDNET port 40:
 
 ```python
-s.bind(("fdcd::80:0", 20000 + 40))
+s.bind(("fdcd::80:0", 0xcd00 + 40))
 s.sendto(b"...", ("fdcd::fe", 5))   # level 0, mac fe, its config service
 ```
+
+Always bind: a socket that does not gets an ephemeral port, which on linux
+lies anywhere in 32768 to 60999 and is below the offset about half the
+time.
 
 `fdcd::10:0` is shifted along with everything else, so one offset covers the
 whole prefix and the bridge is reached the same way a device is. Anything

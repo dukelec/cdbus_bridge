@@ -70,8 +70,12 @@ port. Talking to a device is therefore plain IPv6 UDP.
    default).
  - A CDNET packet has to fit in one CDBUS frame and there is no
    fragmentation, so keep datagrams at 244 bytes or less.
- - `port_offset` shifts the host's own port, for programs that need a port
-   the host would not let them bind; 0 (off) by default.
+ - `port_offset` shifts the host's own port: a program binds
+   `port_offset + <CDNET port>` and is that CDNET port on the bus. It is
+   `0xcd00` (52480) by default, so a level 0 port, which is under 128, needs
+   no root to bind; 0 switches the shift off. A datagram sent from a port
+   below the offset is dropped, so bind explicitly rather than rely on an
+   ephemeral port.
 
 It needs a one-time host setup, see [fw_bridge/host/](fw_bridge/host/). Until
 that is done the serial port works as it always has, so the ethernet port is
@@ -79,7 +83,7 @@ opt-in.
 
 ```python
 s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-s.bind(("fdcd::80:0", 50040))
+s.bind(("fdcd::80:0", 0xcd00 + 40))     # port_offset + CDNET port 40
 s.sendto(b"...", ("fdcd::80:00fe", 0xcdcd))
 ```
 

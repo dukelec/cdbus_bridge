@@ -105,11 +105,14 @@ After modifying the configuration, write 1 to `save_conf` to save the changes to
 
 To restore the default configuration, change the value of `magic_code` to a different value, save it to flash, and then power cycle the device.
 
-Debug output goes to the serial port when `dbg_en` is set (CDNET port 9),
-and always goes out on the debug uart. The serial port is there from the
-moment the device enumerates, so the boot log, the CSA table included,
-waits in its queue and is still there when the port is opened. If the port
-is never opened, bus traffic takes those frames back as it needs them.
+Debug output always goes out on the debug uart, and `dbg_en` sends a copy
+to the host on CDNET port 9: bit 0 (1) to the serial port, bit 1 (2) to the
+ethernet port, from `fdcd::10:0` to the host's level 0 address, 3 for both.
+The serial port is there from the moment the device enumerates, so the boot
+log, the CSA table included, waits in its queue and is still there when the
+port is opened; if the port is never opened, bus traffic takes those frames
+back as it needs them. The ethernet port has no open to wait for, so it
+only carries what is printed while it is up and being read.
 
 The debug uart (2 Mbps) is fed through a 2 KB ring buffer drained by DMA,
 so printing never holds up the main loop. The ring survives a reset:

@@ -205,12 +205,14 @@ void comm_service_poll(void)
 // for printf
 int _write(int file, char *data, int len)
 {
-    // to the serial port only. It is there from the moment the device
-    // enumerates, while the ethernet interface may never come up at all,
-    // and the boot log is printed before either could be. The same text
-    // goes out on the debug uart below in any case.
-    if (csa.dbg_en)
+    // dbg_en bit 0: the serial port, whose queue holds the text until a
+    // host opens the port, the boot log included; bit 1: the ethernet port,
+    // which only takes what is printed while it is up and being read. The
+    // same text goes out on the debug uart below in any case.
+    if (csa.dbg_en & 1)
         cdc_dbg_tx((const uint8_t *)data, min(CDN_MAX_PAYLOAD, len));
+    if (csa.dbg_en & 2)
+        net_dbg_tx((const uint8_t *)data, len);
 
     dbg_uart_write((const uint8_t *)data, len);
     return len;

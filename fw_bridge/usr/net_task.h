@@ -61,4 +61,8 @@ bool net_local_tx(const uint8_t *dst, uint16_t sport, uint16_t dport,
 // destination and the length in front of it
 #define NET_LOCAL_MAX       (CD_FRAME_SIZE - 8)
 
+// queue a line of this bridge's own debug text for the host, false if the
+// port is not up and being read, or there is no room for it
+bool net_dbg_tx(const uint8_t *dat, int len);
+
 #endif

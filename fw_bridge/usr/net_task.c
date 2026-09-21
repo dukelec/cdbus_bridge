@@ -405,6 +405,24 @@ bool net_local_tx(const uint8_t *dst, uint16_t sport, uint16_t dport,
 }
 
 
+/*
+ * The bridge's own debug text, from the local node to the host's level 0
+ * address on port 9, the way a bus device reports its own. Only while the
+ * port is up and being read: the ethernet port has no open to wait for the
+ * way the serial port does, so there is nothing to queue the boot log
+ * for, and it is printed before the port exists anyway.
+ */
+bool net_dbg_tx(const uint8_t *dat, int len)
+{
+    uint8_t dst[3];
+
+    if (!net_bus_active())
+        return false;
+    pc_addr(dst, CDN_ADDR_L0);
+    return net_local_tx(dst, 64, 9, dat, min(len, NET_LOCAL_MAX));
+}
+
+
 //--------------------------------------------------------------------
 // bus bound
 //--------------------------------------------------------------------

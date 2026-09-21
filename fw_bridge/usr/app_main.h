@@ -62,7 +62,7 @@ typedef struct {
     bool            _reserved0;
     bool            save_conf;
 
-    bool            dbg_en;
+    uint8_t         dbg_en;         // bit 0: serial port, bit 1: ethernet port
     #define         _end_common _reserved1
     uint8_t         _reserved1[4];
 

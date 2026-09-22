@@ -342,8 +342,11 @@ void cdc_poll(void)
         // what a closed port left behind is stale: frames nobody drains
         // from rx_head, which would hold to-bus share against the network
         // port for good, bytes in the usb fifo that would be parsed on the
-        // next open, and the half frame the parser is in the middle of
+        // next open, the half frame the parser is in the middle of, and
+        // the raw mode's uart input, which keeps arriving with nobody there
         while ((frm = cd_list_get(&d_dev.rx_head)) != NULL)
+            cd_list_put(&frame_free_head, frm);
+        while ((frm = cd_list_get(&raw_rx_head)) != NULL)
             cd_list_put(&frame_free_head, frm);
         tud_cdc_read_flush();
         d_dev.rx_byte_cnt = 0;

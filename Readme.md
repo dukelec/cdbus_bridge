@@ -23,9 +23,15 @@ Switchs Defination:
  - The PC sends complete CDBUS packets (with CRC) via USB serial to the CDBUS Bridge, which forwards them unchanged to the RS-485 bus.
  - Data received from RS-485 is sent unchanged back to the PC via USB serial.
  - The baud rate set by the PC when opening the USB serial port is used for RS-485 (`baud_l` is automatically limited in arbitration mode).
- - The PC must enable the DTR option on the USB serial port.
+ - The PC must enable the DTR option on the USB serial port. The port
+   counts as open for as long as DTR is asserted, and DTR is deliberately
+   not cleared by a USB reset: if the host resets the bus while a program
+   holds the port (a wake up, a hub replug), the bridge keeps treating the
+   port as open until the program closes and reopens it.
  - The default RS-485 address of the Bridge is 0. To change it, see the next section.
- - Raw mode allows arbitrary data transfer without following the CDBUS byte format (HW v6.2+).
+ - Raw mode allows arbitrary data transfer without following the CDBUS byte
+   format (HW v6.2+). The port carries a plain byte stream then, so no debug
+   output is copied to it.
 
 ## Configuration Mode
 
@@ -38,6 +44,19 @@ The target address should be set to `00:00:ff`.
 After modifying the configuration, write 1 to `save_conf` to save the changes to flash.
 
 To restore the default configuration, change the value of `magic_code` to a different value, save it to flash, and then power cycle the device.
+
+Debug output always goes out on the debug uart, and `dbg_en` sends a copy
+to the host on CDNET port 9. The serial port is there from the moment the
+device enumerates, so the boot log, the CSA table included, waits in its
+queue and is still there when the port is opened; if the port is never
+opened, bus traffic takes those frames back as it needs them.
+
+The debug uart (2 Mbps) is fed through a 2 KB ring buffer drained by DMA,
+so printing never holds up the main loop. The ring survives a reset:
+whatever a crash or a watchdog left unsent is printed by the next boot,
+between `--- unsent before reset ---` and `--- end ---`, followed by the
+reset cause. A hard fault prints the fault registers and the faulting pc
+before it hangs, and a deliberate reset flushes the ring first.
 
 <img src="doc/img/cdgui.png">
 

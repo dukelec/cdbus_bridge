@@ -20,6 +20,7 @@
 
 #include "tusb.h"
 #include "app_main.h"
+#include "usb_desc.h"
 
 #define USB_VID             0x2e3c
 #define USB_PID             0x5742  // 0x5740 is the bootloader, 0x5741 ncm only
@@ -43,14 +44,6 @@ enum {
     ITF_NUM_CDC_DATA,
     ITF_NUM_TOTAL
 };
-
-#define EPNUM_NET_NOTIF     0x81
-#define EPNUM_NET_OUT       0x02
-#define EPNUM_NET_IN        0x82
-#define EPNUM_CDC_NOTIF     0x83
-#define EPNUM_CDC_OUT       0x04
-#define EPNUM_CDC_IN        0x84
-
 
 //--------------------------------------------------------------------
 // device descriptor

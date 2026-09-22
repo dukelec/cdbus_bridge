@@ -157,9 +157,8 @@ static void cduart_rx_reset(cduart_dev_t *dev)
     dev->rx_drop = false;
 }
 
-// the raw mode's host -> uart path: append to the frame already waiting at
-// the end of the uart tx list where possible, so a burst of small usb reads
-// becomes one uart transfer. Returns what was taken; the rest found no frame.
+// raw mode, host -> uart: append to the frame waiting at the end of the uart
+// tx list where possible. Returns what was taken; the rest found no frame.
 static unsigned raw_feed(const uint8_t *p, unsigned len)
 {
     const uint8_t *start = p;
@@ -192,14 +191,9 @@ static unsigned raw_feed(const uint8_t *p, unsigned len)
     return p - start;
 }
 
-/*
- * Parse what the host sent, as much as the pool can take: a chunk parses
- * into a frame every 5 bytes, so one packet can need more frames than the
- * whole pool holds, and reading it in one go took the pool from its reserve
- * straight to zero, where the controller loses whatever comes off the bus.
- * What the pool cannot take yet stays in the buffer, and the next packet
- * stays in the endpoint, which is the back pressure the host needs.
- */
+// parse what the host sent, as much as the pool can take: a frame every 5
+// bytes, so a whole packet could empty the pool under the controller. The
+// rest waits in the buffer and the next packet in the endpoint
 static void usb_rx_task(void)
 {
     while (true) {
@@ -233,12 +227,9 @@ void PendSV_Handler(void)
     if (csa.usb_online) {
         if (usb_resumed) {
             usb_resumed = false;
-            // a transfer armed just before a reset never completes: the reset
-            // closed the endpoint under it and set-configuration opened a
-            // fresh one, so g_tx_completed would stay 0 for good. One armed
-            // before a suspend, or before the port was closed, is still in
-            // the endpoint and completes once the host polls it: nothing to
-            // redo there, and arming another on top of it would corrupt both
+            // a transfer a reset swallowed leaves g_tx_completed at 0 for
+            // good; one still armed, after a suspend or a reopen, completes
+            // once the host polls it and must not have another put on top
             if (!cdc_in_armed()) {
                 pcdc->g_tx_completed = 1;
                 if (tx_frame) {
@@ -257,11 +248,9 @@ void PendSV_Handler(void)
             raw_mode = false;
         }
 
-        // read nothing until the bus is at the rate the host asked for. The
-        // host's first request follows its rate in the same instant, and the
-        // rate is applied from the main loop, after this handler: a request
-        // read here went out at the old rate, or was on the wire while the
-        // controller's clock was being switched
+        // read nothing until the bus is at the rate the host asked for: the
+        // main loop applies it after this handler, and the host's first
+        // request follows the rate in the same instant
         if (cdc_rate_final == cdctl_baud_h)
             usb_rx_task();
 
@@ -291,14 +280,10 @@ void PendSV_Handler(void)
             }
         }
     } else if (!cdc_dtr) {
-        // the port is closed. What the host wrote after closing, or before
-        // its echo was off, was parsed the moment the port was opened again,
-        // glued onto the half frame the parser had been left in; and in the
-        // raw mode the uart keeps delivering with nobody there, so the next
-        // program to open the port got up to a pool of stale bytes first.
-        // Only a closed port though, not one in the hold-off after dtr: a
-        // request sent right after opening the port, which is when every
-        // tool sends one, waits in the endpoint until the hold-off is over
+        // a closed port: what the host wrote after closing, the half frame
+        // the parser is in and the raw mode's uart input would all go to the
+        // next program to open the port. Not during the hold-off after dtr
+        // though, the request sent right after opening waits there
         cd_frame_t *frm;
         if (otg_core_struct_hs.dev.conn_state == USB_CONN_STATE_CONFIGURED)
             usb_vcp_get_rxdata(&otg_core_struct_hs.dev, usb_rx_buf);
@@ -415,8 +400,7 @@ void app_main(void)
             t_update_baud = get_systick();
             __set_BASEPRI(0xc0); // disable pendsv
             // under the mask: PendSV reads the port again once cdctl_baud_h
-            // is what the host asked for, and a bus frame could pend it
-            // between the assignment and the mask otherwise
+            // matches, and a bus frame could pend it before the mask otherwise
             cdctl_baud_l = baud_l;
             cdctl_baud_h = baud_h;
             if (!raw_mode) {

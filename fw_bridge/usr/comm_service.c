@@ -220,8 +220,7 @@ int _write(int file, char *data, int len)
 {
     // never dip into the pool reserve for debug frames: the host may be offline
     // and unable to drain them, while the same text goes out on the debug uart
-    // below in any case. And none at all in the raw mode, whose serial port
-    // carries a byte stream with nothing to put a frame in
+    // below in any case. None in the raw mode, whose port is a byte stream
     if (csa.dbg_en && csa.bus_cfg.mode < 4 && frame_free_head.len > FRAME_RESERVE) {
         cd_frame_t *frm = cd_list_get(&frame_free_head);
         if (frm) {

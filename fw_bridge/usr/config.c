@@ -23,9 +23,8 @@ const csa_t csa_dft = {
 
 csa_t csa;
 
-// what a rate from the flash may be: the host can write anything into the
-// limits, and 0 in the arbitration mode ends as a baud_l of 0, which the
-// controller's divider cannot express
+// the limits come from the flash and the host may write anything into them;
+// 0 in the arbitration mode ends as a baud_l the divider cannot express
 #define BAUD_MIN        1200
 #define BAUD_MAX        50000000
 

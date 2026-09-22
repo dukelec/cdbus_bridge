@@ -35,9 +35,7 @@
 
 #define FRAME_MAX           80
 // keep this many frames in the free pool for the cdctl receive interrupt,
-// the one allocator that cannot wait: caching frames for an offline host,
-// reading in what the host sent and the debug text all back off at this
-// line, so a frame off the wire always has somewhere to go
+// the one allocator that cannot wait; everything else backs off at this line
 #define FRAME_RESERVE       10
 
 

@@ -11,7 +11,6 @@
 
 static char cpu_id[25];
 static char info_str[100];
-static cd_spinlock_t p5_lock = {0};
 
 
 static void send_frame(cd_frame_t *frame, uint8_t p_len)
@@ -136,7 +135,6 @@ static uint8_t csa_read_len(uint16_t offset, uint8_t len)
 // csa manipulation
 static void p5_handler(cd_frame_t *frame)
 {
-    uint32_t flags;
     uint8_t *p_dat = frame->dat + 5;
     uint8_t p_len = frame->dat[2] - 2;
     bool reply = !(*p_dat & 0x80);
@@ -145,9 +143,7 @@ static void p5_handler(cd_frame_t *frame)
     if (*p_dat == 0x00 && p_len == 4) {
         uint16_t offset = get_unaligned16(p_dat + 1);
         uint8_t len = csa_read_len(offset, p_dat[3]);
-        cd_irq_save(&p5_lock, flags);
         memcpy(p_dat + 1, ((void *) &csa) + offset, len);
-        cd_irq_restore(&p5_lock, flags);
         *p_dat = 0;
         if (reply)
             send_frame(frame, len + 1);
@@ -158,9 +154,7 @@ static void p5_handler(cd_frame_t *frame)
         uint8_t *src_addr = p_dat + 3;
         uint16_t start = clip(offset, 0, sizeof(csa_t));
         uint16_t end = clip(offset + len, 0, sizeof(csa_t));
-        cd_irq_save(&p5_lock, flags);
         memcpy(((void *) &csa) + start, src_addr + (start - offset), end - start);
-        cd_irq_restore(&p5_lock, flags);
         *p_dat = 0;
         if (reply)
             send_frame(frame, 1);
@@ -226,8 +220,9 @@ int _write(int file, char *data, int len)
 {
     // never dip into the pool reserve for debug frames: the host may be offline
     // and unable to drain them, while the same text goes out on the debug uart
-    // below in any case
-    if (csa.dbg_en && frame_free_head.len > FRAME_RESERVE) {
+    // below in any case. And none at all in the raw mode, whose serial port
+    // carries a byte stream with nothing to put a frame in
+    if (csa.dbg_en && csa.bus_cfg.mode < 4 && frame_free_head.len > FRAME_RESERVE) {
         cd_frame_t *frm = cd_list_get(&frame_free_head);
         if (frm) {
             len = min(CDN_MAX_PAYLOAD, len);

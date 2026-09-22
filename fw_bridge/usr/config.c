@@ -23,6 +23,20 @@ const csa_t csa_dft = {
 
 csa_t csa;
 
+// what a rate from the flash may be: the host can write anything into the
+// limits, and 0 in the arbitration mode ends as a baud_l of 0, which the
+// controller's divider cannot express
+#define BAUD_MIN        1200
+#define BAUD_MAX        50000000
+
+static void baud_check(uint32_t *baud, uint32_t dft, const char *name)
+{
+    if (*baud >= BAUD_MIN && *baud <= BAUD_MAX)
+        return;
+    d_warn("conf: %s %lu out of range, using %lu\n", name, *baud, dft);
+    *baud = dft;
+}
+
 
 void load_conf(void)
 {
@@ -38,8 +52,11 @@ void load_conf(void)
         csa.conf_from = 2;
         csa.conf_ver = APP_CONF_VER;
     }
-    if (csa.conf_from)
+    if (csa.conf_from) {
         memset(&csa.do_reboot, 0, 3);
+        baud_check(&csa.limit_baudrate0, csa_dft.limit_baudrate0, "limit_baudrate0");
+        baud_check(&csa.limit_baudrate1, csa_dft.limit_baudrate1, "limit_baudrate1");
+    }
 }
 
 int save_conf(void)

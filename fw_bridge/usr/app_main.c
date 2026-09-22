@@ -77,9 +77,12 @@ cd_frame_t *frame_dead_evict(void)
     return old;
 }
 
-bool frame_pool_ready(void)
+// take dead frames back until the pool is above its reserve and, if asked,
+// the to-host direction is within its share; false if that cannot be had
+static bool frame_reclaim(bool host_share)
 {
-    while (frame_free_head.len <= FRAME_RESERVE) {
+    while (frame_free_head.len <= FRAME_RESERVE ||
+            (host_share && !frame_dir_ok(true))) {
         cd_frame_t *old = frame_dead_evict();
         if (!old)
             return false;
@@ -87,6 +90,11 @@ bool frame_pool_ready(void)
         cache_drop_cnt++;
     }
     return true;
+}
+
+bool frame_pool_ready(void)
+{
+    return frame_reclaim(false);
 }
 
 /*
@@ -99,16 +107,7 @@ bool frame_pool_ready(void)
  */
 bool frame_dbg_ready(void)
 {
-    if (!frame_pool_ready())
-        return false;
-    while (!frame_dir_ok(true)) {
-        cd_frame_t *old = frame_dead_evict();
-        if (!old)
-            return false;
-        cd_list_put(&frame_free_head, old);
-        cache_drop_cnt++;
-    }
-    return true;
+    return frame_reclaim(true);
 }
 
 /*
@@ -211,12 +210,11 @@ static void dump_hw_status(void)
                 frame_free_head.len, cache_drop_cnt,
                 frame_dir_len(true), frame_dir_len(false),
                 csa.usb_online, raw_mode);
-        d_debug("  net: bus %ld, pc %ld, loc %ld, drop f %ld b %ld y %ld, stall %ld\n",
-                net_cnt.to_bus, net_cnt.to_pc, net_cnt.local,
-                net_cnt.drop_fmt, net_cnt.drop_big, net_cnt.drop_busy, net_cnt.stall);
-        d_debug("  cdc: bus %ld, pc %ld, loc %ld, drop y %ld, rate %ld\n",
-                cdc_cnt.to_bus, cdc_cnt.to_pc, cdc_cnt.local,
-                cdc_cnt.drop_busy, cdc_rate);
+        d_debug("  net: bus %ld, pc %ld, loc %ld, drop f %ld b %ld, na %ld (drop %ld), stall %ld\n",
+                net_cnt.to_bus, net_cnt.to_pc, net_cnt.local, net_cnt.drop_fmt,
+                net_cnt.drop_big, net_cnt.na_sent, net_cnt.na_drop, net_cnt.stall);
+        d_debug("  cdc: bus %ld, pc %ld, loc %ld, rate %ld\n",
+                cdc_cnt.to_bus, cdc_cnt.to_pc, cdc_cnt.local, cdc_rate);
     }
 }
 
@@ -409,12 +407,6 @@ void app_main(void)
             while (true);
         }
     }
-}
-
-
-void cdctl_rx_cb(cdctl_dev_t *dev, cd_frame_t *frame)
-{
-    // the main loop polls, nothing to wake up
 }
 
 void EXINT0_IRQHandler(void)

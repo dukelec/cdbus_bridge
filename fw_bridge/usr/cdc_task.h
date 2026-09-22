@@ -17,7 +17,6 @@ typedef struct {
     uint32_t to_bus;
     uint32_t to_pc;
     uint32_t local;
-    uint32_t drop_busy;
 } cdc_cnt_t;
 
 extern cdc_cnt_t cdc_cnt;

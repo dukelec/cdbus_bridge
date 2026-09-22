@@ -21,7 +21,6 @@
 
 static char cpu_id[25];
 static char info_str[100];
-static cd_spinlock_t p5_lock = {0};
 
 
 static void get_uid(char *buf)
@@ -81,7 +80,6 @@ static int p1_handler(const uint8_t *req, int req_len, uint8_t *rsp, int rsp_max
 // csa manipulation
 static int p5_handler(const uint8_t *req, int req_len, uint8_t *rsp, int rsp_max)
 {
-    uint32_t flags;
     uint8_t cmd;
     bool reply;
 
@@ -104,13 +102,7 @@ static int p5_handler(const uint8_t *req, int req_len, uint8_t *rsp, int rsp_max
         len = min(len, rsp_max - 1);
 
         rsp[0] = 0;
-        if (cmd == 0x00) {
-            cd_irq_save(&p5_lock, flags);
-            memcpy(rsp + 1, base + offset, len);
-            cd_irq_restore(&p5_lock, flags);
-        } else {
-            memcpy(rsp + 1, base + offset, len);
-        }
+        memcpy(rsp + 1, base + offset, len);
         return reply ? len + 1 : -1;
 
     } else if (cmd == 0x20 && req_len > 3) {
@@ -119,9 +111,7 @@ static int p5_handler(const uint8_t *req, int req_len, uint8_t *rsp, int rsp_max
         int start = clip(offset, 0, (int)sizeof(csa_t));
         int end = clip(offset + len, 0, (int)sizeof(csa_t));
 
-        cd_irq_save(&p5_lock, flags);
         memcpy(((void *)&csa) + start, req + 3 + (start - offset), end - start);
-        cd_irq_restore(&p5_lock, flags);
         rsp[0] = 0;
         return reply ? 1 : -1;
     }

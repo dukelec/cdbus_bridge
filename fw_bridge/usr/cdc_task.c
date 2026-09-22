@@ -129,14 +129,13 @@ static void cdc_rx_task(void)
 {
     while (tud_cdc_available()) {
         // leave the bytes in the usb fifo rather than read what we cannot
-        // turn into frames: that is the back pressure the host needs
-        if (!frame_dir_ok(false) || !frame_pool_ready())
-            break;
-        // a chunk can parse into a frame every 5 bytes, so never read more
+        // turn into frames: that is the back pressure the host needs. A
+        // chunk can parse into a frame every 5 bytes, so never read more
         // than what the pool holds above its reserve, or what is left of
-        // the share, can take. Signed: the controller's receive interrupt
-        // takes from the pool between the check above and here, and a
-        // difference gone negative must not wrap into a huge read
+        // the share, can take; signed, the receive interrupt may have
+        // drawn on the pool since the check
+        if (!frame_pool_ready())
+            break;
         int room = min((int)frame_free_head.len - FRAME_RESERVE,
                 FRAME_DIR_MAX - (int)frame_dir_len(false));
         if (room <= 0)
@@ -176,8 +175,6 @@ static void bus_tx_task(void)
 {
     cd_frame_t *frm;
 
-    if (hw_raw)
-        return;
     while ((frm = cd_list_get(&d_dev.rx_head)) != NULL) {
         bus_tx(frm);
         cdc_cnt.to_bus++;
@@ -331,44 +328,31 @@ void cdc_poll(void)
         uart_dma_rx();
 
     // a staged frame carries its length differently in each mode, so it must
-    // not survive a switch between them
+    // not survive a switch between them, nor the port closing
     bool raw_now = hw_raw && !cfg_mode();
-    if (raw_now != raw_mode) {
-        raw_mode = raw_now;
-        if (tx_frm) {
-            cd_list_put(&frame_free_head, tx_frm);
-            tx_frm = NULL;
-        }
+    bool closed = !cdc_open();
+    if (tx_frm && (raw_now != raw_mode || closed)) {
+        cd_list_put(&frame_free_head, tx_frm);
+        tx_frm = NULL;
     }
+    raw_mode = raw_now;
 
-    if (!cdc_open()) {
+    if (closed) {
         cd_frame_t *frm;
-        if (tx_frm) {
-            cd_list_put(&frame_free_head, tx_frm);
-            tx_frm = NULL;
-        }
-        // half a stream from a port that is closed is stale, and nothing
-        // drains rx_head while it stays closed, so it would hold part of
-        // the to-bus share against the network port for good. The same
-        // goes for bytes still in the usb fifo, which would otherwise be
-        // parsed the moment the port is opened again, and the half frame
-        // the parser may be in the middle of, whose remaining bytes went
-        // with them: a port reopened within the idle timeout would
-        // otherwise get its next frame glued onto that half.
+        // what a closed port left behind is stale: frames nobody drains
+        // from rx_head, which would hold to-bus share against the network
+        // port for good, bytes in the usb fifo that would be parsed on the
+        // next open, and the half frame the parser is in the middle of
         while ((frm = cd_list_get(&d_dev.rx_head)) != NULL)
             cd_list_put(&frame_free_head, frm);
         tud_cdc_read_flush();
         d_dev.rx_byte_cnt = 0;
         d_dev.rx_crc = 0xffff;
         d_dev.rx_drop = false;
-        // And for what is still on its way out: the next program to open
-        // the port would get it before it has set the tty raw, and echo it
-        // back at us. Only while no transfer is armed on the endpoint
-        // though: the usb core takes the tx fifo itself, a packet at a
-        // time, for as long as one is, and a fifo emptied underneath it
-        // leaves the core waiting for bytes that never come, with the
-        // endpoint stuck for good. What is armed goes out to the next
-        // program, as it always did.
+        // and what is still on its way out, which the next program to open
+        // the port would echo back before it has set the tty raw. Not while
+        // a transfer is armed though: the usb core takes the tx fifo itself
+        // then, and a fifo emptied under it leaves the endpoint stuck
         if (!usbd_edpt_busy(BOARD_TUD_RHPORT, EPNUM_CDC_IN))
             tud_cdc_write_clear();
         return;
@@ -379,12 +363,10 @@ void cdc_poll(void)
     if (!cdc_up())
         return;
 
-    // the host sets the rate right after it opens the port, and its first
-    // request follows in the same instant. Nothing is read on the turn the
-    // rate changes: bus_baud_task() runs later in this same loop, so the
-    // request is taken in once the bus is at the new rate, rather than put
-    // on the bus at the old one, or out on the wire while the controller's
-    // clock is being changed underneath it
+    // read nothing on the turn the rate changes: the host's first request
+    // follows its rate in the same instant, and bus_baud_task() runs later
+    // in this loop, so the request is only taken in once the bus is at the
+    // new rate, rather than sent at the old one or while the clock changes
     if (cdc_rate != CDC_CONFIG_RATE && cdc_rate && cdc_rate != cdc_rate_final) {
         cdc_rate_final = cdc_rate;
         return;

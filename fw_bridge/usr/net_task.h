@@ -30,9 +30,8 @@ typedef struct {
     uint32_t local;         // requests served by the local node
     uint32_t drop_fmt;      // could not be expressed as a cdnet frame
     uint32_t drop_big;      // payload larger than one bus frame can carry
-    uint32_t drop_busy;     // bus tx backed up, or the frame pool ran dry
-    uint32_t na_sent;
-    uint32_t na_drop;
+    uint32_t na_sent;       // neighbor advertisements sent
+    uint32_t na_drop;       // solicitations not answered, the queue was full
     uint32_t stall;         // times the host stopped taking datagrams
 } net_cnt_t;
 

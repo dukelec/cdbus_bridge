@@ -36,9 +36,13 @@ cduart_dev_t d_dev = {0};   // usb cdc
 cdctl_dev_t r_dev = {0};    // CDBUS
 
 static uint8_t usb_rx_buf[512];
+static uint16_t usb_rx_len = 0;         // what usb_rx_buf holds of the last packet
+static uint16_t usb_rx_pos = 0;         // ... and how much of it has been parsed
 static bool cdc_need_flush = false;
 static uint32_t cdc_rate;
 static uint32_t cdc_rate_final = 115200;
+static uint32_t cdctl_baud_l = 115200;  // what the bus was last set to
+static uint32_t cdctl_baud_h = 115200;
 static uint32_t cache_drop_cnt = 0;
 static volatile bool usb_resumed = false;
 
@@ -137,6 +141,81 @@ static void usb_detection(void)
 }
 
 
+// the parser back to the start of a frame
+static void cduart_rx_reset(cduart_dev_t *dev)
+{
+    dev->rx_byte_cnt = 0;
+    dev->rx_crc = 0xffff;
+    dev->rx_drop = false;
+}
+
+// the raw mode's host -> uart path: append to the frame already waiting at
+// the end of the uart tx list where possible, so a burst of small usb reads
+// becomes one uart transfer. Returns what was taken; the rest found no frame.
+static unsigned raw_feed(const uint8_t *p, unsigned len)
+{
+    const uint8_t *start = p;
+
+    while (len) {
+        uint32_t flags;
+        cd_irq_save(&raw_tx_head.lock, flags);
+        cd_frame_t *frm = list_entry_safe(raw_tx_head.last, cd_frame_t);
+        if (frm && frm->dat[257] == 255)
+            frm = NULL;
+        if (!frm) {
+            cd_irq_restore(&raw_tx_head.lock, flags);
+            frm = cd_list_get(&frame_free_head);
+            if (!frm)
+                break;
+            frm->dat[257] = 0;
+        }
+        r_dev.tx_cnt++;
+        unsigned sub_len = min(255 - frm->dat[257], len);
+        memcpy(frm->dat + frm->dat[257], p, sub_len);
+        frm->dat[257] += sub_len;
+        if (frm != list_entry_safe(raw_tx_head.last, cd_frame_t))
+            cd_list_put(&raw_tx_head, frm);
+        else
+            cd_irq_restore(&raw_tx_head.lock, flags);
+        uart_dma_tx();
+        p += sub_len;
+        len -= sub_len;
+    }
+    return p - start;
+}
+
+/*
+ * Parse what the host sent, as much as the pool can take: a chunk parses
+ * into a frame every 5 bytes, so one packet can need more frames than the
+ * whole pool holds, and reading it in one go took the pool from its reserve
+ * straight to zero, where the controller loses whatever comes off the bus.
+ * What the pool cannot take yet stays in the buffer, and the next packet
+ * stays in the endpoint, which is the back pressure the host needs.
+ */
+static void usb_rx_task(void)
+{
+    while (true) {
+        // signed: the receive interrupt may have drawn on the pool since
+        int room = (int)frame_free_head.len - FRAME_RESERVE;
+        if (room <= 0)
+            break;
+        if (usb_rx_pos == usb_rx_len) {
+            usb_rx_len = usb_vcp_get_rxdata(&otg_core_struct_hs.dev, usb_rx_buf);
+            usb_rx_pos = 0;
+            if (!usb_rx_len)
+                break;
+        }
+        unsigned n = min(usb_rx_len - usb_rx_pos, room * (raw_mode ? 255 : 5));
+        if (raw_mode) {
+            usb_rx_pos += raw_feed(usb_rx_buf + usb_rx_pos, n);
+        } else {
+            cduart_rx_handle(&d_dev, usb_rx_buf + usb_rx_pos, n);
+            usb_rx_pos += n;
+        }
+    }
+}
+
+
 void PendSV_Handler(void)
 {
     cdc_struct_type *pcdc = (cdc_struct_type *)otg_core_struct_hs.dev.class_handler->pdata;
@@ -165,39 +244,13 @@ void PendSV_Handler(void)
             raw_mode = false;
         }
 
-        if (frame_free_head.len > 5) {
-            uint16_t len = usb_vcp_get_rxdata(&otg_core_struct_hs.dev, usb_rx_buf);
-            if (raw_mode) {
-                uint8_t *p = usb_rx_buf;
-                while (len) {
-                    uint32_t flags;
-                    cd_irq_save(&raw_tx_head.lock, flags);
-                    cd_frame_t *frm = list_entry_safe(raw_tx_head.last, cd_frame_t);
-                    if (frm && frm->dat[257] == 255)
-                        frm = NULL;
-                    if (!frm) {
-                        cd_irq_restore(&raw_tx_head.lock, flags);
-                        frm = cd_list_get(&frame_free_head);
-                        if (!frm)
-                            break;
-                        frm->dat[257] = 0;
-                    }
-                    r_dev.tx_cnt++;
-                    unsigned sub_len = min(255 - frm->dat[257], len);
-                    memcpy(frm->dat + frm->dat[257], p, sub_len);
-                    frm->dat[257] += sub_len;
-                    if (frm != list_entry_safe(raw_tx_head.last, cd_frame_t))
-                        cd_list_put(&raw_tx_head, frm);
-                    else
-                        cd_irq_restore(&raw_tx_head.lock, flags);
-                    uart_dma_tx();
-                    p += sub_len;
-                    len -= sub_len;
-                }
-            } else {
-                cduart_rx_handle(&d_dev, usb_rx_buf, len);
-            }
-        }
+        // read nothing until the bus is at the rate the host asked for. The
+        // host's first request follows its rate in the same instant, and the
+        // rate is applied from the main loop, after this handler: a request
+        // read here went out at the old rate, or was on the wire while the
+        // controller's clock was being switched
+        if (cdc_rate_final == cdctl_baud_h)
+            usb_rx_task();
 
         if (pcdc->g_tx_completed) {
             if (tx_frame) {
@@ -224,6 +277,22 @@ void PendSV_Handler(void)
                 cdc_need_flush = false;
             }
         }
+    } else if (!cdc_dtr) {
+        // the port is closed. What the host wrote after closing, or before
+        // its echo was off, was parsed the moment the port was opened again,
+        // glued onto the half frame the parser had been left in; and in the
+        // raw mode the uart keeps delivering with nobody there, so the next
+        // program to open the port got up to a pool of stale bytes first.
+        // Only a closed port though, not one in the hold-off after dtr: a
+        // request sent right after opening the port, which is when every
+        // tool sends one, waits in the endpoint until the hold-off is over
+        cd_frame_t *frm;
+        if (otg_core_struct_hs.dev.conn_state == USB_CONN_STATE_CONFIGURED)
+            usb_vcp_get_rxdata(&otg_core_struct_hs.dev, usb_rx_buf);
+        usb_rx_len = usb_rx_pos = 0;
+        cduart_rx_reset(&d_dev);
+        while ((frm = cd_list_get(&raw_rx_head)) != NULL)
+            cd_list_put(&frame_free_head, frm);
     }
 
     uart_dma_rx();
@@ -249,8 +318,6 @@ void app_main(void)
             (uint64_t *)((uint32_t)&_estack - (uint32_t)&_Min_Stack_Size
                     + (uint32_t)&_Noinit_Size);
     uint32_t cdc_rate_bk = 0;
-    uint32_t cdctl_baud_l = 115200;
-    uint32_t cdctl_baud_h = 115200;
     uint32_t t_update_baud = 0;
 
     dbg_uart_init(); // before the first print

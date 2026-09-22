@@ -34,8 +34,10 @@
 #define APP_CONF_VER        0x0203
 
 #define FRAME_MAX           80
-// keep this many frames in the free pool for the rx paths, so caching frames
-// for an offline host can never starve them (the usb rx gate needs > 5)
+// keep this many frames in the free pool for the cdctl receive interrupt,
+// the one allocator that cannot wait: caching frames for an offline host,
+// reading in what the host sent and the debug text all back off at this
+// line, so a frame off the wire always has somewhere to go
 #define FRAME_RESERVE       10
 
 

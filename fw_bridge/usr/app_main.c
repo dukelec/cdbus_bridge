@@ -141,6 +141,14 @@ static void usb_detection(void)
 }
 
 
+// whether the cdc in endpoint holds a transfer the host has not polled yet
+static bool cdc_in_armed(void)
+{
+    usbd_core_type *udev = &otg_core_struct_hs.dev;
+    usb_ept_info *ept = &udev->ept_in[USBD_CDC_BULK_IN_EPT & 0x7f];
+    return USB_INEPT(udev->usb_reg, ept->eptn)->diepctl_bit.eptena == SET;
+}
+
 // the parser back to the start of a frame
 static void cduart_rx_reset(cduart_dev_t *dev)
 {
@@ -225,15 +233,20 @@ void PendSV_Handler(void)
     if (csa.usb_online) {
         if (usb_resumed) {
             usb_resumed = false;
-            // a transfer armed just before the link went down never completes:
-            // usbd_core_in_handler() skips in_handler while the device is not
-            // in the configured state, so g_tx_completed would stay 0 forever
-            pcdc->g_tx_completed = 1;
-            if (tx_frame) {
-                cd_list_put(&frame_free_head, tx_frame);
-                tx_frame = NULL;
+            // a transfer armed just before a reset never completes: the reset
+            // closed the endpoint under it and set-configuration opened a
+            // fresh one, so g_tx_completed would stay 0 for good. One armed
+            // before a suspend, or before the port was closed, is still in
+            // the endpoint and completes once the host polls it: nothing to
+            // redo there, and arming another on top of it would corrupt both
+            if (!cdc_in_armed()) {
+                pcdc->g_tx_completed = 1;
+                if (tx_frame) {
+                    cd_list_put(&frame_free_head, tx_frame);
+                    tx_frame = NULL;
+                }
+                cdc_need_flush = false;
             }
-            cdc_need_flush = false;
         }
 
         if (cdc_rate != 0xcdcd) {
@@ -400,9 +413,12 @@ void app_main(void)
             gpio_set_val(&led_g, 1);
             gpio_set_val(&led_b, 0);
             t_update_baud = get_systick();
+            __set_BASEPRI(0xc0); // disable pendsv
+            // under the mask: PendSV reads the port again once cdctl_baud_h
+            // is what the host asked for, and a bus frame could pend it
+            // between the assignment and the mask otherwise
             cdctl_baud_l = baud_l;
             cdctl_baud_h = baud_h;
-            __set_BASEPRI(0xc0); // disable pendsv
             if (!raw_mode) {
                 cdctl_set_clk(&r_dev, cdctl_baud_h);
                 cdctl_set_baud_rate(&r_dev, cdctl_baud_l, cdctl_baud_h);

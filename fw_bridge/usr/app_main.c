@@ -362,7 +362,7 @@ void app_main(void)
     csa.bus_cfg.baud_h = baud_req_h;
 
     spi_wr_init(&r_spi);
-    cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, &r_int, EXINT0_IRQn);
+    cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, &r_int);
 
     if (!hw_raw) {
         nvic_irq_enable(EXINT0_IRQn, 2, 0);

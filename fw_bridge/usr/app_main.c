@@ -351,7 +351,7 @@ void app_main(void)
     gpio_set_val(&led_g, 0);
 
     spi_wr_init(&r_spi);
-    cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, &r_int, EXINT0_IRQn);
+    cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, &r_int);
 
     if (csa.bus_cfg.mode < 4) {
         nvic_irq_enable(EXINT0_IRQn, 2, 0);

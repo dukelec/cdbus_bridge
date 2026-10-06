@@ -205,8 +205,9 @@ static bool addr6_is_ours(const uint8_t *a6)
     case CDN_ADDR_L0:
     case CDN_ADDR_LOCAL:
     case CDN_ADDR_L1:
+    case CDN_ADDR_L1_MC:
     case CDN_ADDR_L1_NET:
-    case CDN_ADDR_MULTI:
+    case CDN_ADDR_L1_NET_MC:
         return true;
     default:
         return false;
@@ -371,6 +372,11 @@ static bool pc_tx_pick(void)
         xo.kind = XMIT_UDP;
         xo.frm = frm;
         memcpy(xo.s_addr, pkt.src.addr, 3);
+        // a device on another net sends as a0, but holds the same 80
+        // address towards the host as one on our net, so that a reply
+        // comes from the address the request went to
+        if (xo.s_addr[0] == CDN_ADDR_L1_NET)
+            xo.s_addr[0] = CDN_ADDR_L1;
         // a level 0 frame reaches the host on its level 0 address
         pc_addr(xo.d_addr, pkt.src.addr[0] == CDN_ADDR_L0 ?
                 CDN_ADDR_L0 : CDN_ADDR_L1);
@@ -441,9 +447,15 @@ static bool bus_send(const uint8_t *dst6, uint16_t sport, uint16_t dport,
         pkt._d_mac = dst6[15];
         break;
 
-    case CDN_ADDR_MULTI:
+    case CDN_ADDR_L1_MC:
+        pc_addr(pkt.src.addr, CDN_ADDR_L1);
+        cdn_set_addr(pkt.dst.addr, CDN_ADDR_L1_MC, dst6[14], dst6[15]);
+        pkt._d_mac = dst6[15];
+        break;
+
+    case CDN_ADDR_L1_NET_MC:
         pc_addr(pkt.src.addr, CDN_ADDR_L1_NET);
-        cdn_set_addr(pkt.dst.addr, CDN_ADDR_MULTI, dst6[14], dst6[15]);
+        cdn_set_addr(pkt.dst.addr, CDN_ADDR_L1_NET_MC, dst6[14], dst6[15]);
         pkt._d_mac = dst6[15];
         break;
 

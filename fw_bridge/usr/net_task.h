@@ -13,12 +13,16 @@
 /*
  * The last 3 bytes of an ipv6 address inside our prefix are a CDNET address,
  * [type, net, mac]. Everything above those 3 bytes has to match the prefix.
+ * A level 1 type (bit7 set) is the cdnet header byte, bit5: MULTI_NET,
+ * bit4: MULTICAST. Towards the host a device has a single level 1 address,
+ * type 80, whether it is on our net or not.
  */
 #define CDN_ADDR_L0         0x00    // level 0, local link
 #define CDN_ADDR_LOCAL      0x10    // served by this firmware, not on the bus
 #define CDN_ADDR_L1         0x80    // level 1, local link
-#define CDN_ADDR_L1_NET     0xa0    // level 1, routed
-#define CDN_ADDR_MULTI      0xf0    // level 1, multicast
+#define CDN_ADDR_L1_MC      0x90    // level 1, multicast on our net
+#define CDN_ADDR_L1_NET     0xa0    // level 1, routed (alias of L1 from the host)
+#define CDN_ADDR_L1_NET_MC  0xb0    // level 1, multicast across nets
 
 #define IP_PFX_LEN          13      // a /104
 

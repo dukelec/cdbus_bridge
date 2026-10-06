@@ -55,8 +55,15 @@ unchanged.
 | `fdcd::fe`      | `00:00:fe` | level 0, mac fe                    |
 | `fdcd::80:00fe` | `80:00:fe` | level 1, mac fe on our own net     |
 | `fdcd::80:01fe` | `a0:01:fe` | level 1 on another net, via router |
-| `fdcd::f0:00ff` | `f0:00:ff` | level 1 multicast                  |
+| `fdcd::90:00ff` | `90:00:ff` | level 1 multicast, our own net     |
+| `fdcd::b0:00ff` | `b0:00:ff` | level 1 multicast, cross net       |
 | `fdcd::10:0`    | --         | **the bridge itself**              |
+
+The level byte is `00` for level 0, `80` for level 1 and `90` or `b0` for a
+multicast. Whether a level 1 packet stays on the link or goes to the router is
+decided by the net byte, so a device has one level 1 address wherever it is: a
+frame from another net arrives from `fdcd::80:NNMM` as well, and `a0` is
+accepted as an alias of `80` when sending.
 
 `fdcd::10:0` is the one address that never reaches the bus. It is a node the
 firmware serves on its own, offering the same services the serial port's

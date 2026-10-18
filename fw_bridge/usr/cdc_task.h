@@ -46,6 +46,5 @@ bool cdc_dbg_tx(const uint8_t *dat, int len);
 // while the port is open; see bus_baud_task()
 extern uint32_t cdc_rate;
 extern uint32_t cdc_rate_final;
-extern volatile bool cdc_dtr;
 
 #endif

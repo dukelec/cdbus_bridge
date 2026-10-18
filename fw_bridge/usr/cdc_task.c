@@ -44,23 +44,17 @@ uint32_t cdc_rate = 0;
 uint32_t cdc_rate_final = 0;
 
 /*
- * Deliberately not cleared on bus reset. The host only sends
- * SET_CONTROL_LINE_STATE when the application opens or closes the port, so
- * after a reset-resume (a pc waking up) it would never be asserted again
- * and the port would stay silent until it is reopened or replugged.
+ * DTR is the stack's line state, which a bus reset clears along with the
+ * rest of the class state. That is the right thing: after a reset the host
+ * has no port open on us until it says so again, and every host does, since
+ * a reset breaks the handle its program held (linux hangs the tty up on a
+ * reset-resume, windows and macos enumerate a new device). Keeping the old
+ * value across a reset was tried once, for a wake up stall that turned out
+ * to be the usb core's own suspend handling, and only cost the ethernet
+ * port the bus whenever a host went away without closing the port first.
  */
-volatile bool cdc_dtr = false;
-static uint32_t dtr_t = 0;
+static uint32_t dtr_t = 0;      // when the port was last seen opening
 
-
-void tud_cdc_line_state_cb(uint8_t itf, bool dtr, bool rts)
-{
-    (void)itf;
-    (void)rts;
-    if (dtr && !cdc_dtr)
-        dtr_t = get_systick();
-    cdc_dtr = dtr;
-}
 
 void tud_cdc_line_coding_cb(uint8_t itf, const cdc_line_coding_t *coding)
 {
@@ -71,7 +65,7 @@ void tud_cdc_line_coding_cb(uint8_t itf, const cdc_line_coding_t *coding)
 // the host holds the port
 static bool cdc_open(void)
 {
-    return tud_ready() && cdc_dtr;
+    return tud_ready() && tud_cdc_connected();
 }
 
 // ... and may be talked to. Nothing is sent for the first few ms after the
@@ -322,6 +316,16 @@ void cdc_init(void)
 
 void cdc_poll(void)
 {
+    static bool open_last = false;
+    bool open = cdc_open();
+
+    // the opening edge, taken here rather than in the line state callback so
+    // that a port the stack closed on its own (a bus reset) gets its hold-off
+    // again when the host reopens it
+    if (open && !open_last)
+        dtr_t = get_systick();
+    open_last = open;
+
     // drain the uart dma ring whatever the port is doing, otherwise it wraps
     // unnoticed and the next read picks up from the wrong place
     if (hw_raw)
@@ -330,7 +334,7 @@ void cdc_poll(void)
     // a staged frame carries its length differently in each mode, so it must
     // not survive a switch between them, nor the port closing
     bool raw_now = hw_raw && !cfg_mode();
-    bool closed = !cdc_open();
+    bool closed = !open;
     if (tx_frm && (raw_now != raw_mode || closed)) {
         cd_list_put(&frame_free_head, tx_frm);
         tx_frm = NULL;

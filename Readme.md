@@ -38,11 +38,9 @@ without anything being taken down first.
    Saving the config stores the rates in effect at that moment, so a save
    made while the port is open at 2 Mbps makes 2 Mbps the boot rate.
  - The PC must enable the DTR option on the USB serial port. The port
-   counts as open for as long as DTR is asserted, and DTR is deliberately
-   not cleared by a USB reset: if the host resets the bus while a program
-   holds the port (a wake up, a hub replug), the bridge keeps treating the
-   port as open, and the ethernet port does not get the bus back, until
-   the program closes and reopens it.
+   counts as open for as long as DTR is asserted. A USB reset clears it,
+   as it does the rest of the device state, and the host asserts it again
+   when its program reopens the port, which it has to after a reset anyway.
  - The default RS-485 address of the Bridge is 0. To change it, see below.
  - Raw mode allows arbitrary data transfer without following the CDBUS byte
    format (HW v6.2+). The bus then belongs to the serial port alone and the

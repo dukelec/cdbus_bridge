@@ -59,10 +59,13 @@ static void usb_detection(void)
     static uint8_t cdc_dtr_final = 0;
     uint32_t t_cur = get_systick();
 
-    // cdc_dtr is deliberately not cleared on bus reset: the host only sends
-    // SET_CONTROL_LINE_STATE when the application opens or closes the port, so
-    // after a reset-resume (pc wake up) it would never be asserted again and
-    // the bridge would stay silent until the port is reopened or replugged
+    // a bus reset clears the line state like the rest of the device state;
+    // the host asserts dtr again when its program reopens the port, which a
+    // reset forces it to. A suspend is not a reset: the state is SUSPENDED
+    // then, above CONFIGURED, and the port stays open across it
+    if (otg_core_struct_hs.dev.conn_state < USB_CONN_STATE_CONFIGURED)
+        cdc_dtr = 0;
+
     if (!cdc_dtr) {
         t_usb = t_cur;
         if (csa.usb_online)

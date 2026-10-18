@@ -132,7 +132,11 @@ For other hardware versions, please switch to the corresponding branch.
 
 The `tinyusb` submodule is pinned at an upstream commit rather than at a
 release tag, because `0.21.0` predates a batch of `usbd.c` fixes for ways
-the device can wedge until it is replugged. Nothing extra to run.
+the device can wedge until it is replugged. On top of that `make` applies
+the patches in `fw_bridge/patches/tinyusb/` (a dwc2 fix for a device that
+stays suspended after the host wakes up) and leaves them applied; `make
+tinyusb-unpatch` takes them out before the submodule is moved. Nothing
+extra to run.
 
 ## Test
 

@@ -1,0 +1,37 @@
+dwc2: drop a stale USBSUSP flag instead of signalling a suspend
+
+Applied by `make` on top of the pinned upstream commit, see the Makefile.
+
+The driver masks USBSUSPM from a suspend until the next WKUINT. A further
+suspend entry in that window sets GINTSTS.USBSUSP without an interrupt, and
+the unmask on wakeup then delivers it right after RESUME, on a bus that is
+running again: the stack ends up suspended for good, and every later wakeup
+repeats the pattern. Seen on an AT32F405 behind a hub across a host sleep.
+DSTS.SUSPSTS is the live state, so a flag seen while the core is not in
+suspend is stale and only cleared.
+
+diff --git a/src/portable/synopsys/dwc2/dcd_dwc2.c b/src/portable/synopsys/dwc2/dcd_dwc2.c
+index f13372532..ffe82ae31 100644
+--- a/src/portable/synopsys/dwc2/dcd_dwc2.c
++++ b/src/portable/synopsys/dwc2/dcd_dwc2.c
+@@ -1256,8 +1256,18 @@ void dcd_int_handler(uint8_t rhport) {
+ 
+   if (gintsts & GINTSTS_USBSUSP) {
+     dwc2->gintsts = GINTSTS_USBSUSP;
+-    dwc2->gintmsk &= ~GINTMSK_USBSUSPM;
+-    dcd_event_bus_signal(rhport, DCD_EVENT_SUSPEND, true);
++    // USBSUSP records the entry into suspend, it is not a level. It is masked
++    // from here until the next WKUINT, and a further suspend entry during that
++    // time (seen on an AT32F405 behind a hub across a host sleep) sets the
++    // flag again without an interrupt. The unmask on wakeup then delivers it
++    // right after RESUME, on a bus that is running again, and the stack stays
++    // suspended for good: every later wakeup repeats the pattern. DSTS.SUSPSTS
++    // is the live state, so a flag seen while the core is not in suspend is
++    // stale and only cleared.
++    if (dwc2->dsts & DSTS_SUSPSTS) {
++      dwc2->gintmsk &= ~GINTMSK_USBSUSPM;
++      dcd_event_bus_signal(rhport, DCD_EVENT_SUSPEND, true);
++    }
+   }
+ 
+   if (gintsts & GINTSTS_WKUINT) {

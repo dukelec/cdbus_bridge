@@ -196,6 +196,30 @@ all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET
 #######################################
 # list of objects
 OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
+
+# local fixes on top of the pinned tinyusb commit: each patch is applied once,
+# before any tinyusb object is built, and left in place (the submodule is
+# ignore = dirty for that). tinyusb-unpatch takes them out again, which is what
+# to do before moving the submodule to another commit.
+TUSB_PATCHES = $(sort $(wildcard patches/tinyusb/*.patch))
+TUSB_OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(filter tinyusb/%,$(C_SOURCES:.c=.o))))
+
+.PHONY: tinyusb-patch tinyusb-unpatch
+tinyusb-patch:
+	@for p in $(TUSB_PATCHES); do \
+		if ! git -C tinyusb apply --check --reverse ../$$p >/dev/null 2>&1; then \
+			echo "applying $$p"; git -C tinyusb apply ../$$p || exit 1; \
+		fi; \
+	done
+
+tinyusb-unpatch:
+	@for p in $(TUSB_PATCHES); do \
+		if git -C tinyusb apply --check --reverse ../$$p >/dev/null 2>&1; then \
+			echo "removing $$p"; git -C tinyusb apply --reverse ../$$p || exit 1; \
+		fi; \
+	done
+
+$(TUSB_OBJECTS): | tinyusb-patch
 vpath %.c $(sort $(dir $(C_SOURCES)))
 # list of ASM program objects
 OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))

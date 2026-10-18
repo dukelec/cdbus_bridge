@@ -9,3 +9,4 @@
 [submodule "fw_bridge/tinyusb"]
 	path = fw_bridge/tinyusb
 	url = https://github.com/hathach/tinyusb.git
+	ignore = dirty

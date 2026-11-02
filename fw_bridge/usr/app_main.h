@@ -12,10 +12,10 @@
 
 #include "cd_utils.h"
 #include "cd_list.h"
-#include "cd_debug.h"
 #include "cdbus_uart.h"
 #include "cdctl_it.h"
 #include "modbus_crc.h"
+#include "dbg_uart.h"
 
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
@@ -26,9 +26,12 @@
 
 #define BL_ARGS             0x20000000 // first word
 #define APP_CONF_ADDR       0x0801F800 // last page
-#define APP_CONF_VER        0x0203
+#define APP_CONF_VER        0x0204
 
 #define FRAME_MAX           80
+// keep this many frames in the free pool for the cdctl receive interrupt,
+// the one allocator that cannot wait; everything else backs off at this line
+#define FRAME_RESERVE       10
 
 #define CDC_RX_SIZE         64  // usb full-speed bulk transfers up to 64 bytes
 
@@ -81,16 +84,18 @@ extern volatile int usb_tx_cnt;
 extern list_head_t cdc_rx_head;
 extern list_head_t cdc_rx_free_head;
 extern list_head_t frame_free_head;
-extern cduart_dev_t d_dev;  // uart / usb
+void frame_cache_put(list_head_t *head, cd_frame_t *frame);
+void cdc_rx_drop(void);
+extern cduart_dev_t d_dev;  // usb cdc
 extern volatile uint8_t cdc_dtr;
 extern volatile uint32_t cdc_rate;
 extern volatile uint32_t pendsv_val;
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
-extern uint32_t end; // end of bss
+extern uint32_t _estack, _Min_Stack_Size, _Noinit_Size; // linker script symbols
 
-void common_service_init(void);
-void common_service_routine(void);
+void comm_service_init(void);
+void comm_service_poll(void);
 
 void app_main(void);
 void load_conf(void);

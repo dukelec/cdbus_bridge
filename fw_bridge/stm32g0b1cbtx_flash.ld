@@ -55,8 +55,13 @@ ENTRY(Reset_Handler)
 /* Highest address of the user mode stack */
 _estack = ORIGIN(RAM) + LENGTH(RAM);    /* end of RAM */
 /* Generate a link error if heap and stack don't fit into RAM */
-_Min_Heap_Size = 0x200;      /* required amount of heap  */
-_Min_Stack_Size = 0x400; /* required amount of stack */
+_Min_Heap_Size = 0x1000;      /* required amount of heap  */
+/* The lowest _Noinit_Size of the stack reservation is the .noinit section,
+   kept across resets (the debug ring), and the stack canary sits right above
+   it. _sbrk() caps the heap at _estack - _Min_Stack_Size, so the heap cannot
+   reach the ring either. */
+_Noinit_Size = 0x900;
+_Min_Stack_Size = 0x4000 + _Noinit_Size;
 
 /* Specify the memory areas */
 MEMORY
@@ -173,6 +178,19 @@ SECTIONS
     . = ALIGN(8);
   } >RAM
 
+  /* Not loaded and not zeroed, so it survives a reset. Pinned at a fixed
+     address so that neither this image nor the bootloader, whose stack
+     starts at the same _estack, runs into it by accident; the linker
+     reports an overlap if .bss ever grows that far. */
+  .noinit (_estack - _Min_Stack_Size) (NOLOAD) :
+  {
+    . = ALIGN(4);
+    _snoinit = .;
+    KEEP(*(.noinit*))
+    . = ALIGN(4);
+    _enoinit = .;
+  } >RAM
+  ASSERT(_enoinit - _snoinit <= _Noinit_Size, ".noinit does not fit its reservation")
   
 
   /* Remove information from the standard libraries */

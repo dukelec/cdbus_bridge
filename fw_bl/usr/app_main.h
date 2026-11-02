@@ -21,6 +21,9 @@
 #define APP_CONF_VER        0x0200
 
 #define FRAME_MAX           80
+// keep this many frames in the free pool for the rx path, so debug
+// frames queued for an offline host can never starve it
+#define FRAME_RESERVE       10
 
 typedef enum {
     LED_POWERON = 0,
@@ -78,14 +81,14 @@ extern volatile int usb_rx_cnt;
 extern volatile int usb_tx_cnt;
 
 extern list_head_t frame_free_head;
-extern cduart_dev_t d_dev;  // uart / usb
+extern cduart_dev_t d_dev;  // usb cdc
 extern volatile uint8_t cdc_dtr;
 
 extern uint32_t end; // end of bss
 extern uint32_t *bl_args;
 
-void common_service_init(void);
-void common_service_routine(void);
+void comm_service_init(void);
+void comm_service_poll(void);
 
 void app_main(void);
 void load_conf(void);

@@ -20,6 +20,19 @@ const csa_t csa_dft = {
 
 csa_t csa;
 
+// the limits come from the flash and the host may write anything into them;
+// 0 in the arbitration mode ends as a baud_l the divider cannot express
+#define BAUD_MIN        1200
+#define BAUD_MAX        50000000
+
+static void baud_check(uint32_t *baud, uint32_t dft, const char *name)
+{
+    if (*baud >= BAUD_MIN && *baud <= BAUD_MAX)
+        return;
+    d_warn("conf: %s %lu out of range, using %lu\n", name, *baud, dft);
+    *baud = dft;
+}
+
 
 void load_conf(void)
 {
@@ -30,23 +43,31 @@ void load_conf(void)
     if (magic_code == 0xcdcd && conf_ver == APP_CONF_VER) {
         memcpy(&csa, (void *)APP_CONF_ADDR, offsetof(csa_t, _end_save));
         csa.conf_from = 1;
-    } else if (magic_code == 0xcdcd && (conf_ver >> 8) == (APP_CONF_VER >> 8)) {
+    } else if (magic_code == 0xcdcd && (conf_ver >> 12) == (APP_CONF_VER >> 12)) {
         memcpy(&csa, (void *)APP_CONF_ADDR, offsetof(csa_t, _end_common));
         csa.conf_from = 2;
         csa.conf_ver = APP_CONF_VER;
     }
-    if (csa.conf_from)
+    if (csa.conf_from) {
         memset(&csa.do_reboot, 0, 3);
+        baud_check(&csa.limit_baudrate0, csa_dft.limit_baudrate0, "limit_baudrate0");
+        baud_check(&csa.limit_baudrate1, csa_dft.limit_baudrate1, "limit_baudrate1");
+        // the controller refuses anything above, and the bus stays down then
+        if (csa.bus_cfg.mode > 3) {
+            d_warn("conf: mode %d not supported, using %d\n", csa.bus_cfg.mode, csa_dft.bus_cfg.mode);
+            csa.bus_cfg.mode = csa_dft.bus_cfg.mode;
+        }
+    }
 }
 
 int save_conf(void)
 {
-    uint8_t ret = flash_erase(APP_CONF_ADDR, 2048);
-    if (ret != HAL_OK)
+    int ret = flash_erase(APP_CONF_ADDR, 2048);
+    if (ret)
         d_info("conf: failed to erase flash\n");
     ret = flash_write(APP_CONF_ADDR, offsetof(csa_t, _end_save), (uint8_t *)&csa);
 
-    if (ret == HAL_OK) {
+    if (!ret) {
         d_info("conf: save to flash successed, size: %d\n", offsetof(csa_t, _end_save));
         return 0;
     } else {
@@ -147,9 +168,10 @@ void csa_list_show(void)
     CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, baud_h, "RS-485 baud rate for follow bytes");
     CSA_SHOW_SUB(1, bus_cfg, cdctl_cfg_t, filter_m, "Multicast address");
     CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, mode, "0: Traditional, 1: Arbitration, 2: Break Sync");
-    CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, tx_permit_len, "Allow send wait time");
-    CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, max_idle_len, "Max idle wait time for BS mode");
-    CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, tx_pre_len, " Active TX_EN before TX");
+    CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, idle_wait_len, "Idle entry wait time");
+    CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, tx_permit_len, "TX permit wait time");
+    CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, max_idle_len, "Max idle wait time, BS mode");
+    CSA_SHOW_SUB(0, bus_cfg, cdctl_cfg_t, tx_pre_len, "TE pre-assert time");
     d_debug("\n");
 
     CSA_SHOW(0, limit_baudrate0, "Low baudrate limit (sw1 off)");

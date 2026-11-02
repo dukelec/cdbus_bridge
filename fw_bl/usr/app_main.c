@@ -21,7 +21,7 @@ cdc_rx_buf_t * volatile cdc_rx_buf = NULL;
 static cd_frame_t frame_alloc[FRAME_MAX];
 list_head_t frame_free_head = {0};
 
-cduart_dev_t d_dev = {0};   // uart / usb
+cduart_dev_t d_dev = {0};   // usb cdc
 
 volatile int usb_rx_cnt = 0;
 volatile int usb_tx_cnt = 0;
@@ -69,6 +69,10 @@ static void usb_detection(void)
     static uint8_t cdc_dtr_final = 0;
     uint32_t t_cur = get_systick();
 
+    // a bus reset clears the line state like the rest of the device state;
+    // the host asserts dtr again when its program reopens the port, which a
+    // reset forces it to. A suspend is not a reset: the state is SUSPENDED
+    // then, above CONFIGURED, and the port stays open across it
     if (hUsbDeviceFS.dev_state < USBD_STATE_CONFIGURED)
         cdc_dtr = 0;
 
@@ -114,7 +118,7 @@ void app_main(void)
     cduart_dev_init(&d_dev, &frame_free_head);
     d_dev.local_mac = 0xff;
 
-    common_service_init();
+    comm_service_init();
 
     printf("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
     gpio_set_val(&led_g, 0);
@@ -122,20 +126,25 @@ void app_main(void)
     while (true) {
         usb_detection();
 
-        if (csa.usb_online) {
-            USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
+        USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
 
+        // a reset may have taken the class data away since usb_detection()
+        if (csa.usb_online && hcdc) {
             cdc_rx_buf_t *bf = list_get_entry_it(&cdc_rx_head, cdc_rx_buf_t);
             if (bf) {
+                uint32_t flags;
                 cduart_rx_handle(&d_dev, bf->dat, bf->len);
                 list_put_it(&cdc_rx_free_head, &bf->node);
 
+                // CDC_Init_FS() may pick a buffer too, after a reset
+                local_irq_save(flags);
                 if (!cdc_rx_buf) {
-                    cdc_rx_buf = list_get_entry_it(&cdc_rx_free_head, cdc_rx_buf_t);
+                    cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_rx_buf_t);
                     d_verbose("continue CDC Rx\n");
                     USBD_CDC_SetRxBuffer(&hUsbDeviceFS, cdc_rx_buf->dat);
                     USBD_CDC_ReceivePacket(&hUsbDeviceFS);
                 }
+                local_irq_restore(flags);
             }
 
             if (hcdc->TxState == 0) {
@@ -156,7 +165,7 @@ void app_main(void)
             }
         }
 
-        common_service_routine();
+        comm_service_poll();
 
         if (gpio_get_val(&sw1) && *bl_args != 0xcdcd0001) {
             printf("sw1 switch off, reboot...\n");

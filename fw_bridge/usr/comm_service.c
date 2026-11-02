@@ -35,12 +35,34 @@ static void get_uid(char *buf)
     buf[24] = '\0';
 }
 
+/*
+ * Only flash, sram, the otp and the engineering bytes (uid, flash size) may
+ * be handed to memcpy. Reading an address that is not backed by anything
+ * hard faults, and the read service takes its address straight from the host.
+ */
+static bool mem_readable(uint32_t addr, uint32_t len)
+{
+    uint32_t end = addr + len;
+
+    if (end < addr)
+        return false;
+    if (addr >= 0x08000000 && end <= 0x08000000 + 128 * 1024)
+        return true;
+    if (addr >= 0x20000000 && end <= 0x20000000 + 144 * 1024)
+        return true;
+    if (addr >= 0x1fff7000 && end <= 0x1fff7400) // otp
+        return true;
+    if (addr >= 0x1fff7500 && end <= 0x1fff7800) // engineering bytes
+        return true;
+    return false;
+}
+
 static void init_info_str(void)
 {
     // M: model; S: serial string; HW: hardware version; SW: software version
     get_uid(cpu_id);
-    sprintf(info_str, "M: cdbus bridge; S: %s; SW: %s", cpu_id, SW_VER);
-    d_info("info: %s\n", info_str);
+    sprintf(info_str, "M: cdbus bridge; S: %s; HW: v5; SW: %s", cpu_id, SW_VER);
+    d_info("info: %s, git: %s\n", info_str, SW_VER_FULL);
 }
 
 
@@ -63,49 +85,70 @@ static void p8_handler(cd_frame_t *frame)
 {
     uint8_t *p_dat = frame->dat + 5;
     uint8_t p_len = frame->dat[2] - 2;
+    bool reply = !(*p_dat & 0x80);
+    *p_dat &= 0x7f;
 
     if (*p_dat == 0x2f && p_len == 9) {
         uint32_t addr = get_unaligned32(p_dat + 1);
         uint32_t len = get_unaligned32(p_dat + 5);
         uint8_t ret = flash_erase(addr, len);
         *p_dat = ret ? 1 : 0;
-        send_frame(frame, 1);
+        if (reply)
+            send_frame(frame, 1);
 
     } else if (*p_dat == 0x00 && p_len == 6) {
         uint32_t addr = get_unaligned32(p_dat + 1);
-        uint8_t *dst_addr = (uint8_t *) addr;
-        uint8_t len = min(p_dat[5], CDN_MAX_DAT - 1);
-        memcpy(p_dat + 1, dst_addr, len);
-        *p_dat = 0;
-        send_frame(frame, len + 1);
+        uint8_t len = min(p_dat[5], CDN_MAX_PAYLOAD - 1);
+        if (!mem_readable(addr, len)) {
+            *p_dat = 1;
+            len = 0;
+        } else {
+            memcpy(p_dat + 1, (const uint8_t *)addr, len);
+            *p_dat = 0;
+        }
+        if (reply)
+            send_frame(frame, len + 1);
 
     } else if (*p_dat == 0x20 && p_len > 8) {
         uint32_t addr = get_unaligned32(p_dat + 1);
         uint8_t len = p_len - 5;
         uint8_t ret = flash_write(addr, len, p_dat + 5);
         *p_dat = ret ? 1 : 0;
-        send_frame(frame, 1);
+        if (reply)
+            send_frame(frame, 1);
 
     } else {
         cd_list_put(&frame_free_head, frame);
+        return;
     }
+    if (!reply)
+        cd_list_put(&frame_free_head, frame);
+}
+
+// a bad offset must read nothing rather than whatever lies past csa
+static uint8_t csa_read_len(uint16_t offset, uint8_t len)
+{
+    if (offset > sizeof(csa_t))
+        return 0;
+    len = min(len, sizeof(csa_t) - offset);
+    return min(len, CDN_MAX_PAYLOAD - 1);
 }
 
 // csa manipulation
 static void p5_handler(cd_frame_t *frame)
 {
-    uint32_t flags;
     uint8_t *p_dat = frame->dat + 5;
     uint8_t p_len = frame->dat[2] - 2;
+    bool reply = !(*p_dat & 0x80);
+    *p_dat &= 0x7f;
 
     if (*p_dat == 0x00 && p_len == 4) {
         uint16_t offset = get_unaligned16(p_dat + 1);
-        uint8_t len = min(p_dat[3], CDN_MAX_DAT - 1);
-        local_irq_save(flags);
+        uint8_t len = csa_read_len(offset, p_dat[3]);
         memcpy(p_dat + 1, ((void *) &csa) + offset, len);
-        local_irq_restore(flags);
         *p_dat = 0;
-        send_frame(frame, len + 1);
+        if (reply)
+            send_frame(frame, len + 1);
 
     } else if (*p_dat == 0x20 && p_len > 3) {
         uint16_t offset = get_unaligned16(p_dat + 1);
@@ -113,22 +156,25 @@ static void p5_handler(cd_frame_t *frame)
         uint8_t *src_addr = p_dat + 3;
         uint16_t start = clip(offset, 0, sizeof(csa_t));
         uint16_t end = clip(offset + len, 0, sizeof(csa_t));
-        local_irq_save(flags);
         memcpy(((void *) &csa) + start, src_addr + (start - offset), end - start);
-        local_irq_restore(flags);
         *p_dat = 0;
-        send_frame(frame, 1);
+        if (reply)
+            send_frame(frame, 1);
 
     } else if (*p_dat == 0x01 && p_len == 4) {
         uint16_t offset = get_unaligned16(p_dat + 1);
-        uint8_t len = min(p_dat[3], CDN_MAX_DAT - 1);
+        uint8_t len = csa_read_len(offset, p_dat[3]);
         memcpy(p_dat + 1, ((void *) &csa_dft) + offset, len);
         *p_dat = 0;
-        send_frame(frame, len + 1);
+        if (reply)
+            send_frame(frame, len + 1);
 
     } else {
         cd_list_put(&frame_free_head, frame);
+        return;
     }
+    if (!reply)
+        cd_list_put(&frame_free_head, frame);
 }
 
 
@@ -151,12 +197,12 @@ static inline void serial_cmd_dispatch(void)
 }
 
 
-void common_service_init(void)
+void comm_service_init(void)
 {
     init_info_str();
 }
 
-void common_service_routine(void)
+void comm_service_poll(void)
 {
     if (csa.save_conf) {
         csa.save_conf = false;
@@ -164,6 +210,7 @@ void common_service_routine(void)
     }
     if (csa.do_reboot) {
         *(uint32_t *)BL_ARGS = 0xcdcd0000 | csa.do_reboot;
+        dbg_uart_flush();
         NVIC_SystemReset();
     }
     serial_cmd_dispatch();
@@ -173,10 +220,13 @@ void common_service_routine(void)
 // for printf
 int _write(int file, char *data, int len)
 {
-    if (csa.dbg_en) {
+    // never dip into the pool reserve for debug frames: the host may be offline
+    // and unable to drain them, while the same text goes out on the debug uart
+    // below in any case
+    if (csa.dbg_en && frame_free_head.len > FRAME_RESERVE) {
         cd_frame_t *frm = cd_list_get(&frame_free_head);
         if (frm) {
-            len = min(CDN_MAX_DAT - 2, len);
+            len = min(CDN_MAX_PAYLOAD, len);
             frm->dat[0] = 0xff;
             frm->dat[1] = 0x0;
             frm->dat[2] = 2 + len;
@@ -188,6 +238,6 @@ int _write(int file, char *data, int len)
         }
     }
 
-    arch_dbg_tx((uint8_t *)data, len);
+    dbg_uart_write((const uint8_t *)data, len);
     return len;
 }

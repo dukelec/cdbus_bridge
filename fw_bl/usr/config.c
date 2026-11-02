@@ -25,7 +25,7 @@ void load_conf(void)
     csa = csa_dft;
 
     //d_info("end_save: %d\n", offsetof(csa_t, _end_save)); // 512
-    if (magic_code == 0xcdcd && (conf_ver >> 8) == (APP_CONF_VER >> 8)) {
+    if (magic_code == 0xcdcd && (conf_ver >> 12) == (APP_CONF_VER >> 12)) {
         memcpy(&csa, (void *)APP_CONF_ADDR, offsetof(csa_t, _end_save));
         csa.conf_from = 1;
         memset(&csa.do_reboot, 0, 3);

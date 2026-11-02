@@ -153,6 +153,13 @@ USBD_CDC_ItfTypeDef USBD_Interface_fops_FS =
 static int8_t CDC_Init_FS(void)
 {
   /* USER CODE BEGIN 3 */
+  // a set configuration follows a reset or a replug, what the host sent
+  // before is stale, and it frees the buffers if they had all run out
+  cdc_rx_buf_t *bf;
+  while ((bf = list_get_entry(&cdc_rx_head, cdc_rx_buf_t)) != NULL)
+      list_put(&cdc_rx_free_head, &bf->node);
+  if (!cdc_rx_buf)
+      cdc_rx_buf = list_get_entry(&cdc_rx_free_head, cdc_rx_buf_t);
   if (!cdc_rx_buf) {
       printf("CDC_Init_FS: error\n");
       while (true);

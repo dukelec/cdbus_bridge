@@ -14,7 +14,21 @@
 # target
 ######################################
 TARGET = cdbus_bridge
-GIT_VERSION := $(shell git describe --dirty --always --tags)
+GIT_VERSION_FULL := $(shell git describe --long --dirty --always --tags)
+# tag format: any_string_vX.Y
+VERSION_MID := $(shell echo $(GIT_VERSION_FULL) | sed -E 's/.*v//' | sed -E 's/-g.*//')
+GIT_VERSION := $(shell \
+	if echo $(VERSION_MID) | grep -Eq '^[0-9]+\.[0-9]+-[0-9]+$$'; then \
+		base=$$(echo $(VERSION_MID) | cut -d- -f1); \
+		patch=$$(echo $(VERSION_MID) | cut -d- -f2); \
+		major=$$(echo $$base | cut -d. -f1); \
+		minor=$$(echo $$base | cut -d. -f2); \
+		echo v$$major.$$((minor+patch)); \
+	elif echo $(VERSION_MID) | grep -Eq '^[0-9]+\.[0-9]+$$'; then \
+		echo v$(VERSION_MID); \
+	else \
+		echo $(shell git describe --always --tags); \
+	fi)
 
 
 ######################################
@@ -23,7 +37,7 @@ GIT_VERSION := $(shell git describe --dirty --always --tags)
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -Og
+OPT = -O2
 
 
 #######################################
@@ -89,7 +103,8 @@ cdnet/dev/cdctl_pll_cal.c \
 cdnet/utils/cd_list.c \
 cdnet/utils/hex_dump.c \
 usr/config.c \
-usr/common_services.c \
+usr/comm_service.c \
+usr/dbg_uart.c \
 usr/app_main.c
 
 # ASM sources
@@ -144,6 +159,7 @@ C_DEFS =  \
 -DUSE_FULL_LL_DRIVER \
 -DUSE_HAL_DRIVER \
 -DSTM32G0B1xx \
+-DSW_VER_FULL=\"$(GIT_VERSION_FULL)\" \
 -DSW_VER=\"$(GIT_VERSION)\"
 
 

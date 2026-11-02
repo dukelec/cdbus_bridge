@@ -11,6 +11,7 @@
 
 static char cpu_id[25];
 static char info_str[100];
+static cd_spinlock_t p5_lock = {0};
 
 
 static void send_frame(cd_frame_t *frame, uint8_t p_len)
@@ -39,8 +40,8 @@ static void init_info_str(void)
 {
     // M: model; S: serial string; HW: hardware version; SW: software version
     get_uid(cpu_id);
-    sprintf(info_str, "M: cdbus bridge (bl); S: %s; SW: %s", cpu_id, SW_VER);
-    d_info("info: %s\n", info_str);
+    sprintf(info_str, "M: cdbus bridge (bl); S: %s; HW: v5; SW: %s", cpu_id, SW_VER);
+    d_info("info: %s, git: %s\n", info_str, SW_VER_FULL);
 }
 
 
@@ -74,7 +75,7 @@ static void p8_handler(cd_frame_t *frame)
     } else if (*p_dat == 0x00 && p_len == 6) {
         uint32_t addr = get_unaligned32(p_dat + 1);
         uint8_t *dst_addr = (uint8_t *) addr;
-        uint8_t len = min(p_dat[5], CDN_MAX_DAT - 1);
+        uint8_t len = min(p_dat[5], CDN_MAX_PAYLOAD - 1);
         memcpy(p_dat + 1, dst_addr, len);
         *p_dat = 0;
         send_frame(frame, len + 1);
@@ -100,10 +101,10 @@ static void p5_handler(cd_frame_t *frame)
 
     if (*p_dat == 0x00 && p_len == 4) {
         uint16_t offset = get_unaligned16(p_dat + 1);
-        uint8_t len = min(p_dat[3], CDN_MAX_DAT - 1);
-        local_irq_save(flags);
+        uint8_t len = min(p_dat[3], CDN_MAX_PAYLOAD - 1);
+        cd_irq_save(&p5_lock, flags);
         memcpy(p_dat + 1, ((void *) &csa) + offset, len);
-        local_irq_restore(flags);
+        cd_irq_restore(&p5_lock, flags);
         *p_dat = 0;
         send_frame(frame, len + 1);
 
@@ -113,15 +114,15 @@ static void p5_handler(cd_frame_t *frame)
         uint8_t *src_addr = p_dat + 3;
         uint16_t start = clip(offset, 0, sizeof(csa_t));
         uint16_t end = clip(offset + len, 0, sizeof(csa_t));
-        local_irq_save(flags);
+        cd_irq_save(&p5_lock, flags);
         memcpy(((void *) &csa) + start, src_addr + (start - offset), end - start);
-        local_irq_restore(flags);
+        cd_irq_restore(&p5_lock, flags);
         *p_dat = 0;
         send_frame(frame, 1);
 
     } else if (*p_dat == 0x01 && p_len == 4) {
         uint16_t offset = get_unaligned16(p_dat + 1);
-        uint8_t len = min(p_dat[3], CDN_MAX_DAT - 1);
+        uint8_t len = min(p_dat[3], CDN_MAX_PAYLOAD - 1);
         memcpy(p_dat + 1, ((void *) &csa_dft) + offset, len);
         *p_dat = 0;
         send_frame(frame, len + 1);
@@ -151,12 +152,12 @@ static inline void serial_cmd_dispatch(void)
 }
 
 
-void common_service_init(void)
+void comm_service_init(void)
 {
     init_info_str();
 }
 
-void common_service_routine(void)
+void comm_service_poll(void)
 {
     if (csa.save_conf) {
         csa.save_conf = false;
@@ -170,13 +171,24 @@ void common_service_routine(void)
 }
 
 
+static inline void dbg_transmit(const uint8_t *buf, uint16_t len)
+{
+    for (uint16_t i = 0; i < len; i++) {
+        while (!(USART5->ISR & USART_ISR_TXE_TXFNF));
+        USART5->TDR = *(buf + i);
+    }
+}
+
 // for printf
 int _write(int file, char *data, int len)
 {
-    if (csa.dbg_en) {
+    // never dip into the pool reserve for debug frames: the host may be offline
+    // and unable to drain them, while the same text goes out on the debug uart
+    // below in any case
+    if (csa.dbg_en && frame_free_head.len > FRAME_RESERVE) {
         cd_frame_t *frm = cd_list_get(&frame_free_head);
         if (frm) {
-            len = min(CDN_MAX_DAT - 2, len);
+            len = min(CDN_MAX_PAYLOAD, len);
             frm->dat[0] = 0xff;
             frm->dat[1] = 0x0;
             frm->dat[2] = 2 + len;
@@ -188,7 +200,7 @@ int _write(int file, char *data, int len)
         }
     }
 
-    arch_dbg_tx((uint8_t *)data, len);
+    dbg_transmit((uint8_t *)data, len);
     return len;
 }
 

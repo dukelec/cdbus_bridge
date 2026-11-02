@@ -862,7 +862,12 @@ USBD_StatusTypeDef USBD_LL_SetSpeed(USBD_HandleTypeDef *pdev,
 
 USBD_StatusTypeDef USBD_LL_Suspend(USBD_HandleTypeDef *pdev)
 {
-  pdev->dev_old_state = pdev->dev_state;
+  /* local fix: a second suspend without an intervening resume must not
+     latch SUSPENDED into dev_old_state, the device would never come back */
+  if (pdev->dev_state != USBD_STATE_SUSPENDED)
+  {
+    pdev->dev_old_state = pdev->dev_state;
+  }
   pdev->dev_state = USBD_STATE_SUSPENDED;
 
   return USBD_OK;

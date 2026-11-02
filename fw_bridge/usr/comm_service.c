@@ -60,8 +60,11 @@ static bool mem_readable(uint32_t addr, uint32_t len)
 static void init_info_str(void)
 {
     // M: model; S: serial string; HW: hardware version; SW: software version
+    // HW: v4 has the cdctl-b (fixed 40 MHz), v5 the cdctl01a (pll at 100 ~ 150 MHz),
+    // err: cdctl_dev_init did not recognize the chip and left sysclk 0
     get_uid(cpu_id);
-    sprintf(info_str, "M: cdbus bridge; S: %s; HW: v5; SW: %s", cpu_id, SW_VER);
+    const char *hw = r_dev.sysclk == 40000000 ? "v4" : r_dev.sysclk >= 100000000 ? "v5" : "err";
+    sprintf(info_str, "M: cdbus bridge; S: %s; HW: %s; SW: %s", cpu_id, hw, SW_VER);
     d_info("info: %s, git: %s\n", info_str, SW_VER_FULL);
 }
 

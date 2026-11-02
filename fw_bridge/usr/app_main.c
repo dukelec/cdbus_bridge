@@ -19,6 +19,7 @@ static gpio_t sw2 = { .group = SW2_GPIO_Port, .num = SW2_Pin };
 
 static gpio_t r_int = { .group = CD_INT_GPIO_Port, .num = CD_INT_Pin };
 static gpio_t r_cs = { .group = CD_SS_GPIO_Port, .num = CD_SS_Pin };
+static gpio_t r_rst = { .group = OLD_CD_RST_GPIO_Port, .num = OLD_CD_RST_Pin }; // hw v4 only, open drain
 static spi_t r_spi = {
         .spi = SPI1,
         .ns_pin = &r_cs,
@@ -299,8 +300,6 @@ void app_main(void)
     cduart_dev_init(&d_dev, &frame_free_head);
     d_dev.local_mac = 0xff;
 
-    comm_service_init();
-
     printf("conf: %s\n", csa.conf_from ? "load from flash" : "use default");
     csa_list_show();
 
@@ -313,8 +312,16 @@ void app_main(void)
     gpio_set_val(&led_b, 1);
     gpio_set_val(&led_g, 0);
 
+    // the cdctl-b of the hw v4 is an fpga module that comes up poorly without
+    // a reset pulse; the pin floats on the hw v5, where it drives nothing
+    gpio_set_val(&r_rst, 0);
+    delay_systick(2);
+    gpio_set_val(&r_rst, 1);
+    delay_systick(2);
+
     spi_wr_init(&r_spi);
     cdctl_dev_init(&r_dev, &frame_free_head, &csa.bus_cfg, &r_spi, &r_int);
+    comm_service_init(); // after cdctl_dev_init: the info string names the hw by the chip
 
     HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
     HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);

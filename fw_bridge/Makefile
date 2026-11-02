@@ -98,7 +98,7 @@ Core/Src/sysmem.c \
 Core/Src/syscalls.c \
 cdnet/arch/stm32/arch_wrapper.c \
 cdnet/dev/cdbus_uart.c \
-cdnet/dev/cdctl_it.c \
+usr/cdctl_it_old.c \
 cdnet/dev/cdctl_pll_cal.c \
 cdnet/utils/cd_list.c \
 cdnet/utils/hex_dump.c \

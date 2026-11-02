@@ -1,0 +1,407 @@
+/*
+ * Software License Agreement (MIT License)
+ *
+ * Copyright (c) 2017, DUKELEC, Inc.
+ * All rights reserved.
+ *
+ * Author: Duke Fong <d@d-l.io>
+ */
+
+/*
+ * cdnet/dev/cdctl_it.c, plus the cdctl-b of the hw v4 board (the same change
+ * cdcam carries for its hw v2): chip versions 0x0e and 0x0f are accepted, they
+ * run on a fixed 40 MHz with no pll, no soft reset and no phy rx enable. Older
+ * ones, which need their error flags cleared by hand, never shipped on the
+ * hw v4 and are not handled. The cdctl-b is an fpga module whose version
+ * register is only trusted once it reads stable.
+ */
+
+#include "cdctl_it.h"
+#include "cd_debug.h"
+#include "cdctl_pll_cal.h"
+
+#define CDCTL_MASK (CDBIT_FLAG_RX_PENDING | CDBIT_FLAG_RX_LOST | CDBIT_FLAG_RX_ERROR |  \
+                    CDBIT_FLAG_TX_CD | CDBIT_FLAG_TX_ERROR)
+
+#define VER_STABLE_CNT  10                              // same reads in a row
+#define VER_TIMEOUT     (1000000 / CD_SYSTICK_US_DIV)   // 1 s, covers the fpga configuration
+
+static uint8_t version = 0x00;
+
+
+// the fpga keeps answering 0x00 / 0xff until its bitstream is loaded, the
+// asic answers at once; 0xff is also what an absent chip reads as
+static uint8_t cdctl_read_version(cdctl_dev_t *dev)
+{
+    uint32_t t_start = get_systick();
+    uint8_t last = 0xff;
+    int same = 0;
+
+    while (get_systick() - t_start < VER_TIMEOUT) {
+        uint8_t ver = cdctl_reg_r(dev, CDREG_VERSION);
+        if (ver != 0x00 && ver != 0xff && ver == last) {
+            if (++same >= VER_STABLE_CNT)
+                return ver;
+        } else {
+            last = ver;
+            same = 0;
+        }
+    }
+    return last;
+}
+
+
+// move state to `to` if it is not above `from_max`, returns the state before
+static cdctl_state_t cdctl_state_cas(cdctl_dev_t *dev, cdctl_state_t from_max, cdctl_state_t to)
+{
+    uint32_t flags;
+    cd_irq_save(&dev->lock, flags);
+    cdctl_state_t st = dev->state;
+    if (st <= from_max)
+        dev->state = to;
+    cd_irq_restore(&dev->lock, flags);
+    return st;
+}
+
+// restart the state machine if int_n is asserted or a frame waits in tx_head
+static inline void cdctl_kick(cdctl_dev_t *dev)
+{
+    if (!gpio_get_val(dev->int_n) || (!dev->tx_wait_trigger && dev->tx_head.first))
+        cdctl_int_isr(dev);
+}
+
+// take the spi from the state machine: wait for it to pause between two
+// transfers, then park it in CDCTL_REG_MANUAL so cdctl_int_isr() stays out
+static cdctl_state_t cdctl_manual_begin(cdctl_dev_t *dev)
+{
+    cdctl_state_t st; // spin with irq on, the dma irq has to finish the transfer
+    while ((st = cdctl_state_cas(dev, CDCTL_WAIT_TX_CLEAN, CDCTL_REG_MANUAL)) > CDCTL_WAIT_TX_CLEAN);
+    return st;
+}
+
+static void cdctl_manual_end(cdctl_dev_t *dev, cdctl_state_t st)
+{
+    dev->state = st; // nobody else touches state while it is CDCTL_REG_MANUAL
+    if (st != CDCTL_RST)
+        cdctl_kick(dev); // an int_n or a frame queued meanwhile was turned away
+}
+
+uint8_t cdctl_reg_r(cdctl_dev_t *dev, uint8_t reg)
+{
+    uint8_t dat = 0xff;
+    cdctl_state_t st = cdctl_manual_begin(dev);
+    spi_mem_read(dev->spi, reg, &dat, 1);
+    cdctl_manual_end(dev, st);
+    return dat;
+}
+
+void cdctl_reg_w(cdctl_dev_t *dev, uint8_t reg, uint8_t val)
+{
+    cdctl_state_t st = cdctl_manual_begin(dev);
+    spi_mem_write(dev->spi, reg | 0x80, &val, 1);
+    cdctl_manual_end(dev, st);
+}
+
+
+cd_frame_t *cdctl_recv_frame(cd_dev_t *cd_dev)
+{
+    cdctl_dev_t *dev = container_of(cd_dev, cdctl_dev_t, cd_dev);
+    return cd_list_get(&dev->rx_head);
+}
+
+void cdctl_send_frame(cd_dev_t *cd_dev, cd_frame_t *frame)
+{
+    cdctl_dev_t *dev = container_of(cd_dev, cdctl_dev_t, cd_dev);
+    cd_list_put(&dev->tx_head, frame);
+    cdctl_int_isr(dev); // starts the state machine if it is idle, else the frame waits in tx_head
+}
+
+
+void cdctl_set_baud_rate(cdctl_dev_t *dev, uint32_t low, uint32_t high)
+{
+    uint16_t l, h;
+    l = clip((int32_t)DIV_ROUND_CLOSEST(dev->sysclk, low) - 1, 2, 65535);
+    h = clip((int32_t)DIV_ROUND_CLOSEST(dev->sysclk, high) - 1, 2, 65535);
+    cdctl_reg_w(dev, CDREG_DIV_LS_L, l & 0xff);
+    cdctl_reg_w(dev, CDREG_DIV_LS_H, l >> 8);
+    cdctl_reg_w(dev, CDREG_DIV_HS_L, h & 0xff);
+    cdctl_reg_w(dev, CDREG_DIV_HS_H, h >> 8);
+    dn_debug(dev->name, "set baud rate: %"PRIu32" %"PRIu32" (%u %u)\n", low, high, l, h);
+}
+
+void cdctl_get_baud_rate(cdctl_dev_t *dev, uint32_t *low, uint32_t *high)
+{
+    uint16_t l, h;
+    l = cdctl_reg_r(dev, CDREG_DIV_LS_L) | cdctl_reg_r(dev, CDREG_DIV_LS_H) << 8;
+    h = cdctl_reg_r(dev, CDREG_DIV_HS_L) | cdctl_reg_r(dev, CDREG_DIV_HS_H) << 8;
+    *low = DIV_ROUND_CLOSEST(dev->sysclk, l + 1);
+    *high = DIV_ROUND_CLOSEST(dev->sysclk, h + 1);
+}
+
+void cdctl_set_clk(cdctl_dev_t *dev, uint32_t target_baud)
+{
+    if (version != 0x10) // the cdctl-b has no pll, sysclk stays at 40 MHz
+        return;
+
+    cdctl_reg_w(dev, CDREG_CLK_CTRL, 0x00); // select osc
+    while (!(cdctl_reg_r(dev, CDREG_CLK_STATUS) & 0b100)) {}
+    dn_info(dev->name, "version (clk: osc): %02x\n", cdctl_reg_r(dev, CDREG_VERSION));
+
+    dev->sysclk = cdctl_sys_cal(target_baud);
+    pllcfg_t pll = cdctl_pll_cal(CDCTL_OSC_CLK, dev->sysclk);
+    dn_info(dev->name, "sysclk %"PRIu32", actual: %"PRIu32"\n", dev->sysclk, pll.freq);
+    dev->sysclk = pll.freq;
+    cdctl_reg_w(dev, CDREG_PLL_N, pll.n);
+    cdctl_reg_w(dev, CDREG_PLL_ML, pll.m & 0xff);
+    cdctl_reg_w(dev, CDREG_PLL_OD_MH, (pll.d << 4) | (pll.m >> 8));
+    dn_info(dev->name, "pll_n: %02x, ml: %02x, od_mh: %02x\n",
+            cdctl_reg_r(dev, CDREG_PLL_N), cdctl_reg_r(dev, CDREG_PLL_ML), cdctl_reg_r(dev, CDREG_PLL_OD_MH));
+    dn_info(dev->name, "pll_ctrl: %02x\n", cdctl_reg_r(dev, CDREG_PLL_CTRL));
+    cdctl_reg_w(dev, CDREG_PLL_CTRL, 0x10); // enable pll
+    dn_info(dev->name, "clk_status: %02x\n", cdctl_reg_r(dev, CDREG_CLK_STATUS));
+    cdctl_reg_w(dev, CDREG_CLK_CTRL, 0x01); // select pll
+    while (!(cdctl_reg_r(dev, CDREG_CLK_STATUS) & 0b100)) {}
+    dn_info(dev->name, "clk_status (clk: pll): %02x\n", cdctl_reg_r(dev, CDREG_CLK_STATUS));
+    dn_info(dev->name, "version (clk: pll): %02x\n", cdctl_reg_r(dev, CDREG_VERSION));
+}
+
+
+int cdctl_dev_init(cdctl_dev_t *dev, list_head_t *free_head, cdctl_cfg_t *init,
+        spi_t *spi, gpio_t *int_n)
+{
+    if (!dev->name)
+        dev->name = "cdctl";
+    dev->rx_frame = cd_list_get(free_head);
+    dev->free_head = free_head;
+    dev->cd_dev.recv_frame = cdctl_recv_frame;
+    dev->cd_dev.send_frame = cdctl_send_frame;
+
+#ifdef CD_USE_DYNAMIC_INIT
+    dev->state = CDCTL_RST;
+    dev->lock = 0;
+    list_head_init(&dev->rx_head);
+    list_head_init(&dev->tx_head);
+    dev->tx_wait_trigger = NULL;
+    dev->tx_buf_clean_mask = false;
+    dev->rx_cnt = 0;
+    dev->tx_cnt = 0;
+    dev->rx_lost_cnt = 0;
+    dev->rx_error_cnt = 0;
+    dev->rx_break_cnt = 0;
+    dev->tx_cd_cnt = 0;
+    dev->tx_error_cnt = 0;
+    dev->rx_no_free_node_cnt = 0;
+    dev->rx_len_err_cnt = 0;
+#endif
+
+    dev->spi = spi;
+    dev->int_n = int_n;
+
+    dn_info(dev->name, "mode%d init...\n", init->mode);
+    version = cdctl_read_version(dev);
+    dn_info(dev->name, "chip version: %02x\n", version);
+    if (version < 0x0e || version > 0x10) {
+        dn_error(dev->name, "version error\n");
+        version = 0x00;
+        return -1;
+    }
+
+    if (version == 0x10) {
+        cdctl_reg_w(dev, CDREG_CLK_CTRL, 0x80); // soft reset
+        cdctl_set_clk(dev, init->baud_h);
+#ifndef CDCTL_AVOID_PIN_RE
+        cdctl_reg_w(dev, CDREG_PIN_RE_CTRL, 0x10); // enable phy rx
+#endif
+    } else {
+        dn_info(dev->name, "cdctl-b, fixed 40 MHz\n");
+        dev->sysclk = 40e6L;
+    }
+    if (init->mode >= 4) {
+        dn_info(dev->name, "init abort, mode: %d\n", init->mode);
+        return -2;
+    }
+
+    uint8_t setting = (cdctl_reg_r(dev, CDREG_SETTING) & 0xf) | CDBIT_SETTING_TX_PUSH_PULL;
+    if (init->mode == 1 || init->mode == 2)
+        setting |= init->mode << 4;
+    else if (init->mode == 3)
+        setting |= CDBIT_SETTING_FULL_DUPLEX;
+    cdctl_reg_w(dev, CDREG_SETTING, setting);
+    cdctl_reg_w(dev, CDREG_FILTER, init->mac);
+    cdctl_reg_w(dev, CDREG_FILTER_M0, init->filter_m[0]);
+    cdctl_reg_w(dev, CDREG_FILTER_M1, init->filter_m[1]);
+    cdctl_reg_w(dev, CDREG_IDLE_WAIT_LEN, init->idle_wait_len);
+    cdctl_reg_w(dev, CDREG_TX_PERMIT_LEN_L, init->tx_permit_len & 0xff);
+    cdctl_reg_w(dev, CDREG_TX_PERMIT_LEN_H, init->tx_permit_len >> 8);
+    cdctl_reg_w(dev, CDREG_MAX_IDLE_LEN_L, init->max_idle_len & 0xff);
+    cdctl_reg_w(dev, CDREG_MAX_IDLE_LEN_H, init->max_idle_len >> 8);
+    cdctl_reg_w(dev, CDREG_TX_PRE_LEN, init->tx_pre_len);
+    cdctl_set_baud_rate(dev, init->baud_l, init->baud_h);
+    cdctl_flush(dev);
+
+    cdctl_get_baud_rate(dev, &init->baud_l, &init->baud_h);
+    dn_debug(dev->name, "get baud rate: %"PRIu32" %"PRIu32"\n", init->baud_l, init->baud_h);
+    dn_debug(dev->name, "get filter(m): %02x (%02x %02x)\n",
+            cdctl_reg_r(dev, CDREG_FILTER), cdctl_reg_r(dev, CDREG_FILTER_M0), cdctl_reg_r(dev, CDREG_FILTER_M1));
+    dn_debug(dev->name, "flags: %02x\n", cdctl_reg_r(dev, CDREG_INT_FLAG));
+    dev->state = CDCTL_IDLE;
+    cdctl_reg_w(dev, CDREG_INT_MASK, CDCTL_MASK);
+    return 0;
+}
+
+
+static inline void cdctl_reg_r_it(cdctl_dev_t *dev, uint8_t reg)
+{
+    dev->buf[0] = reg;
+    gpio_set_low(dev->spi->ns_pin);
+    spi_wr_it(dev->spi, dev->buf, dev->buf, 2);
+}
+
+static inline void cdctl_reg_w_it(cdctl_dev_t *dev, uint8_t reg, uint8_t val)
+{
+    dev->buf[0] = reg | 0x80;
+    dev->buf[1] = val;
+    gpio_set_low(dev->spi->ns_pin);
+    spi_wr_it(dev->spi, dev->buf, NULL, 2);
+}
+
+
+// int_n pin interrupt isr, also the entry for cdctl_send_frame() from any context:
+// the idle check and the claim are one atomic step, so only one caller wins
+void cdctl_int_isr(cdctl_dev_t *dev)
+{
+    if (dev->state == CDCTL_RST) // before cdctl_dev_init, RST only ever moves forward
+        return;
+    if (cdctl_state_cas(dev, CDCTL_WAIT_TX_CLEAN, CDCTL_RD_FLAG) <= CDCTL_WAIT_TX_CLEAN)
+        cdctl_reg_r_it(dev, CDREG_INT_FLAG);
+}
+
+// dma finish callback
+void cdctl_spi_isr(cdctl_dev_t *dev)
+{
+    // end of CDCTL_RD_FLAG
+    if (dev->state == CDCTL_RD_FLAG) {
+        uint8_t val = dev->buf[1];
+        gpio_set_high(dev->spi->ns_pin);
+
+        if (val & (CDBIT_FLAG_RX_LOST | CDBIT_FLAG_RX_ERROR | CDBIT_FLAG_RX_BREAK | \
+                CDBIT_FLAG_TX_CD | CDBIT_FLAG_TX_ERROR)) {
+            if (val & CDBIT_FLAG_RX_LOST)
+                dev->rx_lost_cnt++;
+            if (val & CDBIT_FLAG_RX_ERROR)
+                dev->rx_error_cnt++;
+            if (val & CDBIT_FLAG_RX_BREAK)
+                dev->rx_break_cnt++;
+            if (val & CDBIT_FLAG_TX_CD)
+                dev->tx_cd_cnt++;
+            if (val & CDBIT_FLAG_TX_ERROR)
+                dev->tx_error_cnt++;
+        }
+
+        // check for new frame
+        if (val & CDBIT_FLAG_RX_PENDING) {
+            dev->state = CDCTL_RX_HEADER;
+            uint8_t *buf = dev->rx_frame->dat - 1;
+            *buf = CDREG_RX; // borrow space from the "node" item
+            gpio_set_low(dev->spi->ns_pin);
+            spi_wr_it(dev->spi, buf, buf, 4);
+            return;
+        }
+
+        // check for tx
+        if (dev->tx_wait_trigger) {
+            if (val & CDBIT_FLAG_TX_BUF_CLEAN) {
+                dev->state = CDCTL_REG_W;
+                cdctl_reg_w_it(dev, CDREG_TX_CTRL, CDBIT_TX_START | CDBIT_TX_RST_POINTER);
+                cdctl_tx_cb(dev, dev->tx_wait_trigger);
+                dev->tx_wait_trigger = NULL;
+                return;
+            } else if (!dev->tx_buf_clean_mask) {
+                // enable tx_buf_clean irq
+                dev->tx_buf_clean_mask = true;
+                dev->state = CDCTL_REG_W;
+                cdctl_reg_w_it(dev, CDREG_INT_MASK, CDCTL_MASK | CDBIT_FLAG_TX_BUF_CLEAN);
+                return;
+            }
+        } else if (dev->tx_head.first) {
+            dev->tx_frame = cd_list_get(&dev->tx_head);
+            uint8_t *buf = dev->tx_frame->dat - 1;
+            *buf = CDREG_TX | 0x80; // borrow space from the "node" item
+            dev->state = CDCTL_TX_FRAME;
+            gpio_set_low(dev->spi->ns_pin);
+            spi_wr_it(dev->spi, buf, NULL, 4 + buf[3]);
+            return;
+        } else if (dev->tx_buf_clean_mask) {
+            dev->tx_buf_clean_mask = false;
+            dev->state = CDCTL_REG_W;
+            cdctl_reg_w_it(dev, CDREG_INT_MASK, CDCTL_MASK);
+            return;
+        }
+
+        dev->state = dev->tx_wait_trigger ? CDCTL_WAIT_TX_CLEAN : CDCTL_IDLE;
+        cdctl_kick(dev); // a frame queued by a higher priority irq saw us busy
+        return;
+    }
+
+    // end of write RX_CTRL, TX_CTRL, INT_MASK
+    if (dev->state == CDCTL_REG_W) {
+        gpio_set_high(dev->spi->ns_pin);
+        dev->state = CDCTL_RD_FLAG;
+        cdctl_reg_r_it(dev, CDREG_INT_FLAG);
+        return;
+    }
+
+    // end of CDCTL_RX_HEADER
+    if (dev->state == CDCTL_RX_HEADER) {
+        dev->state = CDCTL_RX_BODY;
+        if (dev->rx_frame->dat[2] > min(CD_FRAME_SIZE - 3, 253)) {
+            gpio_set_high(dev->spi->ns_pin);
+            dev->rx_len_err_cnt++;
+            dev->state = CDCTL_REG_W;
+            cdctl_reg_w_it(dev, CDREG_RX_CTRL, CDBIT_RX_CLR_PENDING | CDBIT_RX_RST_POINTER);
+            return;
+        }
+        if (dev->rx_frame->dat[2] != 0) {
+            spi_wr_it(dev->spi, NULL, dev->rx_frame->dat + 3, dev->rx_frame->dat[2]);
+            return;
+        } // no return
+    }
+
+    // end of CDCTL_RX_BODY
+    if (dev->state == CDCTL_RX_BODY) {
+        gpio_set_high(dev->spi->ns_pin);
+        dev->state = CDCTL_REG_W;
+        cdctl_reg_w_it(dev, CDREG_RX_CTRL, CDBIT_RX_CLR_PENDING | CDBIT_RX_RST_POINTER);
+        cd_frame_t *frame = cd_list_get(dev->free_head);
+        if (frame) {
+            cd_list_put(&dev->rx_head, dev->rx_frame);
+            dev->rx_cnt++;
+            cdctl_rx_cb(dev, dev->rx_frame);
+            dev->rx_frame = frame;
+        } else {
+            dev->rx_no_free_node_cnt++;
+        }
+        return;
+    }
+
+    // end of CDCTL_TX_FRAME
+    if (dev->state == CDCTL_TX_FRAME) {
+        gpio_set_high(dev->spi->ns_pin);
+#ifndef CDCTL_TX_NOT_FREE
+        cd_list_put(dev->free_head, dev->tx_frame);
+#endif
+        dev->tx_wait_trigger = dev->tx_frame;
+        dev->tx_frame = NULL;
+        dev->tx_cnt++;
+
+        dev->state = CDCTL_RD_FLAG;
+        cdctl_reg_r_it(dev, CDREG_INT_FLAG);
+        return;
+    }
+
+    dn_warn(dev->name, "unexpected spi dma cb\n");
+}
+
+
+__weak void cdctl_rx_cb(cdctl_dev_t *dev, cd_frame_t *frame) {}
+__weak void cdctl_tx_cb(cdctl_dev_t *dev, cd_frame_t *frame) {}

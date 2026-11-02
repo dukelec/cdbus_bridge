@@ -38,9 +38,11 @@ static void get_uid(char *buf)
 
 static void init_info_str(void)
 {
-    // M: model; S: serial string; HW: hardware version; SW: software version
+    // M: model; S: serial string; SW: software version
+    // no HW field: the bootloader has no spi, so it cannot tell the hw v4
+    // (cdctl-b) from the hw v5 (cdctl01a); the application reports it
     get_uid(cpu_id);
-    sprintf(info_str, "M: cdbus bridge (bl); S: %s; HW: v5; SW: %s", cpu_id, SW_VER);
+    sprintf(info_str, "M: cdbus bridge (bl); S: %s; SW: %s", cpu_id, SW_VER);
     d_info("info: %s, git: %s\n", info_str, SW_VER_FULL);
 }
 

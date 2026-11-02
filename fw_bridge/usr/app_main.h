@@ -87,6 +87,7 @@ extern list_head_t frame_free_head;
 void frame_cache_put(list_head_t *head, cd_frame_t *frame);
 void cdc_rx_drop(void);
 extern cduart_dev_t d_dev;  // usb cdc
+extern cdctl_dev_t r_dev;   // cdbus
 extern volatile uint8_t cdc_dtr;
 extern volatile uint32_t cdc_rate;
 extern volatile uint32_t pendsv_val;

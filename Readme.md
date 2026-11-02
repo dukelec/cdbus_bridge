@@ -4,6 +4,9 @@
 <img alt="cdbus_bridge" src="doc/img/cdbridge5.2_case.jpg">
 
  - The two RS485 ports are internally straight-through, simplifying wiring.
+ - This firmware runs on the hw v5 (cdctl01a) and the hw v4 (cdctl-b fpga
+   module); the chip is detected at boot and the device info reports
+   `HW: v5` or `HW: v4` accordingly.
 
 Switchs Defination:
  - S1.1: Force bootloader mode.

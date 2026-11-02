@@ -46,7 +46,7 @@ void load_conf(void)
     if (magic_code == 0xcdcd && conf_ver == APP_CONF_VER) {
         memcpy(&csa, (void *)APP_CONF_ADDR, offsetof(csa_t, _end_save));
         csa.conf_from = 1;
-    } else if (magic_code == 0xcdcd && (conf_ver >> 8) == (APP_CONF_VER >> 8)) {
+    } else if (magic_code == 0xcdcd && (conf_ver >> 12) == (APP_CONF_VER >> 12)) {
         memcpy(&csa, (void *)APP_CONF_ADDR, offsetof(csa_t, _end_common));
         csa.conf_from = 2;
         csa.conf_ver = APP_CONF_VER;

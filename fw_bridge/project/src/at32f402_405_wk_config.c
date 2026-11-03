@@ -76,8 +76,8 @@
   *         - ahbclk              = 216000000
   *         - apb1div             = 2
   *         - apb1clk             = 108000000
-  *         - apb2div             = 2
-  *         - apb2clk             = 108000000
+  *         - apb2div             = 1
+  *         - apb2clk             = 216000000
   *         - pll_ns              = 72
   *         - pll_ms              = 1
   *         - pll_fp              = 4
@@ -138,7 +138,7 @@ void wk_system_clock_config(void)
   crm_ahb_div_set(CRM_AHB_DIV_1);
 
   /* config apb2clk, the maximum frequency of APB2 clock is 216 MHz  */
-  crm_apb2_div_set(CRM_APB2_DIV_2);
+  crm_apb2_div_set(CRM_APB2_DIV_1);
 
   /* config apb1clk, the maximum frequency of APB1 clock is 120 MHz  */
   crm_apb1_div_set(CRM_APB1_DIV_2);
@@ -523,7 +523,7 @@ void wk_spi1_init(void)
   spi_init_struct.master_slave_mode = SPI_MODE_MASTER;
   spi_init_struct.frame_bit_num = SPI_FRAME_8BIT;
   spi_init_struct.first_bit_transmission = SPI_FIRST_BIT_MSB;
-  spi_init_struct.mclk_freq_division = SPI_MCLK_DIV_2; // 54 MHz
+  spi_init_struct.mclk_freq_division = SPI_MCLK_DIV_4; // 54 MHz
   spi_init_struct.clock_polarity = SPI_CLOCK_POLARITY_LOW;
   spi_init_struct.clock_phase = SPI_CLOCK_PHASE_1EDGE;
   spi_init_struct.cs_mode_selection = SPI_CS_SOFTWARE_MODE;

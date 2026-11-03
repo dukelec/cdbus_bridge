@@ -50,7 +50,7 @@
             <ParametersSub name="TransmissionMode" value="SPI_TRANSMIT_FULL_DUPLEX"/>
             <ParametersSub name="Mode" value="SPI_MODE_MASTER"/>
             <ParametersSub name="FirstBit" value="SPI_FIRST_BIT_MSB"/>
-            <ParametersSub name="ClkDivision" value="SPI_MCLK_DIV_3"/>
+            <ParametersSub name="ClkDivision" value="SPI_MCLK_DIV_4"/>
         </Parameters>
     </SPI1>
     <SYSTEM>
@@ -207,7 +207,7 @@
         <sclkselect>1</sclkselect>
         <ahbdiv>1</ahbdiv>
         <apb1div>2</apb1div>
-        <apb2div>2</apb2div>
+        <apb2div>1</apb2div>
         <pllfu>18</pllfu>
         <hicktousb>1</hicktousb>
         <hicktosclk>0</hicktosclk>

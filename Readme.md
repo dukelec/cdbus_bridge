@@ -28,6 +28,10 @@ Switchs Defination:
  - Raw mode allows arbitrary data transfer without following the CDBUS byte
    format (HW v6.2+). The port carries a plain byte stream then, so no debug
    output is copied to it.
+   The rate is 216 MHz / n (n ≥ 16), 13.5 Mbps at most; any other rate runs
+   at the nearest one. Exact above 1 Mbps in 0.5 Mbps steps: 1, 1.5, 2, 3,
+   4, 4.5, 6, 8, 9, 12 and 13.5 Mbps. 5 Mbps runs at 5.023 Mbps (+0.47%),
+   well within what a uart tolerates.
 
 ## Configuration Mode
 

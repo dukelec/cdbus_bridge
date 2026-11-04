@@ -23,7 +23,9 @@ Switchs Defination:
  - The PC sends complete CDBUS packets (with CRC) via USB serial to the CDBUS Bridge, which forwards them unchanged to the RS-485 bus.
  - Data received from RS-485 is sent unchanged back to the PC via USB serial.
  - The baud rate set by the PC when opening the USB serial port is used for RS-485 (`baud_l` is automatically limited in arbitration mode).
- - The PC must enable the DTR option on the USB serial port.
+ - The PC must enable the DTR option on the USB serial port, unless `avoid_dtr`
+   is set to 1 (bootloader included). The port is then open whenever USB is
+   up, and what arrives while no program has it open waits for the next one.
  - The default RS-485 address of the Bridge is 0. To change it, see the next section.
  - Raw mode allows arbitrary data transfer without following the CDBUS byte
    format (HW v6.2+). The port carries a plain byte stream then, so no debug

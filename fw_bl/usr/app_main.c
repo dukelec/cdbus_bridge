@@ -63,10 +63,13 @@ static void usb_detection(void)
     // the host asserts dtr again when its program reopens the port, which a
     // reset forces it to. A suspend is not a reset: the state is SUSPENDED
     // then, above CONFIGURED, and the port stays open across it
-    if (otg_core_struct_hs.dev.conn_state < USB_CONN_STATE_CONFIGURED)
+    bool dtr = cdc_dtr || csa.avoid_dtr;
+    if (otg_core_struct_hs.dev.conn_state < USB_CONN_STATE_CONFIGURED) {
         cdc_dtr = 0;
+        dtr = false;
+    }
 
-    if (!cdc_dtr) {
+    if (!dtr) {
         t_usb = t_cur;
         if (csa.usb_online)
             printf("usb: 1 -> 0 (!dtr)\n");

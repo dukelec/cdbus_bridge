@@ -47,8 +47,9 @@ typedef struct {
     bool            save_conf;
 
     bool            dbg_en;
+    bool            avoid_dtr;  // the serial port is open without dtr
 
-    uint8_t         _keep[503]; // covers the areas in the app csa that need to be saved
+    uint8_t         _keep[502]; // covers the areas in the app csa that need to be saved
 
     // end of flash
     #define         _end_save usb_online // offset: 512
@@ -56,6 +57,10 @@ typedef struct {
     bool            usb_online;
 
 } csa_t; // config status area
+
+// must match the app's csa
+_Static_assert(offsetof(csa_t, avoid_dtr) == 9, "avoid_dtr moved");
+_Static_assert(offsetof(csa_t, _end_save) == 512, "saved size changed");
 
 extern csa_t csa;
 extern const csa_t csa_dft;

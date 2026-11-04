@@ -54,8 +54,9 @@ typedef struct {
     bool            save_conf;
 
     bool            dbg_en;
+    bool            avoid_dtr;      // the serial port is open without dtr
     #define         _end_common _reserved1
-    uint8_t         _reserved1[4];
+    uint8_t         _reserved1[3];
 
     cdctl_cfg_t     bus_cfg;
     uint32_t        limit_baudrate0;
@@ -67,6 +68,9 @@ typedef struct {
     bool            usb_online;
 
 } csa_t; // config status area
+
+// the bl reads it from the same page
+_Static_assert(offsetof(csa_t, avoid_dtr) == 9, "avoid_dtr moved");
 
 extern csa_t csa;
 extern const csa_t csa_dft;

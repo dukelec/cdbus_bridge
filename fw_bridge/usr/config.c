@@ -162,6 +162,7 @@ void csa_list_show(void)
     d_debug("\n");
 
     CSA_SHOW(0, dbg_en, "1: Report debug message to host, 0: do not report");
+    CSA_SHOW(0, avoid_dtr, "1: Serial port works without DTR, also in bl");
     d_debug("\n");
 
     CSA_SHOW_SUB(1, bus_cfg, cdctl_cfg_t, mac, "RS-485 port id, range: 0~254");

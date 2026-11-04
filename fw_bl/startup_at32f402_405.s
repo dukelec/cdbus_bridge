@@ -120,7 +120,7 @@ g_pfnVectors:
   .word  BusFault_Handler
   .word  UsageFault_Handler
   .word  0
-  .word  0
+  .word  sw_ver                     /* 0x20, reserved: version string */
   .word  0
   .word  0
   .word  SVC_Handler

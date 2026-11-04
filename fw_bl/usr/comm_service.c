@@ -12,6 +12,7 @@
 static char cpu_id[25];
 static char info_str[100];
 static cd_spinlock_t p5_lock = {0};
+const char sw_ver[] = SW_VER; // vector slot 0x20 points here, the app reads it
 
 
 static void send_frame(cd_frame_t *frame, uint8_t p_len)
@@ -40,7 +41,7 @@ static void init_info_str(void)
 {
     // M: model; S: serial string; HW: hardware version; SW: software version
     get_uid(cpu_id);
-    sprintf(info_str, "M: cdbus bridge (bl); S: %s; HW: v6; SW: %s", cpu_id, SW_VER);
+    sprintf(info_str, "M: cdbus bridge (bl); S: %s; HW: v6; SW: %s", cpu_id, sw_ver);
     d_info("info: %s, git: %s\n", info_str, SW_VER_FULL);
 }
 

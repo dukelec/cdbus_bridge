@@ -10,7 +10,9 @@
 #include "app_main.h"
 
 static char cpu_id[25];
-static char info_str[100];
+static char info_str[128];
+const char sw_ver[] = SW_VER; // vector slot 0x20 points here, for the bl to read
+extern const uint32_t g_pfnVectors[]; // ours, right after the bl
 
 
 static void send_frame(cd_frame_t *frame, uint8_t p_len)
@@ -57,9 +59,13 @@ static bool mem_readable(uint32_t addr, uint32_t len)
 
 static void init_info_str(void)
 {
-    // M: model; S: serial string; HW: hardware version; SW: software version
+    // M: model; S: serial string; HW: hardware version; SW: software version; BL: bl version
+    const char *bl_ver = *(const char **)(0x08000000 + 0x20); // 0 in older bls
+    bool has_bl = (uint32_t)bl_ver - 0x08000000 < (uint32_t)g_pfnVectors - 0x08000000;
+
     get_uid(cpu_id);
-    sprintf(info_str, "M: cdbus bridge; S: %s; HW: v6; SW: %s", cpu_id, SW_VER);
+    snprintf(info_str, sizeof(info_str), "M: cdbus bridge; S: %s; HW: v6; SW: %s%s%.20s",
+             cpu_id, sw_ver, has_bl ? "; BL: " : "", has_bl ? bl_ver : "");
     d_info("info: %s, git: %s\n", info_str, SW_VER_FULL);
 }
 

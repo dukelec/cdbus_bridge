@@ -37,14 +37,18 @@ without anything being taken down first.
  - Before that, the bus runs at the rate stored in the config, which is what it comes up with after power on.
    Saving the config stores the rates in effect at that moment, so a save
    made while the port is open at 2 Mbps makes 2 Mbps the boot rate.
- - The PC must enable the DTR option on the USB serial port. The port
-   counts as open for as long as DTR is asserted. A USB reset clears it,
-   as it does the rest of the device state, and the host asserts it again
-   when its program reopens the port, which it has to after a reset anyway.
+ - The PC must enable the DTR option on the USB serial port, unless `avoid_dtr`
+   is set to 1 (bootloader included). The port is then open whenever USB is
+   up: it keeps the bus, so the ethernet port gets no bus traffic, and what
+   arrives while no program has it open is queued for the next one.
  - The default RS-485 address of the Bridge is 0. To change it, see below.
  - Raw mode allows arbitrary data transfer without following the CDBUS byte
    format (HW v6.2+). The bus then belongs to the serial port alone and the
    ethernet port reports no carrier.
+   The rate is 216 MHz / n (n ≥ 16), 13.5 Mbps at most; any other rate runs
+   at the nearest one. Exact above 1 Mbps in 0.5 Mbps steps: 1, 1.5, 2, 3,
+   4, 4.5, 6, 8, 9, 12 and 13.5 Mbps. 5 Mbps runs at 5.023 Mbps (+0.47%),
+   well within what a uart tolerates.
 
 ### Ethernet Port
 
@@ -102,22 +106,6 @@ flash) are reachable two ways:
 After modifying the configuration, write 1 to `save_conf` to save the changes to flash.
 
 To restore the default configuration, change the value of `magic_code` to a different value, save it to flash, and then power cycle the device.
-
-Debug output always goes out on the debug uart, and `dbg_en` sends a copy
-to the host on CDNET port 9: bit 0 (1) to the serial port, bit 1 (2) to the
-ethernet port, from `fdcd::10:0` to the host's level 0 address, 3 for both.
-The serial port is there from the moment the device enumerates, so the boot
-log, the CSA table included, waits in its queue and is still there when the
-port is opened; if the port is never opened, bus traffic takes those frames
-back as it needs them. The ethernet port has no open to wait for, so it
-only carries what is printed while it is up and being read.
-
-The debug uart (2 Mbps) is fed through a 2 KB ring buffer drained by DMA,
-so printing never holds up the main loop. The ring survives a reset:
-whatever a crash or a watchdog left unsent is printed by the next boot,
-between `--- unsent before reset ---` and `--- end ---`, followed by the
-reset cause. A hard fault prints the fault registers and the faulting pc
-before it hangs, and a deliberate reset flushes the ring first.
 
 <img src="doc/img/cdgui.png">
 

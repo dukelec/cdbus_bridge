@@ -62,10 +62,11 @@ void tud_cdc_line_coding_cb(uint8_t itf, const cdc_line_coding_t *coding)
     cdc_rate = coding->bit_rate;
 }
 
-// the host holds the port
+// the host holds the port, or with avoid_dtr just the usb is up: the bus
+// then stays with the serial port and its opening and closing go unseen
 static bool cdc_open(void)
 {
-    return tud_ready() && tud_cdc_connected();
+    return tud_ready() && (tud_cdc_connected() || csa.avoid_dtr);
 }
 
 // ... and may be talked to. Nothing is sent for the first few ms after the

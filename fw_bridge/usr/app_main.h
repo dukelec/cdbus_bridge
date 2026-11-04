@@ -63,8 +63,9 @@ typedef struct {
     bool            save_conf;
 
     uint8_t         dbg_en;         // bit 0: serial port, bit 1: ethernet port
+    bool            avoid_dtr;      // the serial port is open without dtr
     #define         _end_common _reserved1
-    uint8_t         _reserved1[4];
+    uint8_t         _reserved1[3];
 
     cdctl_cfg_t     bus_cfg;
     uint32_t        limit_baudrate0;    // baud_l cap in arbitration mode, sw2 off
@@ -91,6 +92,8 @@ typedef struct {
 // first, and everything from the second on is versioned by _reserved2
 _Static_assert(offsetof(csa_t, _reserved2) == 0x30, "bus config moved");
 _Static_assert(offsetof(csa_t, ip_pfx) == 0x40, "network config moved");
+// the bl reads it from the same page
+_Static_assert(offsetof(csa_t, avoid_dtr) == 9, "avoid_dtr moved");
 
 extern csa_t csa;
 extern const csa_t csa_dft;

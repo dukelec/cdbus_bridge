@@ -55,7 +55,7 @@ void load_conf(void)
     if (magic_code == 0xcdcd && conf_ver == APP_CONF_VER) {
         memcpy(&csa, (void *)APP_CONF_ADDR, offsetof(csa_t, _end_save));
         csa.conf_from = 1;
-    } else if (magic_code == 0xcdcd && (conf_ver >> 8) == (APP_CONF_VER >> 8)) {
+    } else if (magic_code == 0xcdcd && (conf_ver >> 12) == (APP_CONF_VER >> 12)) {
         // nothing up to the bus settings has moved within this major
         // version, so a device coming from an older minor keeps its mac
         // and rates and takes defaults for what came after
@@ -175,6 +175,7 @@ void csa_list_show(void)
     d_debug("\n");
 
     CSA_SHOW(0, dbg_en, "Report debug message to host, bit0: serial port, bit1: ethernet port");
+    CSA_SHOW(0, avoid_dtr, "1: Serial port works without DTR, also in bl");
     d_debug("\n");
 
     CSA_SHOW_SUB(1, bus_cfg, cdctl_cfg_t, mac, "RS-485 port id, range: 0~254");

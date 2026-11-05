@@ -107,6 +107,9 @@ After modifying the configuration, write 1 to `save_conf` to save the changes to
 
 To restore the default configuration, change the value of `magic_code` to a different value, save it to flash, and then power cycle the device.
 
+The `HW` field of the info string is kept in the user system data of the MCU,
+`tools/hw_ver.py --ver 6.2` writes it through the app; it reads `v6` while never written.
+
 <img src="doc/img/cdgui.png">
 
 

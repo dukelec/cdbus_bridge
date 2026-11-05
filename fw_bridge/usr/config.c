@@ -10,6 +10,8 @@
 #include "app_main.h"
 
 #define ONCE_PAGE_SIZE  2048
+#define MAIN_FLASH_END  (FLASH_BASE + 256 * 1024)
+#define USD_SIZE        0x200
 
 
 const csa_t csa_dft = {
@@ -87,9 +89,70 @@ int save_conf(void)
     }
 }
 
+static bool in_range(uint32_t addr, uint32_t len, uint32_t base, uint32_t end)
+{
+    return addr >= base && addr <= end && len <= end - addr;
+}
+
+// the usd only erases as a whole: what lies outside the range is written back, the lib keeps the fap
+static int usd_erase(uint32_t addr, uint32_t len)
+{
+    uint16_t bak[USD_SIZE / 2];
+    int ret = 0;
+
+    memcpy(bak, (void *)USD_BASE, USD_SIZE);
+    flash_unlock();
+    flash_flag_clear(FLASH_ODF_FLAG | FLASH_PRGMERR_FLAG | FLASH_EPPERR_FLAG);
+    bool erased = flash_user_system_data_erase() == FLASH_OPERATE_DONE;
+    if (!erased)
+        ret = -1;
+    for (uint32_t i = 1; erased && i < USD_SIZE / 2; i++) { // [0]: fap; a failure does not stop the rest
+        uint32_t a = USD_BASE + i * 2;
+        if (bak[i] == 0xffff || (a + 2 > addr && a < addr + len))
+            continue;
+        if (flash_user_system_data_program(a, bak[i] & 0xff) != FLASH_OPERATE_DONE)
+            ret = -1;
+    }
+    FLASH->ctrl_bit.usdulks = FALSE;
+    flash_lock();
+    d_debug("usd erase: %08lx +%ld, ret: %d\n", addr, len, ret);
+    return ret;
+}
+
+// the hardware adds the inverse byte: only the even bytes are taken, a 0xffff pair is left blank
+static int usd_write(uint32_t addr, uint32_t len, const uint8_t *buf)
+{
+    int ret = 0;
+
+    if ((addr | len) & 1)
+        return -1;
+    flash_unlock();
+    flash_flag_clear(FLASH_ODF_FLAG | FLASH_PRGMERR_FLAG | FLASH_EPPERR_FLAG);
+    for (uint32_t i = 0; i < len; i += 2) {
+        if (buf[i] == 0xff && buf[i + 1] == 0xff)
+            continue;
+        if (flash_user_system_data_program(addr + i, buf[i]) != FLASH_OPERATE_DONE) {
+            ret = -1;
+            break;
+        }
+    }
+    FLASH->ctrl_bit.usdulks = FALSE;
+    flash_lock();
+    d_debug("usd write: %08lx %ld, ret: %d\n", addr, len, ret);
+    return ret;
+}
+
+
 int flash_erase(uint32_t addr, uint32_t len)
 {
     int ret = 0;
+    if (in_range(addr, len, USD_BASE, USD_BASE + USD_SIZE))
+        return usd_erase(addr, len);
+    if (!in_range(addr, len, FLASH_BASE, MAIN_FLASH_END)) {
+        d_error("flash erase: out of range\n");
+        return -1;
+    }
+
     uint32_t ofs = addr & ~0x08000000;
     if (ofs <= 0x6000 && 0x6000 < ofs + len) {
         d_error("flash erase: avoid erasing self\n");
@@ -121,6 +184,13 @@ int flash_write(uint32_t addr, uint32_t len, const uint8_t *buf)
     uint32_t write_cnt = (len + 3) / 4;
     uint32_t *src_addr = (uint32_t *) buf;
     uint32_t src_data;
+
+    if (in_range(addr, len, USD_BASE, USD_BASE + USD_SIZE))
+        return usd_write(addr, len, buf);
+    if (!in_range(addr, write_cnt * 4, FLASH_BASE, MAIN_FLASH_END)) {
+        d_error("flash write: out of range\n");
+        return -1;
+    }
 
     flash_unlock();
     flash_flag_clear(FLASH_ODF_FLAG | FLASH_PRGMERR_FLAG | FLASH_EPPERR_FLAG);

@@ -20,7 +20,9 @@
 #include "app_main.h"
 
 static char cpu_id[25];
-static char info_str[100];
+static char info_str[128];
+const char sw_ver[] = SW_VER; // vector slot 0x20 points here, for the bl to read
+extern const uint32_t g_pfnVectors[]; // ours, right after the bl
 
 
 static void get_uid(char *buf)
@@ -36,11 +38,32 @@ static void get_uid(char *buf)
     buf[24] = '\0';
 }
 
+static void get_hw_ver(char *buf) // buf[16], "v6" (pcb v6.1 / v6.2) while never written
+{
+    const uint16_t *p = (const uint16_t *)HW_VER_ADDR;
+    uint8_t v[3];
+
+    for (int i = 0; i < 3; i++) {
+        if ((p[i] >> 8) != (~p[i] & 0xff)) { // blank or broken
+            strcpy(buf, "v6");
+            return;
+        }
+        v[i] = p[i];
+    }
+    sprintf(buf, v[2] ? "v%d.%d.%d" : "v%d.%d", v[0], v[1], v[2]);
+}
+
 static void init_info_str(void)
 {
-    // M: model; S: serial string; HW: hardware version; SW: software version
+    // M: model; S: serial string; HW: hardware version; BL: bl version; SW: software version
+    const char *bl_ver = *(const char **)(0x08000000 + 0x20); // 0 in older bls
+    bool has_bl = (uint32_t)bl_ver - 0x08000000 < (uint32_t)g_pfnVectors - 0x08000000;
+
+    char hw_ver[16];
     get_uid(cpu_id);
-    sprintf(info_str, "M: cdbus bridge; S: %s; HW: v6; SW: %s", cpu_id, SW_VER);
+    get_hw_ver(hw_ver);
+    snprintf(info_str, sizeof(info_str), "M: cdbus bridge; S: %s; HW: %s%s%.20s; SW: %s",
+             cpu_id, hw_ver, has_bl ? "; BL: " : "", has_bl ? bl_ver : "", sw_ver);
     d_info("info: %s, git: %s\n", info_str, SW_VER_FULL);
 }
 
@@ -59,7 +82,7 @@ static bool mem_readable(uint32_t addr, uint32_t len)
         return true;
     if (addr >= 0x20000000 && end <= 0x20000000 + 102 * 1024)
         return true;
-    if (addr >= 0x1ffff000 && end <= 0x1ffff800)
+    if (addr >= 0x1ffff000 && end <= 0x1ffffa00) // up to the end of the usd
         return true;
     return false;
 }

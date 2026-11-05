@@ -5,3 +5,7 @@
 [submodule "cdnet_bridge"]
 	path = fw_bridge/cdnet
 	url = ../cdnet
+
+[submodule "pycdnet"]
+	path = tools/pycdnet
+	url = ../pycdnet

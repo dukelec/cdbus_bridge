@@ -10,6 +10,7 @@
 #include "app_main.h"
 
 #define ONCE_PAGE_SIZE  2048
+#define MAIN_FLASH_END  (FLASH_BASE + 256 * 1024)
 
 
 const csa_t csa_dft = {
@@ -51,9 +52,19 @@ int save_conf(void)
     }
 }
 
+static bool in_main_flash(uint32_t addr, uint32_t len)
+{
+    return addr >= FLASH_BASE && addr <= MAIN_FLASH_END && len <= MAIN_FLASH_END - addr;
+}
+
 int flash_erase(uint32_t addr, uint32_t len)
 {
     int ret = 0;
+    if (!in_main_flash(addr, len)) { // the usd is written by the app only
+        d_error("flash erase: out of range\n");
+        return -1;
+    }
+
     uint32_t ofs = addr & ~0x08000000;
     if (ofs == 0) {
         d_error("flash erase: avoid erasing self\n");
@@ -85,6 +96,11 @@ int flash_write(uint32_t addr, uint32_t len, const uint8_t *buf)
     uint32_t write_cnt = (len + 3) / 4;
     uint32_t *src_addr = (uint32_t *) buf;
     uint32_t src_data;
+
+    if (!in_main_flash(addr, write_cnt * 4)) {
+        d_error("flash write: out of range\n");
+        return -1;
+    }
 
     flash_unlock();
     flash_flag_clear(FLASH_ODF_FLAG | FLASH_PRGMERR_FLAG | FLASH_EPPERR_FLAG);

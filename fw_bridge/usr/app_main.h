@@ -34,7 +34,7 @@
 #define APP_CONF_VER        0x0203
 #define HW_VER_ADDR         0x1FFFF848 // usd Data2..4: major, minor, patch, each byte followed by its inverse
 
-#define FRAME_MAX           80
+#define FRAME_MAX           160
 // keep this many frames in the free pool for the cdctl receive interrupt,
 // the one allocator that cannot wait; everything else backs off at this line
 #define FRAME_RESERVE       10

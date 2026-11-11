@@ -10,8 +10,11 @@
 # target
 ######################################
 TARGET = cdbridge_bl
-GIT_VERSION_FULL := $(shell git describe --long --dirty --always --tags)
-# tag format: any_string_vX.Y
+# version tag format: any_string_vX.Y, the nearest one wins; other tags (e.g.
+# archives) only when no version tag is reachable
+VER_MATCH := $(addprefix --match=,$(shell git tag -l | grep -E 'v[0-9]+\.[0-9]+$$'))
+GIT_DESCRIBE = git describe --tags $(1) $(VER_MATCH) 2>/dev/null || git describe --always --tags $(1)
+GIT_VERSION_FULL := $(shell $(call GIT_DESCRIBE,--long --dirty))
 VERSION_MID := $(shell echo $(GIT_VERSION_FULL) | sed -E 's/.*v//' | sed -E 's/-g.*//')
 GIT_VERSION := $(shell \
 	if echo $(VERSION_MID) | grep -Eq '^[0-9]+\.[0-9]+-[0-9]+$$'; then \
@@ -23,7 +26,7 @@ GIT_VERSION := $(shell \
 	elif echo $(VERSION_MID) | grep -Eq '^[0-9]+\.[0-9]+$$'; then \
 		echo v$(VERSION_MID); \
 	else \
-		echo $(shell git describe --always --tags); \
+		echo $(shell $(call GIT_DESCRIBE,)); \
 	fi)
 
 

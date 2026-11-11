@@ -35,7 +35,7 @@
 
 #define CPU_UID_ADDR        0x1FFFF7E8
 
-#define FRAME_MAX           80
+#define FRAME_MAX           160
 // keep this many frames in the free pool whatever happens. Everything in
 // the main loop backs off at this line so that the one allocator that
 // cannot, the cdctl receive interrupt, always has a frame: there is no way
